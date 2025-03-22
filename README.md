@@ -1,6 +1,21 @@
 # Pi-hole Telegram Bot
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Telegram Bot](https://img.shields.io/badge/Telegram-Bot-blue)](https://core.telegram.org/bots)
+[![Pi-hole](https://img.shields.io/badge/Pi--hole-Integration-red)](https://pi-hole.net/)
+
 A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
+
+## 📑 Table of Contents
+
+- [✨ Features](#-features)
+- [📋 Prerequisites](#-prerequisites)
+- [🛠️ Installation](#️-installation)
+- [🚀 Running the Bot](#-running-the-bot)
+- [📱 Usage](#-usage)
+- [🔐 Security](#-security)
+- [📄 License](#-license)
+- [🙏 Acknowledgements](#-acknowledgements)
 
 ## ✨ Features
 
