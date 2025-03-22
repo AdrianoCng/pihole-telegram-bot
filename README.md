@@ -1,4 +1,4 @@
-# Pi-hole Telegram Bot
+# Pihole Telegram Bot
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Telegram Bot](https://img.shields.io/badge/Telegram-Bot-blue)](https://core.telegram.org/bots)
@@ -37,7 +37,7 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 1. Clone this repository to your Raspberry Pi:
 
    ```bash
-   git clone https://github.com/AdrianoCng/pi-hole-telegram-bot.git
+   git clone https://github.com/AdrianoCng/pihole-telegram-bot.git
    cd pi-hole-telegram-bot
    ```
 

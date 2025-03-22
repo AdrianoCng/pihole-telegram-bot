@@ -1,5 +1,5 @@
 {
-  "name": "pihole-controller",
+  "name": "pihole-telegram-bot",
   "type": "module",
   "version": "0.0.1",
   "description": "Control your pihole with this telegram bot",
@@ -21,11 +21,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/AdrianoCng/pi-hole-telegram-bot"
+    "url": "https://github.com/AdrianoCng/pihole-telegram-bot"
   },
-  "homepage": "https://github.com/AdrianoCng/pi-hole-telegram-bot#readme",
+  "homepage": "https://github.com/AdrianoCng/pihole-telegram-bot#readme",
   "bugs": {
-    "url": "https://github.com/AdrianoCng/pi-hole-telegram-bot/issues"
+    "url": "https://github.com/AdrianoCng/pihole-telegram-bot/issues"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
