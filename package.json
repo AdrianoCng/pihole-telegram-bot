@@ -10,6 +10,23 @@
   },
   "author": "Adriano Cangiamila",
   "license": "ISC",
+  "keywords": [
+    "pihole",
+    "telegram",
+    "bot",
+    "pi-hole",
+    "controller",
+    "dns",
+    "ad-blocker"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AdrianoCng/pi-hole-telegram-bot"
+  },
+  "homepage": "https://github.com/AdrianoCng/pi-hole-telegram-bot#readme",
+  "bugs": {
+    "url": "https://github.com/AdrianoCng/pi-hole-telegram-bot/issues"
+  },
   "dependencies": {
     "dotenv": "^16.4.7",
     "telegraf": "^4.12.2"
