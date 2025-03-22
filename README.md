@@ -22,8 +22,8 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 1. Clone this repository to your Raspberry Pi:
 
    ```bash
-   git clone https://github.com/yourusername/pihole-controller.git
-   cd pihole-controller
+   git clone https://github.com/AdrianoCng/pi-hole-telegram-bot.git
+   cd pi-hole-telegram-bot
    ```
 
 2. Install dependencies on your Raspberry Pi:
@@ -72,7 +72,7 @@ node index.js
 2. Start the bot with PM2 on your Raspberry Pi:
 
    ```bash
-   pm2 start index.js --name pihole-telegram-bot
+   pm2 start index.js --name pi-hole-telegram-bot
    ```
 
 3. Configure PM2 to start on boot (on your Raspberry Pi):
