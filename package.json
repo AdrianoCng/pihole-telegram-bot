@@ -1,0 +1,20 @@
+{
+  "name": "pihole-controller",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Control your pihole with this telegram bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "Adriano Cangiamila",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "telegraf": "^4.12.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
