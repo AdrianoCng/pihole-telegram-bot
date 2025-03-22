@@ -44,11 +44,21 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
    - Start a conversation and it will display your ID
 
 5. Create a `.env` file in the project directory on your Raspberry Pi with the following variables:
+
    ```
    BOT_TOKEN=your_telegram_bot_token_here
    PIHOLE_PASSWORD=your_pihole_admin_password_here
    PIHOLE_IP=your_pihole_ip_address_here
    ALLOWED_USER=your_telegram_user_id_here
+   ```
+
+   Example:
+
+   ```
+   BOT_TOKEN="1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789"
+   PIHOLE_PASSWORD="YourPiholePasswordHere"
+   PIHOLE_IP="http://192.168.1.100"
+   ALLOWED_USER="123456789"
    ```
 
 ## 🚀 Running the Bot
