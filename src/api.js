@@ -1,7 +1,7 @@
 import ApiError from "./ApiError.js";
 
 const api = {
-  BASE_URL: process.env.PIHOLE_URL,
+  BASE_URL: `${process.env.PIHOLE_IP}/api`,
   headers: {},
   setHeader(key, value) {
     this.headers[key] = value;
