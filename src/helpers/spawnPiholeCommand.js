@@ -17,7 +17,7 @@ export default async function spawnPiholeCommand(ctx, args) {
 
     process.stderr.on("data", (chunk) => {
       sendMessage(ctx, chunk.toString());
-      reject();
+      reject(chunk.toString());
     });
 
     process.on("close", () => {
