@@ -89,7 +89,7 @@ function sendMessage(ctx, message) {
   ]);
 
   emojiMap.forEach((emoji, key) => {
-    message = message.replace(key, emoji);
+    message = message.replaceAll(key, emoji);
   });
 
   ctx.reply(message);
