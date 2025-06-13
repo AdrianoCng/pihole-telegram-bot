@@ -1,5 +1,5 @@
 import { exec } from "child_process";
-import { sendMessage } from "./helpers/index.js";
+import { sendMessage } from "./index.js";
 
 /**
  * Execute a Pi-hole command and send output to chat
