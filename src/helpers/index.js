@@ -1,2 +1,3 @@
 export { default as sendMessage } from "./sendMessage.js";
 export { default as executePiholeCommand } from "./executePiholeCommand.js";
+export { default as spawnPiholeCommand } from "./spawnPiholeCommand.js";

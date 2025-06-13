@@ -1,4 +1,4 @@
-import { spawnPiholeCommand } from "../helpers.js";
+import { spawnPiholeCommand } from "../helpers/index.js";
 import { CLI_COMMANDS } from "../constants/cli.js";
 
 const statusController = async (ctx) => {
