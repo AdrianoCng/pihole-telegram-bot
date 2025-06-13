@@ -1,6 +1,6 @@
-import { COMMANDS } from "./constants/commands.js";
+import { COMMANDS } from "../constants/commands.js";
 
-function validateCommands(commands) {
+export function validateCommands(commands) {
   const allTriggers = new Set();
   const duplicates = [];
 
@@ -27,12 +27,10 @@ function validateCommands(commands) {
   return true;
 }
 
-function registerCommands(bot) {
+export function registerCommands(bot) {
   validateCommands(COMMANDS);
 
   COMMANDS.forEach(({ trigger, handler }) => {
     bot.command(trigger, handler);
   });
 }
-
-export { validateCommands, registerCommands };
