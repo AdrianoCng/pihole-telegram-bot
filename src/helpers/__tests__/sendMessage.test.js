@@ -1,4 +1,4 @@
-import { sendMessage } from "../../helpers";
+import { sendMessage } from "../index.js";
 
 describe("sendMessage", () => {
   const mockCtx = {

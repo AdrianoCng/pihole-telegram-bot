@@ -1,5 +1,6 @@
 import { COMMANDS } from "./constants/commands.js";
 import { exec, spawn } from "child_process";
+import { sendMessage } from "./helpers/index.js";
 
 function validateCommands(commands) {
   const allTriggers = new Set();
@@ -81,24 +82,9 @@ function executePiholeCommand(ctx, args) {
   });
 }
 
-function sendMessage(ctx, message) {
-  const emojiMap = new Map([
-    ["[✓]", "✅"],
-    ["[✗]", "❌"],
-    ["[i]", "ℹ️"],
-  ]);
-
-  emojiMap.forEach((emoji, key) => {
-    message = message.replaceAll(key, emoji);
-  });
-
-  ctx.reply(message);
-}
-
 export {
   validateCommands,
   registerCommands,
   spawnPiholeCommand,
   executePiholeCommand,
-  sendMessage,
 };

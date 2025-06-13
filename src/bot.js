@@ -1,5 +1,6 @@
 import { Telegraf } from "telegraf";
-import { registerCommands, sendMessage } from "./helpers.js";
+import { registerCommands } from "./helpers.js";
+import { sendMessage } from "./helpers/index.js";
 import { COMMANDS } from "./constants/commands.js";
 import typing from "./middlewares/typing.js";
 import authenticate from "./middlewares/authenticate.js";

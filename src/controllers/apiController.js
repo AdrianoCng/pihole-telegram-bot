@@ -1,6 +1,6 @@
 import api from "../api.js";
 import { API_ENDPOINTS } from "../constants/api.js";
-import { sendMessage } from "../helpers.js";
+import { sendMessage } from "../helpers/index.js";
 
 const authorizeController = async (ctx) => {
   const response = await api.post(API_ENDPOINTS.AUTH, {

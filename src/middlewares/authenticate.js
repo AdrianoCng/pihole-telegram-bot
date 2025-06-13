@@ -1,4 +1,4 @@
-import { sendMessage } from "../helpers.js";
+import { sendMessage } from "../helpers/index.js";
 
 export default async (ctx, next) => {
   if (process.env.ALLOWED_USER !== ctx.from.id.toString()) {
