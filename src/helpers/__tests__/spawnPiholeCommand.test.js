@@ -74,30 +74,4 @@ describe("spawnPiholeCommand", () => {
       await expect(promise).rejects.toBe(stderrData);
     });
   });
-
-  //   it("should send stderr data to chat and reject on error", async () => {
-  //     const args = ["--help"];
-  //     const stderrData = "Error message";
-
-  //     try {
-  //       const promise = spawnPiholeCommand(mockCtx, args);
-
-  //       const stderrCallback = mockProcess.stderr.on.mock.calls[0][1];
-  //       stderrCallback(Buffer.from(stderrData));
-
-  //       expect(promise).rejects.toBeDefined();
-  //       expect(sendMessage).toHaveBeenCalledWith(mockCtx, stderrData);
-  //     } catch (error) {}
-  //   });
-
-  //   it("should resolve when process closes successfully", async () => {
-  //     const args = ["--help"];
-
-  //     const promise = spawnPiholeCommand(mockCtx, args);
-
-  //     const closeCallback = mockProcess.on.mock.calls[0][1];
-  //     closeCallback();
-
-  //     await expect(promise).resolves.toBeUndefined();
-  //   });
 });
