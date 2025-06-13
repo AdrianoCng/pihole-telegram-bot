@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "test": "jest"
   },
   "author": "Adriano Cangiamila",
   "license": "ISC",
@@ -32,6 +33,10 @@
     "telegraf": "^4.12.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
+    "babel-jest": "^30.0.0",
+    "jest": "^30.0.0",
     "nodemon": "^3.1.7"
   }
 }
