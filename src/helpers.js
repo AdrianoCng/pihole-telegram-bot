@@ -1,5 +1,5 @@
 import { COMMANDS } from "./constants/commands.js";
-import { exec, spawn } from "child_process";
+import { spawn } from "child_process";
 import { sendMessage } from "./helpers/index.js";
 
 function validateCommands(commands) {
@@ -62,29 +62,4 @@ async function spawnPiholeCommand(ctx, args) {
   });
 }
 
-/**
- * Execute a Pi-hole command and send output to chat
- * @param {import('telegraf').Context} ctx
- * @param {string[]} args Command arguments
- * @returns {Promise<void>}
- */
-function executePiholeCommand(ctx, args) {
-  exec(`sudo pihole ${args.join(" ")}`, (err, stdout, stderr) => {
-    if (err) {
-      sendMessage(ctx, err?.message);
-    }
-
-    if (stderr) {
-      sendMessage(ctx, stderr);
-    }
-
-    sendMessage(ctx, stdout);
-  });
-}
-
-export {
-  validateCommands,
-  registerCommands,
-  spawnPiholeCommand,
-  executePiholeCommand,
-};
+export { validateCommands, registerCommands, spawnPiholeCommand };
