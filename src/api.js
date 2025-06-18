@@ -50,7 +50,7 @@ const api = {
 
     this.handleErrors(response);
 
-    return response;
+    return response.json();
   },
 };
 
