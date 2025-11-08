@@ -25,6 +25,7 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 - 🔍 Check Pi-hole version information
 - 🔄 Update Pi-hole subsystems and blocklists
 - 🔒 Secure access limited to authorized users
+- 🔌 Reboot Raspberry Pi remotely
 
 ## 📋 Prerequisites
 
@@ -86,6 +87,12 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 node index.js
 ```
 
+Or using npm:
+
+```bash
+npm start
+```
+
 ### Using PM2 (Recommended)
 
 1. Install PM2 globally on your Raspberry Pi:
@@ -119,6 +126,7 @@ node index.js
    - `/version` or `/v` - Show installed version of Pi-hole, Web Interface & FTL
    - `/update` or `/up` - Update Pi-hole subsystems
    - `/upgravity` or `/g` - Update the list of ad-serving domains
+   - `/reboot` or `/r` - Reboot the Raspberry Pi
    - `/help` - Show available commands and descriptions
 
 ## 🔐 Security
