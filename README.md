@@ -126,6 +126,7 @@ npm start
    - `/version` or `/v` - Show installed version of Pi-hole, Web Interface & FTL
    - `/update` or `/up` - Update Pi-hole subsystems
    - `/upgravity` or `/g` - Update the list of ad-serving domains
+   - `/upgrade` - Upgrade host system
    - `/reboot` or `/r` - Reboot the Raspberry Pi
    - `/help` - Show available commands and descriptions
 

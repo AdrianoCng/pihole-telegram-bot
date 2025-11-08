@@ -29,6 +29,13 @@ const rebootController = async (ctx) => {
   await execCommandWithOutput(ctx, "reboot");
 };
 
+const upgradeController = async (ctx) => {
+  await execCommandWithOutput(ctx, "apt", ["update"]);
+  await execCommandWithOutput(ctx, "apt", ["full-upgrade", "-y"]);
+  await execCommandWithOutput(ctx, "apt", ["autoremove", "-y"]);
+  await execCommandWithOutput(ctx, "apt", ["clean"]);
+};
+
 export default {
   statusController,
   enableController,
@@ -37,4 +44,5 @@ export default {
   updatePiholeController,
   upgravityController,
   rebootController,
+  upgradeController,
 };

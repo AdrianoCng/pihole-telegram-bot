@@ -1,5 +1,6 @@
 import apiController from "../controllers/apiController.js";
 import cliController from "../controllers/cliController.js";
+import botController from "../controllers/botController.js";
 
 export const COMMANDS = [
   {
@@ -51,5 +52,15 @@ export const COMMANDS = [
     trigger: ["reboot", "r"],
     description: "Reboot the Raspberry Pi",
     handler: cliController.rebootController,
+  },
+  {
+    trigger: ["upgrade"],
+    description: "Upgrade host system",
+    handler: cliController.upgradeController,
+  },
+  {
+    trigger: ["bot", "bv"],
+    description: "Show the version of the bot",
+    handler: botController.botVersionController,
   },
 ];

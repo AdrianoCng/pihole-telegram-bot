@@ -24,7 +24,7 @@ describe("spawnPiholeCommand", () => {
       stderr: { on: jest.fn() },
       on: jest.fn((event, callback) => {
         if (event === "close") {
-          setTimeout(callback, 10);
+          callback(0);
         }
       }),
     };
@@ -43,7 +43,7 @@ describe("spawnPiholeCommand", () => {
 
       mockProcess.stdout.on.mockImplementation((event, callback) => {
         if (event === "data") {
-          setTimeout(() => callback(Buffer.from(stdoutData)), 0);
+          callback(Buffer.from(stdoutData));
         }
       });
 
@@ -65,13 +65,20 @@ describe("spawnPiholeCommand", () => {
 
       mockProcess.stderr.on.mockImplementation((event, callback) => {
         if (event === "data") {
-          setTimeout(() => callback(Buffer.from(stderrData)), 0);
+          callback(Buffer.from(stderrData));
+        }
+      });
+
+      mockProcess.on.mockImplementation((event, callback) => {
+        if (event === "close") {
+          callback(1);
         }
       });
 
       const promise = spawnPiholeCommand(mockCtx, args);
 
-      await expect(promise).rejects.toBe(stderrData);
+      await expect(promise).rejects.toThrow("Command failed with exit code 1");
+      expect(sendMessage).toHaveBeenCalledWith(mockCtx, stderrData);
     });
   });
 });

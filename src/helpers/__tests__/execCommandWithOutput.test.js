@@ -49,7 +49,7 @@ describe("execCommandWithOutput", () => {
 
     spawnOnMock.mockImplementation((event, callback) => {
       if (event === "close") {
-        callback();
+        callback(0);
       }
     });
 
@@ -70,8 +70,14 @@ describe("execCommandWithOutput", () => {
       }
     });
 
-    await expect(execCommandWithOutput(mockCtx, command, args)).rejects.toBe(
-      errorOutput
+    spawnOnMock.mockImplementation((event, callback) => {
+      if (event === "close") {
+        callback(1);
+      }
+    });
+
+    await expect(execCommandWithOutput(mockCtx, command, args)).rejects.toThrow(
+      "Command failed with exit code 1"
     );
 
     expect(spawn).toHaveBeenCalledWith("sudo", [command, ...args]);
@@ -84,7 +90,7 @@ describe("execCommandWithOutput", () => {
 
     spawnOnMock.mockImplementation((event, callback) => {
       if (event === "close") {
-        callback();
+        callback(0);
       }
     });
 
