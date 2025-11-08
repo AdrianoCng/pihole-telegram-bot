@@ -52,4 +52,9 @@ export const COMMANDS = [
     description: "Reboot the Raspberry Pi",
     handler: cliController.rebootController,
   },
+  {
+    trigger: ["upgrade"],
+    description: "Upgrade host system",
+    handler: cliController.upgradeController,
+  },
 ];
