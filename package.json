@@ -1,7 +1,7 @@
 {
   "name": "pihole-telegram-bot",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.1",
   "description": "Control your pihole with this telegram bot",
   "main": "index.js",
   "scripts": {
