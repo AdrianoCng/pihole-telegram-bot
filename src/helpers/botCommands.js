@@ -1,4 +1,5 @@
 import { COMMANDS } from "../constants/commands.js";
+import tryCatch from "./tryCatch.js";
 
 export function validateCommands(commands) {
   const allTriggers = new Set();
@@ -31,6 +32,6 @@ export function registerCommands(bot) {
   validateCommands(COMMANDS);
 
   COMMANDS.forEach(({ trigger, handler }) => {
-    bot.command(trigger, handler);
+    bot.command(trigger, tryCatch(handler));
   });
 }
