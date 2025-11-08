@@ -9,7 +9,7 @@ const botVersionController = async (ctx) => {
   );
   const version = JSON.parse(packageJson).version;
 
-  sendMessage(ctx, `The bot version is ${version}`);
+  sendMessage(ctx, `The bot version is v${version}`);
 };
 
 export default {
