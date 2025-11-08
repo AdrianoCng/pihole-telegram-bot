@@ -32,7 +32,7 @@ const rebootController = async (ctx) => {
 const upgradeController = async (ctx) => {
   await execCommandWithOutput(ctx, "apt", ["update"]);
   await execCommandWithOutput(ctx, "apt", ["full-upgrade", "-y"]);
-  await execCommandWithOutput(ctx, "apt", ["autoremove"]);
+  await execCommandWithOutput(ctx, "apt", ["autoremove", "-y"]);
   await execCommandWithOutput(ctx, "apt", ["clean"]);
 };
 
