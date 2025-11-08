@@ -1,4 +1,4 @@
-import { spawnPiholeCommand } from "../helpers/index.js";
+import { spawnPiholeCommand, execCommandWithOutput } from "../helpers/index.js";
 import { CLI_COMMANDS } from "../constants/cli.js";
 
 const statusController = async (ctx) => {
@@ -25,6 +25,10 @@ const upgravityController = async (ctx) => {
   await spawnPiholeCommand(ctx, [CLI_COMMANDS.UPGRAVITY]);
 };
 
+const rebootController = async (ctx) => {
+  await execCommandWithOutput(ctx, "reboot");
+};
+
 export default {
   statusController,
   enableController,
@@ -32,4 +36,5 @@ export default {
   versionController,
   updatePiholeController,
   upgravityController,
+  rebootController,
 };

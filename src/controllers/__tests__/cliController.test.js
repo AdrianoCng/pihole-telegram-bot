@@ -1,5 +1,5 @@
 import { CLI_COMMANDS } from "../../constants/cli";
-import { spawnPiholeCommand } from "../../helpers";
+import { execCommandWithOutput, spawnPiholeCommand } from "../../helpers";
 import cliController from "../cliController";
 
 jest.mock("../../helpers");
@@ -70,6 +70,14 @@ describe("CLI Controllers", () => {
       cliController.upgravityController(mockCtx, args);
 
       expect(spawnPiholeCommand).toHaveBeenCalledWith(mockCtx, args);
+    });
+  });
+
+  describe("rebootController", () => {
+    it("Should run reboot command", () => {
+      cliController.rebootController(mockCtx);
+
+      expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "reboot");
     });
   });
 });

@@ -47,4 +47,9 @@ export const COMMANDS = [
     description: "Update the list of ad-serving domains",
     handler: cliController.upgravityController,
   },
+  {
+    trigger: ["reboot", "r"],
+    description: "Reboot the Raspberry Pi",
+    handler: cliController.rebootController,
+  },
 ];
