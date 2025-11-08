@@ -80,4 +80,24 @@ describe("CLI Controllers", () => {
       expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "reboot");
     });
   });
+
+  describe("upgradeController", () => {
+    it("Should run upgrade command", async () => {
+      await cliController.upgradeController(mockCtx);
+
+      expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "apt", [
+        "update",
+      ]);
+      expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "apt", [
+        "full-upgrade",
+        "-y",
+      ]);
+      expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "apt", [
+        "autoremove",
+      ]);
+      expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "apt", [
+        "clean",
+      ]);
+    });
+  });
 });
