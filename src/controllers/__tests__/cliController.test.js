@@ -94,6 +94,7 @@ describe("CLI Controllers", () => {
       ]);
       expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "apt", [
         "autoremove",
+        "-y",
       ]);
       expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "apt", [
         "clean",
