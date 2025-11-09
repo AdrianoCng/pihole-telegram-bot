@@ -2,17 +2,13 @@ import botController from "../botController.js";
 import { sendMessage } from "../../helpers/index.js";
 import fs from "fs/promises";
 import path from "path";
+import { createMockContext } from "../../__tests__/helpers/testUtils";
 
 jest.mock("../../helpers/index.js");
 jest.mock("fs/promises");
 
 describe("Bot Controller", () => {
-  const mockCtx = {
-    from: {
-      id: 123,
-    },
-    reply: jest.fn(),
-  };
+  const mockCtx = createMockContext();
 
   beforeEach(() => {
     jest.clearAllMocks();

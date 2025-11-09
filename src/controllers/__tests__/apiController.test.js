@@ -2,17 +2,13 @@ import apiController from "../apiController.js";
 import api from "../../api.js";
 import { sendMessage } from "../../helpers/index.js";
 import { API_ENDPOINTS } from "../../constants/api";
+import { createMockContext } from "../../__tests__/helpers/testUtils";
 
 jest.mock("../../api.js");
 jest.mock("../../helpers/index.js");
 
 describe("API Controllers", () => {
-  const mockCtx = {
-    from: {
-      id: 123,
-    },
-    reply: jest.fn(),
-  };
+  const mockCtx = createMockContext();
 
   beforeEach(() => {
     jest.clearAllMocks();
