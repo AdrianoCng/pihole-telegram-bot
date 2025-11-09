@@ -1,13 +1,12 @@
 import { CLI_COMMANDS } from "../../constants/cli";
 import { execCommandWithOutput, spawnPiholeCommand } from "../../helpers";
 import cliController from "../cliController";
+import { createMockContext } from "../../__tests__/helpers/testUtils";
 
 jest.mock("../../helpers");
 
 describe("CLI Controllers", () => {
-  const mockCtx = {
-    reply: jest.fn(),
-  };
+  const mockCtx = createMockContext();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -24,7 +23,7 @@ describe("CLI Controllers", () => {
   });
 
   describe("enableController", () => {
-    it('Should run pihole command "status"', () => {
+    it('Should run pihole command "enable"', () => {
       const args = [CLI_COMMANDS.ENABLE];
 
       cliController.enableController(mockCtx, args);
@@ -34,7 +33,7 @@ describe("CLI Controllers", () => {
   });
 
   describe("disableController", () => {
-    it('Should run pihole command "status"', () => {
+    it('Should run pihole command "disable"', () => {
       const args = [CLI_COMMANDS.DISABLE];
 
       cliController.disableController(mockCtx, args);
@@ -44,7 +43,7 @@ describe("CLI Controllers", () => {
   });
 
   describe("versionController", () => {
-    it('Should run pihole command "status"', () => {
+    it('Should run pihole command "version"', () => {
       const args = [CLI_COMMANDS.VERSION];
 
       cliController.versionController(mockCtx, args);
@@ -54,7 +53,7 @@ describe("CLI Controllers", () => {
   });
 
   describe("updatePiholeController", () => {
-    it('Should run pihole command "status"', () => {
+    it('Should run pihole command "update"', () => {
       const args = [CLI_COMMANDS.UPDATE];
 
       cliController.updatePiholeController(mockCtx, args);
@@ -64,7 +63,7 @@ describe("CLI Controllers", () => {
   });
 
   describe("upgravityController", () => {
-    it('Should run pihole command "status"', () => {
+    it('Should run pihole command "upgravity"', () => {
       const args = [CLI_COMMANDS.UPGRAVITY];
 
       cliController.upgravityController(mockCtx, args);

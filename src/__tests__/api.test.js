@@ -1,23 +1,22 @@
-import ApiError from "../ApiError";
-
-global.fetch = jest.fn();
-
-const originalENV = process.env;
-const TEST_PIHOLE_IP = "192.168.1.100";
-
-beforeAll(() => {
-  process.env = {
-    ...originalENV,
-    PIHOLE_IP: TEST_PIHOLE_IP,
-  };
-});
-
-afterAll(() => {
-  process.env = originalENV;
-});
+import { mockApiResponse, testApiMethodErrors } from "./helpers/testUtils";
 
 describe("api", () => {
   let api;
+  const originalENV = process.env;
+  const TEST_PIHOLE_IP = "192.168.1.100";
+
+  global.fetch = jest.fn();
+
+  beforeAll(() => {
+    process.env = {
+      ...originalENV,
+      PIHOLE_IP: TEST_PIHOLE_IP,
+    };
+  });
+
+  afterAll(() => {
+    process.env = originalENV;
+  });
 
   beforeAll(async () => {
     // Dynamic import after environment is set
@@ -41,11 +40,7 @@ describe("api", () => {
           name: "John Doe",
         };
 
-        fetch.mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve(mockResponse),
-        });
+        fetch.mockResolvedValueOnce(mockApiResponse(mockResponse));
 
         const response = await api.post(mockPath, mockPayload);
 
@@ -57,17 +52,13 @@ describe("api", () => {
         expect(response).toEqual(mockResponse);
       });
 
-      it("Should include custom headers in the request", () => {
+      it("Should include custom headers in the request", async () => {
         api.setHeader("Authorization", "Bearer token123");
         api.setHeader("Content-Type", "application/json");
 
-        fetch.mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({}),
-        });
+        fetch.mockResolvedValueOnce(mockApiResponse({}));
 
-        api.post("/", {});
+        await api.post("/", {});
 
         expect(fetch).toHaveBeenCalledWith(
           expect.any(String),
@@ -82,65 +73,7 @@ describe("api", () => {
     });
 
     describe("Error Handling", () => {
-      it("Should throw ApiError for 400 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 400,
-        });
-
-        expect(api.post("/", {})).rejects.toThrow(ApiError);
-        expect(api.post("/", {})).rejects.toThrow("Bad Request");
-      });
-
-      it("Should throw ApiError for 401 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 401,
-        });
-
-        expect(api.post("/", {})).rejects.toThrow(ApiError);
-        expect(api.post("/", {})).rejects.toThrow("Unauthorized");
-      });
-
-      it("Should throw ApiError for 402 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 402,
-        });
-
-        expect(api.post("/", {})).rejects.toThrow(ApiError);
-        expect(api.post("/", {})).rejects.toThrow("Request failed");
-      });
-
-      it("Should throw ApiError for 403 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 403,
-        });
-
-        expect(api.post("/", {})).rejects.toThrow(ApiError);
-        expect(api.post("/", {})).rejects.toThrow("Forbidden");
-      });
-
-      it("Should throw ApiError for 404 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 404,
-        });
-
-        expect(api.post("/", {})).rejects.toThrow(ApiError);
-        expect(api.post("/", {})).rejects.toThrow("Not Found");
-      });
-
-      it('Should throw ApiError with "Internal Server Error" for unmapped status codes', () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 500,
-        });
-
-        expect(api.post("/", {})).rejects.toThrow(ApiError);
-        expect(api.post("/", {})).rejects.toThrow("Internal Server Error");
-      });
+      testApiMethodErrors(() => api.post("/", {}));
     });
   });
 
@@ -152,11 +85,7 @@ describe("api", () => {
           name: "John Doe",
         };
 
-        fetch.mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve(mockResponse),
-        });
+        fetch.mockResolvedValueOnce(mockApiResponse(mockResponse));
 
         const response = await api.get(mockPath);
 
@@ -166,17 +95,13 @@ describe("api", () => {
         expect(response).toEqual(mockResponse);
       });
 
-      it("Should include custom headers in the request", () => {
+      it("Should include custom headers in the request", async () => {
         api.setHeader("Authorization", "Bearer token123");
         api.setHeader("Content-Type", "application/json");
 
-        fetch.mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({}),
-        });
+        fetch.mockResolvedValueOnce(mockApiResponse({}));
 
-        api.get("/");
+        await api.get("/");
 
         expect(fetch).toHaveBeenCalledWith(
           expect.any(String),
@@ -191,65 +116,7 @@ describe("api", () => {
     });
 
     describe("Error Handling", () => {
-      it("Should throw ApiError for 400 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 400,
-        });
-
-        expect(api.get("/")).rejects.toThrow(ApiError);
-        expect(api.get("/")).rejects.toThrow("Bad Request");
-      });
-
-      it("Should throw ApiError for 401 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 401,
-        });
-
-        expect(api.get("/")).rejects.toThrow(ApiError);
-        expect(api.get("/")).rejects.toThrow("Unauthorized");
-      });
-
-      it("Should throw ApiError for 402 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 402,
-        });
-
-        expect(api.get("/")).rejects.toThrow(ApiError);
-        expect(api.get("/")).rejects.toThrow("Request failed");
-      });
-
-      it("Should throw ApiError for 403 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 403,
-        });
-
-        expect(api.get("/")).rejects.toThrow(ApiError);
-        expect(api.get("/")).rejects.toThrow("Forbidden");
-      });
-
-      it("Should throw ApiError for 404 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 404,
-        });
-
-        expect(api.get("/")).rejects.toThrow(ApiError);
-        expect(api.get("/")).rejects.toThrow("Not Found");
-      });
-
-      it('Should throw ApiError with "Internal Server Error" for unmapped status codes', () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 500,
-        });
-
-        expect(api.get("/")).rejects.toThrow(ApiError);
-        expect(api.get("/")).rejects.toThrow("Internal Server Error");
-      });
+      testApiMethodErrors(() => api.get("/"));
     });
   });
 
@@ -261,11 +128,7 @@ describe("api", () => {
           name: "John Doe",
         };
 
-        fetch.mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve(mockResponse),
-        });
+        fetch.mockResolvedValueOnce(mockApiResponse(mockResponse));
 
         const response = await api.delete(mockPath);
 
@@ -276,17 +139,13 @@ describe("api", () => {
         expect(response).toEqual(mockResponse);
       });
 
-      it("Should include custom headers in the request", () => {
+      it("Should include custom headers in the request", async () => {
         api.setHeader("Authorization", "Bearer token123");
         api.setHeader("Content-Type", "application/json");
 
-        fetch.mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({}),
-        });
+        fetch.mockResolvedValueOnce(mockApiResponse({}));
 
-        api.delete("/");
+        await api.delete("/");
 
         expect(fetch).toHaveBeenCalledWith(
           expect.any(String),
@@ -301,65 +160,7 @@ describe("api", () => {
     });
 
     describe("Error Handling", () => {
-      it("Should throw ApiError for 400 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 400,
-        });
-
-        expect(api.delete("/")).rejects.toThrow(ApiError);
-        expect(api.delete("/")).rejects.toThrow("Bad Request");
-      });
-
-      it("Should throw ApiError for 401 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 401,
-        });
-
-        expect(api.delete("/")).rejects.toThrow(ApiError);
-        expect(api.delete("/")).rejects.toThrow("Unauthorized");
-      });
-
-      it("Should throw ApiError for 402 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 402,
-        });
-
-        expect(api.delete("/")).rejects.toThrow(ApiError);
-        expect(api.delete("/")).rejects.toThrow("Request failed");
-      });
-
-      it("Should throw ApiError for 403 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 403,
-        });
-
-        expect(api.delete("/")).rejects.toThrow(ApiError);
-        expect(api.delete("/")).rejects.toThrow("Forbidden");
-      });
-
-      it("Should throw ApiError for 404 Request failed", () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 404,
-        });
-
-        expect(api.delete("/")).rejects.toThrow(ApiError);
-        expect(api.delete("/")).rejects.toThrow("Not Found");
-      });
-
-      it('Should throw ApiError with "Internal Server Error" for unmapped status codes', () => {
-        fetch.mockResolvedValue({
-          ok: false,
-          status: 500,
-        });
-
-        expect(api.delete("/")).rejects.toThrow(ApiError);
-        expect(api.delete("/")).rejects.toThrow("Internal Server Error");
-      });
+      testApiMethodErrors(() => api.delete("/"));
     });
   });
 });
