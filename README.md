@@ -128,6 +128,7 @@ npm start
    - `/upgravity` or `/g` - Update the list of ad-serving domains
    - `/upgrade` - Upgrade host system
    - `/reboot` or `/r` - Reboot the Raspberry Pi
+   - `/bot` or `/bv` - Show the version of the bot
    - `/help` - Show available commands and descriptions
 
 ## 🔐 Security
