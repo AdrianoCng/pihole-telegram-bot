@@ -2,13 +2,8 @@ import { spawn } from "child_process";
 import execCommandWithOutput from "../execCommandWithOutput";
 import { sendMessage } from "../index";
 
-jest.mock("child_process", () => ({
-  spawn: jest.fn(),
-}));
-
-jest.mock("../index", () => ({
-  sendMessage: jest.fn(),
-}));
+jest.mock("child_process");
+jest.mock("../index");
 
 describe("execCommandWithOutput", () => {
   let mockCtx;
@@ -97,5 +92,27 @@ describe("execCommandWithOutput", () => {
     await expect(
       execCommandWithOutput(mockCtx, command, args)
     ).resolves.toBeUndefined();
+  });
+
+  it("should execute a command with no arguments and send stdout to the chat", async () => {
+    const command = "ls";
+    const output = "some output";
+
+    spawnStdoutOnMock.mockImplementation((event, callback) => {
+      if (event === "data") {
+        callback(Buffer.from(output));
+      }
+    });
+
+    spawnOnMock.mockImplementation((event, callback) => {
+      if (event === "close") {
+        callback(0);
+      }
+    });
+
+    await execCommandWithOutput(mockCtx, command);
+
+    expect(spawn).toHaveBeenCalledWith("sudo", [command]);
+    expect(sendMessage).toHaveBeenCalledWith(mockCtx, output);
   });
 });
