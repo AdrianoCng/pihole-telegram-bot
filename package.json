@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "start:prod": "pm2 start index.js --name pihole-telegram-bot",
     "dev": "nodemon index.js",
     "test": "jest",
     "test:coverage": "jest --coverage"

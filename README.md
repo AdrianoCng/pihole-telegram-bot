@@ -107,6 +107,12 @@ npm start
    pm2 start index.js --name pi-hole-telegram-bot
    ```
 
+   Or using npm:
+
+   ```bash
+   npm run start:prod
+   ```
+
 3. Configure PM2 to start on boot (on your Raspberry Pi):
    ```bash
    pm2 startup
