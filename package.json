@@ -1,5 +1,5 @@
 {
-  "name": "pi-hole-telegram-bot",
+  "name": "pihole-telegram-bot",
   "type": "module",
   "version": "1.1.0",
   "description": "Control your pihole with this telegram bot",
