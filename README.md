@@ -39,7 +39,7 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 
    ```bash
    git clone https://github.com/AdrianoCng/pihole-telegram-bot.git
-   cd pi-hole-telegram-bot
+   cd pihole-telegram-bot
    ```
 
 2. Install dependencies on your Raspberry Pi:
