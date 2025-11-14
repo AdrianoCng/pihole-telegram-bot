@@ -31,7 +31,7 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 
 - Raspberry Pi with Pi-hole installed
 - Telegram account
-- Node.js and npm installed on your Raspberry Pi
+- Node.js and npm installed on your Raspberry Pi - Installation instructions [here](https://nodesource.com/products/distributions)
 
 ## 🛠️ Installation
 
@@ -107,6 +107,12 @@ npm start
    pm2 start index.js --name pi-hole-telegram-bot
    ```
 
+   Or using npm:
+
+   ```bash
+   npm run start:prod
+   ```
+
 3. Configure PM2 to start on boot (on your Raspberry Pi):
    ```bash
    pm2 startup
@@ -126,8 +132,9 @@ npm start
    - `/version` or `/v` - Show installed version of Pi-hole, Web Interface & FTL
    - `/update` or `/up` - Update Pi-hole subsystems
    - `/upgravity` or `/g` - Update the list of ad-serving domains
-   - `/upgrade` - Upgrade host system
+   - `/upgrade` or `/upg` - Upgrade host system
    - `/reboot` or `/r` - Reboot the Raspberry Pi
+   - `/bot` or `/bv` - Show the version of the bot
    - `/help` - Show available commands and descriptions
 
 ## 🔐 Security

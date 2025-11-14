@@ -1,11 +1,12 @@
 {
   "name": "pihole-telegram-bot",
   "type": "module",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Control your pihole with this telegram bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "start:prod": "pm2 start index.js --name pihole-telegram-bot",
     "dev": "nodemon index.js",
     "test": "jest",
     "test:coverage": "jest --coverage"
