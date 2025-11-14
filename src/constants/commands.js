@@ -54,7 +54,7 @@ export const COMMANDS = [
     handler: cliController.rebootController,
   },
   {
-    trigger: ["upgrade"],
+    trigger: ["upgrade", "upg"],
     description: "Upgrade host system",
     handler: cliController.upgradeController,
   },
