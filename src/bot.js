@@ -1,5 +1,5 @@
 import { Telegraf } from "telegraf";
-import { sendMessage, registerCommands } from "./helpers/index.js";
+import { sendMessage, registerCommands, getMainMenu } from "./helpers/index.js";
 import { COMMANDS } from "./constants/commands.js";
 import typing from "./middlewares/typing.js";
 import authenticate from "./middlewares/authenticate.js";
@@ -13,7 +13,11 @@ bot.use(typing);
 registerCommands(bot);
 
 bot.start((ctx) => {
-  sendMessage(ctx, "Hello! I'm your Pi-hole bot. How can I help you today?");
+  sendMessage(
+    ctx,
+    "Hello! I'm your Pi-hole bot. How can I help you today?",
+    getMainMenu()
+  );
 });
 
 bot.help((ctx) => {

@@ -1,4 +1,4 @@
-import { sendMessage } from "../helpers/index.js";
+import { sendMessage, getMainMenu } from "../helpers/index.js";
 import fs from "fs/promises";
 import path from "path";
 
@@ -12,6 +12,11 @@ const botVersionController = async (ctx) => {
   sendMessage(ctx, `The bot version is v${version}`);
 };
 
+const menuController = async (ctx) => {
+  sendMessage(ctx, "Here are the available commands:", getMainMenu());
+};
+
 export default {
   botVersionController,
+  menuController,
 };

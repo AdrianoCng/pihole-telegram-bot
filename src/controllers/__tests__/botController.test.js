@@ -1,5 +1,5 @@
 import botController from "../botController.js";
-import { sendMessage } from "../../helpers/index.js";
+import { sendMessage, getMainMenu } from "../../helpers/index.js";
 import fs from "fs/promises";
 import path from "path";
 import { createMockContext } from "../../__tests__/helpers/testUtils";
@@ -79,6 +79,14 @@ describe("Bot Controller", () => {
         "utf8"
       );
       expect(sendMessage).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("menuController", () => {
+    it("Should send the menu", async () => {
+      botController.menuController(mockCtx);
+
+      expect(sendMessage).toHaveBeenCalledWith(mockCtx, "Here are the available commands:", getMainMenu());
     });
   });
 });
