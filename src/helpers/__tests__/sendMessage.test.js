@@ -9,7 +9,7 @@ describe("sendMessage", () => {
 
     sendMessage(mockCtx, message);
 
-    expect(mockCtx.reply).toHaveBeenCalledWith(message.replaceAll("[✓]", "✅"));
+    expect(mockCtx.reply).toHaveBeenCalledWith(message.replaceAll("[✓]", "✅"), undefined);
   });
 
   it('Should replace all "[✗]" with "❌"', () => {
@@ -17,7 +17,7 @@ describe("sendMessage", () => {
 
     sendMessage(mockCtx, message);
 
-    expect(mockCtx.reply).toHaveBeenCalledWith(message.replaceAll("[✗]", "❌"));
+    expect(mockCtx.reply).toHaveBeenCalledWith(message.replaceAll("[✗]", "❌"), undefined);
   });
 
   it('Should replace all "[i]" with "ℹ️"', () => {
@@ -25,6 +25,6 @@ describe("sendMessage", () => {
 
     sendMessage(mockCtx, message);
 
-    expect(mockCtx.reply).toHaveBeenCalledWith(message.replaceAll("[i]", "ℹ️"));
+    expect(mockCtx.reply).toHaveBeenCalledWith(message.replaceAll("[i]", "ℹ️"), undefined);
   });
 });

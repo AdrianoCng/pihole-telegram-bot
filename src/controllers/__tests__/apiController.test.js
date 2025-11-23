@@ -64,7 +64,7 @@ describe("API Controllers", () => {
       expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.INFO.MESSAGES);
       expect(sendMessage).toHaveBeenCalledWith(
         mockCtx,
-        "1/1/2021, 12:00:00 AM - Test message"
+        "01/01/2021, 00:00:00 - Test message"
       );
     });
 

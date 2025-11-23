@@ -63,4 +63,10 @@ export const COMMANDS = [
     description: "Show the version of the bot",
     handler: botController.botVersionController,
   },
+  {
+    trigger: ["menu"],
+    description: "Show the menu",
+    handler: botController.menuController,
+    showInKeyboard: false,
+  },
 ];
