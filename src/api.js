@@ -22,6 +22,13 @@ const api = {
       errorMessage[response.status] || "Internal Server Error"
     );
   },
+  parseResponse(response) {
+    if (response.headers.get("Content-Length") > 0) {
+      return response.json();
+    }
+
+    return response;
+  },
   async post(path, data) {
     const response = await fetch(`${this.BASE_URL}${path}`, {
       method: "POST",
@@ -31,7 +38,7 @@ const api = {
 
     this.handleErrors(response);
 
-    return response.json();
+    return this.parseResponse(response);
   },
   async get(path) {
     const response = await fetch(`${this.BASE_URL}${path}`, {
@@ -40,7 +47,7 @@ const api = {
 
     this.handleErrors(response);
 
-    return response.json();
+    return this.parseResponse(response);
   },
   async delete(path) {
     const response = await fetch(`${this.BASE_URL}${path}`, {
@@ -50,7 +57,7 @@ const api = {
 
     this.handleErrors(response);
 
-    return response.json();
+    return this.parseResponse(response);
   },
 };
 
