@@ -7,6 +7,11 @@ const authorizeController = async (ctx) => {
     password: process.env.PIHOLE_PASSWORD,
   });
 
+  if (!response || !response.session || !response.session.sid) {
+    sendMessage(ctx, "❌ Authorization failed: Invalid response from server");
+    return;
+  }
+
   api.setHeader("sid", response.session.sid);
 
   sendMessage(ctx, "✅ Authorized successfully");
@@ -20,6 +25,11 @@ const logoutController = async (ctx) => {
 
 const messagesController = async (ctx) => {
   const response = await api.get(API_ENDPOINTS.INFO.MESSAGES);
+
+  if (!response || !response.messages) {
+    sendMessage(ctx, "❌ Failed to retrieve messages: Invalid response from server");
+    return;
+  }
 
   const messages = response.messages;
 
