@@ -30,10 +30,20 @@ export const createMockContext = (overrides = {}) => {
  * @returns {Object} Mock response object
  */
 export const mockApiResponse = (data, status = 200, ok = true) => {
+  const contentLength = data !== null && data !== undefined ? JSON.stringify(data).length : 0;
+  
   return {
     ok,
     status,
     json: () => Promise.resolve(data),
+    headers: {
+      get: (name) => {
+        if (name === "Content-Length") {
+          return contentLength.toString();
+        }
+        return null;
+      },
+    },
   };
 };
 

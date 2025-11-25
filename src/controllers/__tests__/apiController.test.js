@@ -35,6 +35,51 @@ describe("API Controllers", () => {
       );
       expect(sendMessage).toHaveBeenCalledWith(mockCtx, expect.any(String));
     });
+
+    it("Should handle null response", async () => {
+      api.post.mockResolvedValueOnce(null);
+
+      await apiController.authorizeController(mockCtx);
+
+      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH, {
+        password: process.env.PIHOLE_PASSWORD,
+      });
+      expect(api.setHeader).not.toHaveBeenCalled();
+      expect(sendMessage).toHaveBeenCalledWith(
+        mockCtx,
+        "❌ Authorization failed: Invalid response from server"
+      );
+    });
+
+    it("Should handle response without session", async () => {
+      api.post.mockResolvedValueOnce({});
+
+      await apiController.authorizeController(mockCtx);
+
+      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH, {
+        password: process.env.PIHOLE_PASSWORD,
+      });
+      expect(api.setHeader).not.toHaveBeenCalled();
+      expect(sendMessage).toHaveBeenCalledWith(
+        mockCtx,
+        "❌ Authorization failed: Invalid response from server"
+      );
+    });
+
+    it("Should handle response without session.sid", async () => {
+      api.post.mockResolvedValueOnce({ session: {} });
+
+      await apiController.authorizeController(mockCtx);
+
+      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH, {
+        password: process.env.PIHOLE_PASSWORD,
+      });
+      expect(api.setHeader).not.toHaveBeenCalled();
+      expect(sendMessage).toHaveBeenCalledWith(
+        mockCtx,
+        "❌ Authorization failed: Invalid response from server"
+      );
+    });
   });
 
   describe("Logout Controller", () => {
@@ -64,7 +109,7 @@ describe("API Controllers", () => {
       expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.INFO.MESSAGES);
       expect(sendMessage).toHaveBeenCalledWith(
         mockCtx,
-        "1/1/2021, 12:00:00 AM - Test message"
+        "01/01/2021, 00:00:00 - Test message"
       );
     });
 
@@ -78,6 +123,30 @@ describe("API Controllers", () => {
       await apiController.messagesController(mockCtx);
 
       expect(sendMessage).toHaveBeenCalledWith(mockCtx, "No messages found");
+    });
+
+    it("Should handle null response", async () => {
+      api.get.mockResolvedValueOnce(null);
+
+      await apiController.messagesController(mockCtx);
+
+      expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.INFO.MESSAGES);
+      expect(sendMessage).toHaveBeenCalledWith(
+        mockCtx,
+        "❌ Failed to retrieve messages: Invalid response from server"
+      );
+    });
+
+    it("Should handle response without messages property", async () => {
+      api.get.mockResolvedValueOnce({});
+
+      await apiController.messagesController(mockCtx);
+
+      expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.INFO.MESSAGES);
+      expect(sendMessage).toHaveBeenCalledWith(
+        mockCtx,
+        "❌ Failed to retrieve messages: Invalid response from server"
+      );
     });
   });
 });
