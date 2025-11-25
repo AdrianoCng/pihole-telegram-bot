@@ -71,13 +71,13 @@ describe("api", () => {
         );
       });
 
-      it("Should return response object when Content-Length is 0", async () => {
+      it("Should return null when Content-Length is 0", async () => {
         const mockResponse = mockApiResponse(null);
         fetch.mockResolvedValueOnce(mockResponse);
 
         const response = await api.post("/", {});
 
-        expect(response).toBe(mockResponse);
+        expect(response).toBeNull();
       });
     });
 
@@ -123,13 +123,13 @@ describe("api", () => {
         );
       });
 
-      it("Should return response object when Content-Length is 0", async () => {
+      it("Should return null when Content-Length is 0", async () => {
         const mockResponse = mockApiResponse(null);
         fetch.mockResolvedValueOnce(mockResponse);
 
         const response = await api.get("/");
 
-        expect(response).toBe(mockResponse);
+        expect(response).toBeNull();
       });
     });
 
@@ -176,13 +176,13 @@ describe("api", () => {
         );
       });
 
-      it("Should return response object when Content-Length is 0", async () => {
+      it("Should return null when Content-Length is 0", async () => {
         const mockResponse = mockApiResponse(null);
         fetch.mockResolvedValueOnce(mockResponse);
 
         const response = await api.delete("/");
 
-        expect(response).toBe(mockResponse);
+        expect(response).toBeNull();
       });
     });
 

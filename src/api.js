@@ -23,11 +23,13 @@ const api = {
     );
   },
   parseResponse(response) {
-    if (response.headers.get("Content-Length") > 0) {
-      return response.json();
+    const contentLength = response.headers.get("Content-Length");
+
+    if (!!contentLength && parseInt(contentLength, 10) === 0) {
+      return Promise.resolve(null);
     }
 
-    return response;
+    return response.json();
   },
   async post(path, data) {
     const response = await fetch(`${this.BASE_URL}${path}`, {
