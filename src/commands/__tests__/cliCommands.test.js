@@ -81,10 +81,10 @@ describe("CLI Commands", () => {
       await command.handler(ctx);
 
       expect(mockCommandExecutor.exec).toHaveBeenCalledTimes(4);
-      expect(mockCommandExecutor.exec).toHaveBeenNthCalledWith(1, ctx, "apt", ["update"]);
-      expect(mockCommandExecutor.exec).toHaveBeenNthCalledWith(2, ctx, "apt", ["full-upgrade", "-y"]);
-      expect(mockCommandExecutor.exec).toHaveBeenNthCalledWith(3, ctx, "apt", ["autoremove", "-y"]);
-      expect(mockCommandExecutor.exec).toHaveBeenNthCalledWith(4, ctx, "apt", ["clean"]);
+      expect(mockCommandExecutor.exec).toHaveBeenNthCalledWith(1, ctx, "apt-get", ["update"]);
+      expect(mockCommandExecutor.exec).toHaveBeenNthCalledWith(2, ctx, "apt-get", ["full-upgrade", "-y"]);
+      expect(mockCommandExecutor.exec).toHaveBeenNthCalledWith(3, ctx, "apt-get", ["autoremove", "-y"]);
+      expect(mockCommandExecutor.exec).toHaveBeenNthCalledWith(4, ctx, "apt-get", ["clean"]);
     });
   });
 });

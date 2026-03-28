@@ -8,10 +8,10 @@ export default function createUpgradeCommand({ commandExecutor }) {
     trigger: ["upgrade", "upg"],
     description: "Upgrade host system",
     async handler(ctx) {
-      await commandExecutor.exec(ctx, "apt", ["update"]);
-      await commandExecutor.exec(ctx, "apt", ["full-upgrade", "-y"]);
-      await commandExecutor.exec(ctx, "apt", ["autoremove", "-y"]);
-      await commandExecutor.exec(ctx, "apt", ["clean"]);
+      await commandExecutor.exec(ctx, "apt-get", ["update"]);
+      await commandExecutor.exec(ctx, "apt-get", ["full-upgrade", "-y"]);
+      await commandExecutor.exec(ctx, "apt-get", ["autoremove", "-y"]);
+      await commandExecutor.exec(ctx, "apt-get", ["clean"]);
     },
   };
 }
