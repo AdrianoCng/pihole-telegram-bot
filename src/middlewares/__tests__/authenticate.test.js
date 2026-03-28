@@ -1,44 +1,41 @@
-import authenticate from "../authenticate";
-
-jest.mock("../../helpers/index.js");
+import createAuthMiddleware from "../authenticate.js";
+import { createMockContext } from "../../__tests__/helpers/testUtils.js";
 
 describe("Authenticate Middleware", () => {
-  const originalEnv = process.env;
+  let mockSender;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    process.env = { ...originalEnv };
+    mockSender = { send: jest.fn() };
   });
 
-  afterAll(() => {
-    process.env = originalEnv;
-  });
-
-  it("Should block unauthorized access", async () => {
-    process.env.ALLOWED_USER = "456";
-    const ctx = {
-      from: {
-        id: "123",
-      },
-    };
+  it("should block unauthorized access", async () => {
+    const middleware = createAuthMiddleware({
+      config: { get: () => "456" },
+      messageSender: mockSender,
+    });
+    const ctx = createMockContext({ from: { id: 123 } });
     const next = jest.fn();
 
-    await authenticate(ctx, next);
+    await middleware(ctx, next);
 
     expect(next).not.toHaveBeenCalled();
+    expect(mockSender.send).toHaveBeenCalledWith(
+      ctx,
+      "⛔️ Unauthorized access! You are not allowed to use this bot."
+    );
   });
 
-    it("Should allow authorized access", async () => {
-      process.env.ALLOWED_USER = "123";
-      const ctx = {
-        from: {
-          id: "123",
-        },
-      };
-      const next = jest.fn();
-
-      await authenticate(ctx, next);
-
-      expect(next).toHaveBeenCalled();
+  it("should allow authorized access", async () => {
+    const middleware = createAuthMiddleware({
+      config: { get: () => "123" },
+      messageSender: mockSender,
     });
+    const ctx = createMockContext({ from: { id: 123 } });
+    const next = jest.fn();
+
+    await middleware(ctx, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(mockSender.send).not.toHaveBeenCalled();
+  });
 });

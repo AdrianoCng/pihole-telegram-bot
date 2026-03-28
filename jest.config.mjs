@@ -23,10 +23,11 @@ const config = {
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   collectCoverageFrom: [
     "src/**/*.js",
-    "!src/bot.js", // Complex Telegraf setup, controllers tested
-    "!src/helpers/index.js", // Re-export only
+    "!src/bot.js", // Telegraf wiring, commands tested individually
+    "!src/contracts/**", // JSDoc typedefs only, no runtime code
     "!src/__tests__/**", // Test utilities and helpers
     "!src/middlewares/typing.js", // Simple wrapper, no logic to test
+    "!src/commands/index.js", // Pure re-export file, no logic
   ],
 
   // The directory where Jest should output its coverage files
