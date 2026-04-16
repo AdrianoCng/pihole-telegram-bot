@@ -69,7 +69,7 @@ const commands = commandFactories.map((factory) => {
 const authMiddleware = createAuthMiddleware({ config, messageSender });
 const mainMenu = getMainMenu(commands);
 
-const bot = createBot({ 
+const bot = createBot({
   botToken: config.get("BOT_TOKEN"),
   commands,
   middlewares: [authMiddleware, typing],
@@ -77,6 +77,12 @@ const bot = createBot({
   mainMenu,
 });
 
+const telegramCommands = commands.map((cmd) => ({
+  command: Array.isArray(cmd.trigger) ? cmd.trigger[0] : cmd.trigger,
+  description: cmd.description,
+}));
+
+await bot.telegram.setMyCommands(telegramCommands);
 bot.launch();
 
 // Enable graceful stop
