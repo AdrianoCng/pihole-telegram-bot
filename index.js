@@ -82,7 +82,9 @@ const telegramCommands = commands.map((cmd) => ({
   description: cmd.description,
 }));
 
-await bot.telegram.setMyCommands(telegramCommands);
+await bot.telegram.setMyCommands(telegramCommands).catch((err) => {
+  console.error("[warn] Failed to register commands with Telegram:", err.message);
+});
 bot.launch();
 
 // Enable graceful stop
