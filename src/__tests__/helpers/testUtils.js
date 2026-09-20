@@ -48,6 +48,28 @@ export const mockApiResponse = (data, status = 200, ok = true) => {
 };
 
 /**
+ * Test helper for parameterized error case testing
+ * @param {Function} apiMethod - The API method to test (e.g., () => api.get("/"))
+ */
+export const testApiMethodErrors = (apiMethod) => {
+  const errorCases = [
+    { status: 400, message: "Bad Request" },
+    { status: 401, message: "Unauthorized" },
+    { status: 402, message: "Request failed" },
+    { status: 403, message: "Forbidden" },
+    { status: 404, message: "Not Found" },
+    { status: 500, message: "Internal Server Error" },
+  ];
+
+  errorCases.forEach(({ status, message }) => {
+    it(`Should throw ApiError with "${message}" for ${status} status`, () => {
+      global.fetch.mockResolvedValue(mockApiResponse(null, status, false));
+      return expect(apiMethod()).rejects.toThrow(message);
+    });
+  });
+};
+
+/**
  * Creates a mock child process object for testing spawn/exec commands
  * @param {Object} options - Configuration options
  * @param {string} options.stdoutData - Data to emit on stdout
@@ -87,3 +109,20 @@ export const createMockProcess = (options = {}) => {
   };
 };
 
+/**
+ * Setup standard API mocks for tests
+ * @returns {Object} Mock functions
+ */
+export const setupApiMocks = () => {
+  const post = jest.fn();
+  const get = jest.fn();
+  const deleteFn = jest.fn();
+  const setHeader = jest.fn();
+
+  return {
+    post,
+    get,
+    delete: deleteFn,
+    setHeader,
+  };
+};

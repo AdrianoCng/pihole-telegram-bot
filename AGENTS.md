@@ -1,62 +1,64 @@
 ## Project Overview
 
-A Telegram bot for remotely controlling Pi-hole (network ad blocker) on a Raspberry Pi. Built with Node.js, Telegraf, and ES modules. Follows SOLID principles with dependency injection.
+A Telegram bot for remotely controlling Pi-hole on a Raspberry Pi. Built with Node.js, Telegraf, and ES modules, using grouped controllers and directly imported function helpers.
 
 ## Commands
 
-- `npm run dev` — development mode with nodemon auto-reload
-- `npm start` — production start (`node index.js`)
-- `npm run start:prod` — production with PM2 process manager
-- `npm test` — run full Jest test suite
-- `npm run test:coverage` — run tests with coverage report (80% threshold enforced)
-- Run a single test: `npx jest src/commands/__tests__/apiCommands.test.js`
+- `npm run dev` — development with nodemon
+- `npm start` — production start
+- `npm run start:prod` — production with PM2
+- `npm test` — full Jest suite
+- `npm run test:coverage` — coverage with 80% thresholds
+- Single suite: `npx jest src/controllers/__tests__/apiController.test.js`
 
 ## Architecture
 
-**Composition root** (`index.js`): Loads env vars, creates all services via DI container, wires dependencies, and launches the bot. This is the only file that knows about the container or reads `process.env`.
+**Entrypoint** (`index.js`): Loads dotenv before importing the bot, publishes Telegram autocomplete commands, launches the bot even if publication fails, and installs graceful shutdown handlers.
 
-**Contracts** (`src/contracts/index.js`): JSDoc `@typedef` definitions for `HttpClient`, `MessageSender`, `CommandExecutor`, `PiholeExecutor`, `Config`, and `CommandDefinition`. No runtime code — used for documentation and IDE autocomplete.
+**Bot** (`src/bot.js`): Exports a configured Telegraf instance. Registers authentication, typing, commands, greetings, help, fallback replies, and error handling. Importing it does not launch the bot.
 
-**Services** (`src/services/`): Implementations of contracts, each with a single responsibility:
-- `Config.js` — wraps `process.env`, provides `get(key)` with missing-key validation
-- `PiholeApiClient.js` — HTTP client for Pi-hole REST API (`get/post/delete/setHeader`)
-- `MessageSender.js` — emoji replacement + Telegraf `ctx.reply()` wrapper
-- `CommandExecutor.js` — spawns shell commands with `sudo`, streams output via MessageSender
-- `PiholeCommandExecutor.js` — thin wrapper: delegates to CommandExecutor with `command = "pihole"`
+**Command registry** (`src/constants/commands.js`): Single source for triggers, aliases, descriptions, handlers, and keyboard visibility. To add a command, add its controller handler and a registry entry. The registry drives command registration, help, keyboard, and Telegram autocomplete.
 
-**Commands** (`src/commands/`): One file per command, each exporting a factory function that receives its dependencies and returns a `CommandDefinition` object (`{trigger, description, handler, showInKeyboard?}`).
-- Adding a new command: create a new file in `src/commands/`, add one import + one array entry in `src/commands/index.js`
-- API commands (authorize, logout, messages) depend on `httpClient`, `messageSender`, `config`
-- CLI commands (status, enable, disable, version, update, upgravity) depend on `piholeExecutor`
-- System commands (reboot, upgrade) depend on `commandExecutor`
-- Bot commands (botVersion, menu) depend on `messageSender`
+**Controllers** (`src/controllers/`):
+- `apiController.js`: authorization, logout, and Pi-hole messages
+- `cliController.js`: Pi-hole CLI operations, reboot, and sequential host upgrades
+- `botController.js`: bot version and menu
 
-**Bot factory** (`src/bot.js`): `createBot(deps)` receives all dependencies, sets up Telegraf middlewares, registers commands, and returns the bot instance.
+Controllers export named function declarations and a default object. The registry uses named exports through namespace imports so the menu/registry import cycle is safe in native ESM. Construct the keyboard only when requested, never during controller module initialization.
 
-**Middleware** (`src/middlewares/`):
-- `authenticate.js` — factory: `createAuthMiddleware({config, messageSender})` → checks authorized user
-- `typing.js` — stateless Telegraf typing indicator (unchanged)
+**API model** (`src/api.js`): Shared Pi-hole HTTP client with session headers, JSON requests, response parsing, and `ApiError` mapping. The base URL is initialized at import time.
 
-**UI** (`src/ui/keyboard.js`): `getMainMenu(commands)` — generates keyboard from command array.
+**Helpers** (`src/helpers/`):
+- `config.js`: `getEnv(key)` reads configuration and throws for undefined values
+- `sendMessage.js`: emoji replacement and `ctx.reply()`, forwarding options and return value
+- `execCommandWithOutput.js`: spawns sudo commands, streams output, rejects on nonzero exit
+- `spawnPiholeCommand.js`: delegates to the execution helper with command `pihole`
+- `botCommands.js`: validates triggers and registers handlers
+- `keyboard.js`: builds the two-column keyboard from the registry
+- `index.js`: helper exports
 
-**DI Container** (`src/container.js`): Hand-rolled, ~15 lines. `register(name, factory)` + `resolve(name)` with lazy singleton caching. Only used in the composition root.
+**Middleware** (`src/middlewares/`): Directly imported authentication and typing functions.
 
-**Key data flows:**
-- API commands: User → Bot → HttpClient → Pi-hole REST API → MessageSender → User
-- CLI commands: User → Bot → PiholeExecutor → CommandExecutor → `spawn('sudo', ['pihole', ...])` → MessageSender → User
+Data flows:
+- API: User → Bot → Controller → shared API client → Pi-hole → message helper → User
+- CLI: User → Bot → Controller → execution helper → sudo → message helper → User
 
 ## Environment Variables
 
 Required in `.env` (see `.env.example`):
-- `BOT_TOKEN` — Telegram bot token from @BotFather
+- `BOT_TOKEN` — Telegram bot token
 - `PIHOLE_PASSWORD` — Pi-hole admin password
-- `PIHOLE_IP` — Pi-hole URL (e.g., `http://192.168.1.100`)
+- `PIHOLE_IP` — Pi-hole URL
 - `ALLOWED_USER` — authorized Telegram user ID
+
+Missing values fail when read: IP and token at initialization, password on authorization, and allowed user during authentication. Empty strings retain their existing behavior.
 
 ## Testing
 
-- Jest with babel (babel.config.cjs transpiles ESM for Jest)
-- Tests live in `__tests__/` directories alongside source
-- All tests use direct dependency injection — no `jest.mock` for service dependencies
-- Shared test utilities in `src/__tests__/helpers/testUtils.js` — provides `createMockContext()`, `mockApiResponse()`, `testApiMethodErrors()`, `createMockProcess()`, `setupApiMocks()`
-- Coverage excludes: `bot.js`, `contracts/`, test utilities, `typing.js`
+- Jest with Babel transpiles ESM; the Babel configuration preserves module-relative `import.meta.url` values.
+- Tests live in colocated `__tests__/` directories and use module mocks for imported dependencies.
+- Shared utilities and fixed, non-secret initialization fixtures live in `src/__tests__/helpers/`.
+- Isolate environment variables, fetch mocks, and shared API headers between tests.
+- Startup tests mock external boundaries; native ESM subprocess checks verify import ordering and version lookup outside the repository.
+- Coverage excludes bot wiring, helper re-exports, test utilities, and typing middleware. Bot wiring has separate behavioral tests.
+- Never run actual reboot, upgrade, Pi-hole, or Telegram operations in tests.
