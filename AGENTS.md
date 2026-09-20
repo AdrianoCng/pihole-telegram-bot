@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
 A Telegram bot for remotely controlling Pi-hole (network ad blocker) on a Raspberry Pi. Built with Node.js, Telegraf, and ES modules. Follows SOLID principles with dependency injection.
