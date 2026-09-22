@@ -1,122 +1,67 @@
-import { CLI_COMMANDS } from "../../constants/cli";
-import { execCommandWithOutput, spawnPiholeCommand } from "../../helpers";
-import cliController from "../cliController";
-import { createMockContext } from "../../__tests__/helpers/testUtils";
+import cliController from "../cliController.js";
+import piholeService from "../../services/piholeService.js";
+import systemService from "../../services/systemService.js";
+import { sendMessage } from "../../helpers/index.js";
+import { createMockContext } from "../../__tests__/helpers/testUtils.js";
 
-jest.mock("../../helpers");
+jest.mock("../../services/piholeService.js", () => ({
+  __esModule: true,
+  default: {
+    getStatus: jest.fn(),
+    enable: jest.fn(),
+    disable: jest.fn(),
+    getVersion: jest.fn(),
+    update: jest.fn(),
+    updateGravity: jest.fn(),
+  },
+}));
+jest.mock("../../services/systemService.js", () => ({
+  __esModule: true,
+  default: {
+    reboot: jest.fn(),
+    upgradeHost: jest.fn(),
+  },
+}));
+jest.mock("../../helpers/index.js");
 
-describe("CLI Controllers", () => {
-  const mockCtx = createMockContext();
+describe("CLI controllers", () => {
+  const ctx = createMockContext();
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("statusController", () => {
-    it('Should run pihole command "status"', () => {
-      const args = [CLI_COMMANDS.STATUS];
+  it.each([
+    ["statusController", piholeService.getStatus],
+    ["enableController", piholeService.enable],
+    ["disableController", piholeService.disable],
+    ["versionController", piholeService.getVersion],
+    ["updatePiholeController", piholeService.update],
+    ["upgravityController", piholeService.updateGravity],
+    ["rebootController", systemService.reboot],
+    ["upgradeController", systemService.upgradeHost],
+  ])("delegates %s to its service", async (controllerName, serviceMethod) => {
+    await cliController[controllerName](ctx);
 
-      cliController.statusController(mockCtx, args);
-
-      expect(spawnPiholeCommand).toHaveBeenCalledWith(mockCtx, args);
-    });
+    expect(serviceMethod).toHaveBeenCalledWith(expect.any(Function));
   });
 
-  describe("enableController", () => {
-    it('Should run pihole command "enable"', () => {
-      const args = [CLI_COMMANDS.ENABLE];
-
-      cliController.enableController(mockCtx, args);
-
-      expect(spawnPiholeCommand).toHaveBeenCalledWith(mockCtx, args);
+  it("adapts service output to Telegram messages", async () => {
+    piholeService.getStatus.mockImplementation((onOutput) => {
+      onOutput("Pi-hole is enabled");
+      return Promise.resolve();
     });
+
+    await cliController.statusController(ctx);
+
+    expect(sendMessage).toHaveBeenCalledWith(ctx, "Pi-hole is enabled");
   });
 
-  describe("disableController", () => {
-    it('Should run pihole command "disable"', () => {
-      const args = [CLI_COMMANDS.DISABLE];
+  it("propagates service failures", async () => {
+    systemService.upgradeHost.mockRejectedValue(new Error("upgrade failed"));
 
-      cliController.disableController(mockCtx, args);
-
-      expect(spawnPiholeCommand).toHaveBeenCalledWith(mockCtx, args);
-    });
-  });
-
-  describe("versionController", () => {
-    it('Should run pihole command "version"', () => {
-      const args = [CLI_COMMANDS.VERSION];
-
-      cliController.versionController(mockCtx, args);
-
-      expect(spawnPiholeCommand).toHaveBeenCalledWith(mockCtx, args);
-    });
-  });
-
-  describe("updatePiholeController", () => {
-    it('Should run pihole command "update"', () => {
-      const args = [CLI_COMMANDS.UPDATE];
-
-      cliController.updatePiholeController(mockCtx, args);
-
-      expect(spawnPiholeCommand).toHaveBeenCalledWith(mockCtx, args);
-    });
-  });
-
-  describe("upgravityController", () => {
-    it('Should run pihole command "upgravity"', () => {
-      const args = [CLI_COMMANDS.UPGRAVITY];
-
-      cliController.upgravityController(mockCtx, args);
-
-      expect(spawnPiholeCommand).toHaveBeenCalledWith(mockCtx, args);
-    });
-  });
-
-  describe("rebootController", () => {
-    it("Should run reboot command", () => {
-      cliController.rebootController(mockCtx);
-
-      expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "reboot");
-    });
-  });
-
-  describe("upgradeController", () => {
-    it("waits for each step and stops on failure", async () => {
-      let finishUpdate;
-      execCommandWithOutput.mockImplementationOnce(() => new Promise((resolve) => { finishUpdate = resolve; }));
-      execCommandWithOutput.mockRejectedValueOnce(new Error("upgrade failed"));
-      const upgrade = cliController.upgradeController(mockCtx);
-      expect(execCommandWithOutput).toHaveBeenCalledTimes(1);
-      finishUpdate();
-      await expect(upgrade).rejects.toThrow("upgrade failed");
-      expect(execCommandWithOutput).toHaveBeenCalledTimes(2);
-      expect(execCommandWithOutput).toHaveBeenNthCalledWith(2, mockCtx, "apt-get", ["full-upgrade", "-y"]);
-    });
-
-    it("Should run upgrade command", async () => {
-      await cliController.upgradeController(mockCtx);
-
-      expect(execCommandWithOutput.mock.calls).toEqual([
-        [mockCtx, "apt-get", ["update"]],
-        [mockCtx, "apt-get", ["full-upgrade", "-y"]],
-        [mockCtx, "apt-get", ["autoremove", "-y"]],
-        [mockCtx, "apt-get", ["clean"]],
-      ]);
-
-      expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "apt-get", [
-        "update",
-      ]);
-      expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "apt-get", [
-        "full-upgrade",
-        "-y",
-      ]);
-      expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "apt-get", [
-        "autoremove",
-        "-y",
-      ]);
-      expect(execCommandWithOutput).toHaveBeenCalledWith(mockCtx, "apt-get", [
-        "clean",
-      ]);
-    });
+    await expect(cliController.upgradeController(ctx)).rejects.toThrow(
+      "upgrade failed"
+    );
   });
 });

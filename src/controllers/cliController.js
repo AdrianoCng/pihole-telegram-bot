@@ -1,39 +1,39 @@
-import { spawnPiholeCommand, execCommandWithOutput } from "../helpers/index.js";
-import { CLI_COMMANDS } from "../constants/cli.js";
+import piholeService from "../services/piholeService.js";
+import systemService from "../services/systemService.js";
+import { sendMessage } from "../helpers/index.js";
+
+const sendOutputTo = (ctx) => (output) => sendMessage(ctx, output);
 
 export async function statusController(ctx) {
-  await spawnPiholeCommand(ctx, [CLI_COMMANDS.STATUS]);
+  await piholeService.getStatus(sendOutputTo(ctx));
 }
 
 export async function enableController(ctx) {
-  await spawnPiholeCommand(ctx, [CLI_COMMANDS.ENABLE]);
+  await piholeService.enable(sendOutputTo(ctx));
 }
 
 export async function disableController(ctx) {
-  await spawnPiholeCommand(ctx, [CLI_COMMANDS.DISABLE]);
+  await piholeService.disable(sendOutputTo(ctx));
 }
 
 export async function versionController(ctx) {
-  await spawnPiholeCommand(ctx, [CLI_COMMANDS.VERSION]);
+  await piholeService.getVersion(sendOutputTo(ctx));
 }
 
 export async function updatePiholeController(ctx) {
-  await spawnPiholeCommand(ctx, [CLI_COMMANDS.UPDATE]);
+  await piholeService.update(sendOutputTo(ctx));
 }
 
 export async function upgravityController(ctx) {
-  await spawnPiholeCommand(ctx, [CLI_COMMANDS.UPGRAVITY]);
+  await piholeService.updateGravity(sendOutputTo(ctx));
 }
 
 export async function rebootController(ctx) {
-  await execCommandWithOutput(ctx, "reboot");
+  await systemService.reboot(sendOutputTo(ctx));
 }
 
 export async function upgradeController(ctx) {
-  await execCommandWithOutput(ctx, "apt-get", ["update"]);
-  await execCommandWithOutput(ctx, "apt-get", ["full-upgrade", "-y"]);
-  await execCommandWithOutput(ctx, "apt-get", ["autoremove", "-y"]);
-  await execCommandWithOutput(ctx, "apt-get", ["clean"]);
+  await systemService.upgradeHost(sendOutputTo(ctx));
 }
 
 export default {

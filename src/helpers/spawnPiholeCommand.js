@@ -1,11 +1,11 @@
-import { execCommandWithOutput } from "./index.js";
+import execCommandWithOutput from "./execCommandWithOutput.js";
 
 /**
- * Spawn a Pi-hole command and send output to chat
- * @param {import('telegraf').Context} ctx
- * @param {string[]} args Command arguments
+ * Run a Pi-hole command and report output through a transport-neutral callback.
+ * @param {string[]} args
+ * @param {(output: string) => void} onOutput
  * @returns {Promise<void>}
  */
-export default async function spawnPiholeCommand(ctx, args) {
-  return execCommandWithOutput(ctx, "pihole", args);
+export default function spawnPiholeCommand(args, onOutput) {
+  return execCommandWithOutput("pihole", args, onOutput);
 }
