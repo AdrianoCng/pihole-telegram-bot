@@ -1,23 +1,26 @@
 import { spawn } from "child_process";
-import { sendMessage } from "./index.js";
 
 /**
- * Helper function to spawn a command with sudo, handle output, and communicate to chat.
- * @param {import('telegraf').Context} ctx
- * @param {string} command The command to run (e.g. "pihole")
- * @param {string[]} args Command arguments
+ * Run a command with sudo and report each output chunk through a transport-neutral callback.
+ * @param {string} command
+ * @param {string[]} args
+ * @param {(output: string) => void} onOutput
  * @returns {Promise<void>}
  */
-export default function execCommandWithOutput(ctx, command, args = []) {
+export default function execCommandWithOutput(
+  command,
+  args = [],
+  onOutput = () => {}
+) {
   return new Promise((resolve, reject) => {
     const process = spawn("sudo", [command, ...args]);
 
     process.stdout.on("data", (chunk) => {
-      sendMessage(ctx, chunk.toString());
+      onOutput(chunk.toString());
     });
 
     process.stderr.on("data", (chunk) => {
-      sendMessage(ctx, chunk.toString());
+      onOutput(chunk.toString());
     });
 
     process.on("close", (code) => {
@@ -25,7 +28,7 @@ export default function execCommandWithOutput(ctx, command, args = []) {
         resolve();
       } else {
         const errorMessage = `Command failed with exit code ${code}`;
-        sendMessage(ctx, errorMessage);
+        onOutput(errorMessage);
         reject(new Error(errorMessage));
       }
     });

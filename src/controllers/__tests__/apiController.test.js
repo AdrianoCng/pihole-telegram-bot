@@ -1,171 +1,88 @@
 import apiController from "../apiController.js";
-import api from "../../api.js";
+import piholeService from "../../services/piholeService.js";
 import { sendMessage } from "../../helpers/index.js";
-import { API_ENDPOINTS } from "../../constants/api";
-import { createMockContext } from "../../__tests__/helpers/testUtils";
+import { createMockContext } from "../../__tests__/helpers/testUtils.js";
 
-jest.mock("../../api.js", () => ({ __esModule: true, default: { post: jest.fn(), get: jest.fn(), delete: jest.fn(), setHeader: jest.fn() } }));
+jest.mock("../../services/piholeService.js", () => ({
+  __esModule: true,
+  default: {
+    authorize: jest.fn(),
+    logout: jest.fn(),
+    getMessages: jest.fn(),
+  },
+}));
 jest.mock("../../helpers/index.js");
 
-describe("API Controllers", () => {
-  const mockCtx = createMockContext();
-  const originalEnv = process.env;
-  beforeEach(() => { process.env = { ...originalEnv, PIHOLE_PASSWORD: "test-password" }; });
-  afterEach(() => { process.env = originalEnv; });
+describe("API controllers", () => {
+  const ctx = createMockContext();
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("Authorize Controller", () => {
-    it("rejects a missing password before making a request", async () => {
-      delete process.env.PIHOLE_PASSWORD;
-      await expect(apiController.authorizeController(mockCtx)).rejects.toThrow(
-        "Missing required environment variable: PIHOLE_PASSWORD"
-      );
-      expect(api.post).not.toHaveBeenCalled();
-    });
+  it("reports successful authorization", async () => {
+    piholeService.authorize.mockResolvedValue(true);
 
-    it("Should authorize the user", async () => {
-      const mockResponse = {
-        session: {
-          sid: "test-sid",
-        },
-      };
+    await apiController.authorizeController(ctx);
 
-      api.post.mockResolvedValueOnce(mockResponse);
-
-      await apiController.authorizeController(mockCtx);
-
-      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH, {
-        password: process.env.PIHOLE_PASSWORD,
-      });
-      expect(api.setHeader).toHaveBeenCalledWith(
-        "sid",
-        mockResponse.session.sid
-      );
-      expect(sendMessage).toHaveBeenCalledWith(mockCtx, expect.any(String));
-    });
-
-    it("Should handle null response", async () => {
-      api.post.mockResolvedValueOnce(null);
-
-      await apiController.authorizeController(mockCtx);
-
-      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH, {
-        password: process.env.PIHOLE_PASSWORD,
-      });
-      expect(api.setHeader).not.toHaveBeenCalled();
-      expect(sendMessage).toHaveBeenCalledWith(
-        mockCtx,
-        "❌ Authorization failed: Invalid response from server"
-      );
-    });
-
-    it("Should handle response without session", async () => {
-      api.post.mockResolvedValueOnce({});
-
-      await apiController.authorizeController(mockCtx);
-
-      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH, {
-        password: process.env.PIHOLE_PASSWORD,
-      });
-      expect(api.setHeader).not.toHaveBeenCalled();
-      expect(sendMessage).toHaveBeenCalledWith(
-        mockCtx,
-        "❌ Authorization failed: Invalid response from server"
-      );
-    });
-
-    it("Should handle response without session.sid", async () => {
-      api.post.mockResolvedValueOnce({ session: {} });
-
-      await apiController.authorizeController(mockCtx);
-
-      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH, {
-        password: process.env.PIHOLE_PASSWORD,
-      });
-      expect(api.setHeader).not.toHaveBeenCalled();
-      expect(sendMessage).toHaveBeenCalledWith(
-        mockCtx,
-        "❌ Authorization failed: Invalid response from server"
-      );
-    });
+    expect(piholeService.authorize).toHaveBeenCalledWith();
+    expect(sendMessage).toHaveBeenCalledWith(ctx, "✅ Authorized successfully");
   });
 
-  describe("Logout Controller", () => {
-    it("preserves the session if logout fails", async () => {
-      api.delete.mockRejectedValueOnce(new Error("logout failed"));
-      await expect(apiController.logoutController(mockCtx)).rejects.toThrow("logout failed");
-      expect(api.setHeader).not.toHaveBeenCalled();
-      expect(sendMessage).not.toHaveBeenCalled();
-    });
+  it("reports an invalid authorization response", async () => {
+    piholeService.authorize.mockResolvedValue(false);
 
-    it("Should logout the user", async () => {
-      await apiController.logoutController(mockCtx);
+    await apiController.authorizeController(ctx);
 
-      expect(api.delete).toHaveBeenCalledWith(API_ENDPOINTS.AUTH);
-      expect(api.setHeader).toHaveBeenCalledWith("sid", "");
-      expect(sendMessage).toHaveBeenCalledWith(mockCtx, expect.any(String));
-    });
+    expect(sendMessage).toHaveBeenCalledWith(
+      ctx,
+      "❌ Authorization failed: Invalid response from server"
+    );
   });
 
-  describe("Messages Controller", () => {
-    it("Should get messages from Pi-hole", async () => {
-      const mockResponse = {
-        messages: [
-          {
-            timestamp: 1609459200,
-            plain: "Test message",
-          },
-        ],
-      };
+  it("logs out before confirming success", async () => {
+    await apiController.logoutController(ctx);
 
-      api.get.mockResolvedValueOnce(mockResponse);
+    expect(piholeService.logout).toHaveBeenCalledWith();
+    expect(sendMessage).toHaveBeenCalledWith(ctx, "✅ Logged out successfully");
+  });
 
-      await apiController.messagesController(mockCtx);
+  it("does not confirm logout when the service fails", async () => {
+    piholeService.logout.mockRejectedValue(new Error("logout failed"));
 
-      expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.INFO.MESSAGES);
-      expect(sendMessage).toHaveBeenCalledWith(
-        mockCtx,
-        `${new Date(1609459200000).toLocaleString()} - Test message`
-      );
-    });
+    await expect(apiController.logoutController(ctx)).rejects.toThrow("logout failed");
+    expect(sendMessage).not.toHaveBeenCalled();
+  });
 
-    it("Should return a message if there are no messages", async () => {
-      const mockResponse = {
-        messages: [],
-      };
+  it("formats Pi-hole messages for Telegram", async () => {
+    piholeService.getMessages.mockResolvedValue([
+      { timestamp: 1609459200, plain: "Test message" },
+    ]);
 
-      api.get.mockResolvedValueOnce(mockResponse);
+    await apiController.messagesController(ctx);
 
-      await apiController.messagesController(mockCtx);
+    expect(sendMessage).toHaveBeenCalledWith(
+      ctx,
+      `${new Date(1609459200000).toLocaleString()} - Test message`
+    );
+  });
 
-      expect(sendMessage).toHaveBeenCalledWith(mockCtx, "No messages found");
-    });
+  it("reports when Pi-hole has no messages", async () => {
+    piholeService.getMessages.mockResolvedValue([]);
 
-    it("Should handle null response", async () => {
-      api.get.mockResolvedValueOnce(null);
+    await apiController.messagesController(ctx);
 
-      await apiController.messagesController(mockCtx);
+    expect(sendMessage).toHaveBeenCalledWith(ctx, "No messages found");
+  });
 
-      expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.INFO.MESSAGES);
-      expect(sendMessage).toHaveBeenCalledWith(
-        mockCtx,
-        "❌ Failed to retrieve messages: Invalid response from server"
-      );
-    });
+  it("reports an invalid messages response", async () => {
+    piholeService.getMessages.mockResolvedValue(null);
 
-    it("Should handle response without messages property", async () => {
-      api.get.mockResolvedValueOnce({});
+    await apiController.messagesController(ctx);
 
-      await apiController.messagesController(mockCtx);
-
-      expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.INFO.MESSAGES);
-      expect(sendMessage).toHaveBeenCalledWith(
-        mockCtx,
-        "❌ Failed to retrieve messages: Invalid response from server"
-      );
-    });
+    expect(sendMessage).toHaveBeenCalledWith(
+      ctx,
+      "❌ Failed to retrieve messages: Invalid response from server"
+    );
   });
 });
