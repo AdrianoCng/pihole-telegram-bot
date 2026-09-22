@@ -1,12 +1,8 @@
 import { sendMessage, getMainMenu } from "../helpers/index.js";
-import fs from "fs/promises";
+import botService from "../services/botService.js";
 
 export async function botVersionController(ctx) {
-  const packageJson = await fs.readFile(
-    new URL("../../package.json", import.meta.url),
-    "utf8"
-  );
-  const version = JSON.parse(packageJson).version;
+  const version = await botService.getVersion();
 
   sendMessage(ctx, `The bot version is v${version}`);
 }
