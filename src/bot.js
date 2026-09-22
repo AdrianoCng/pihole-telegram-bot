@@ -1,73 +1,49 @@
+import { getEnv } from "./helpers/config.js";
 import { Telegraf } from "telegraf";
+import { sendMessage, registerCommands, getMainMenu } from "./helpers/index.js";
+import { COMMANDS } from "./constants/commands.js";
+import typing from "./middlewares/typing.js";
+import authenticate from "./middlewares/authenticate.js";
 
-/**
- * @param {Object} deps
- * @param {string} deps.botToken
- * @param {import('./contracts/index.js').CommandDefinition[]} deps.commands
- * @param {Function[]} deps.middlewares
- * @param {import('./contracts/index.js').MessageSender} deps.messageSender
- * @param {any} deps.mainMenu
- */
-export default function createBot({ botToken, commands, middlewares, messageSender, mainMenu }) {
-  const bot = new Telegraf(botToken);
+const bot = new Telegraf(getEnv("BOT_TOKEN"));
 
-  middlewares.forEach((middleware) => bot.use(middleware));
+bot.use(authenticate);
 
-  validateCommands(commands);
-  commands.forEach(({ trigger, handler }) => bot.command(trigger, handler));
+bot.use(typing);
 
-  bot.start((ctx) => {
-    messageSender.send(
-      ctx,
-      "Hello! I'm your Pi-hole bot. How can I help you today?",
-      mainMenu
-    );
-  });
+registerCommands(bot);
 
-  bot.help((ctx) => {
-    messageSender.send(
-      ctx,
-      commands
-        .map(({ trigger, description }) => {
-          const triggers = Array.isArray(trigger) ? trigger : [trigger];
-          return `${triggers.map((t) => `/${t}`).join(", ")} - ${description}`;
-        })
-        .join("\n")
-    );
-  });
+bot.start((ctx) => {
+  sendMessage(
+    ctx,
+    "Hello! I'm your Pi-hole bot. How can I help you today?",
+    getMainMenu()
+  );
+});
 
-  bot.on("message", (ctx) => {
-    messageSender.send(ctx, "Sorry, I don't understand that.");
-  });
+bot.help((ctx) => {
+  sendMessage(
+    ctx,
+    COMMANDS.map(({ trigger, description }) => {
+      const commands = Array.isArray(trigger) ? trigger : [trigger];
 
-  bot.catch((err, ctx) => {
-    console.error(err);
+      return `${commands.map((t) => `/${t}`).join(", ")} - ${description}`;
+    }).join("\n")
+  );
+});
 
-    if (!err?.isApiError) {
-      throw new Error(err?.message || "An error occurred 🔥");
-    }
+bot.on("message", (ctx) => {
+  sendMessage(ctx, "Sorry, I don't understand that.");
+});
 
-    messageSender.send(ctx, err?.message || "An error occurred 🔥");
-  });
+bot.catch((err, ctx) => {
+  console.error(err);
 
-  return bot;
-}
-
-function validateCommands(commands) {
-  const seen = new Set();
-  const dupes = [];
-
-  for (const { trigger } of commands) {
-    for (const t of Array.isArray(trigger) ? trigger : [trigger]) {
-      if (seen.has(t)) {
-        dupes.push(t);
-      } else {
-        seen.add(t);
-      }
-    }
+  if (!err?.isApiError) {
+    throw new Error(err?.message || "An error occurred 🔥");
   }
 
-  if (dupes.length > 0) {
-    throw new Error(`Duplicate command triggers found: ${dupes.join(", ")}`);
-  }
-}
+  sendMessage(ctx, err?.message || "An error occurred 🔥");
+});
+
+export default bot;

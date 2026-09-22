@@ -24,10 +24,9 @@ const config = {
   collectCoverageFrom: [
     "src/**/*.js",
     "!src/bot.js", // Telegraf wiring, commands tested individually
-    "!src/contracts/**", // JSDoc typedefs only, no runtime code
     "!src/__tests__/**", // Test utilities and helpers
     "!src/middlewares/typing.js", // Simple wrapper, no logic to test
-    "!src/commands/index.js", // Pure re-export file, no logic
+    "!src/helpers/index.js", // Pure re-export file, no logic
   ],
 
   // The directory where Jest should output its coverage files
@@ -162,6 +161,7 @@ const config = {
 
   // The test environment that will be used for testing
   testEnvironment: "jest-environment-node",
+  setupFiles: ["<rootDir>/src/__tests__/helpers/setup.js"],
 
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},

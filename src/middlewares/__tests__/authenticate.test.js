@@ -1,41 +1,48 @@
-import createAuthMiddleware from "../authenticate.js";
-import { createMockContext } from "../../__tests__/helpers/testUtils.js";
+import authenticate from "../authenticate";
+import { sendMessage } from "../../helpers/index.js";
+
+jest.mock("../../helpers/index.js");
 
 describe("Authenticate Middleware", () => {
-  let mockSender;
+  const originalEnv = process.env;
 
   beforeEach(() => {
-    mockSender = { send: jest.fn() };
+    jest.clearAllMocks();
+    process.env = { ...originalEnv };
   });
 
-  it("should block unauthorized access", async () => {
-    const middleware = createAuthMiddleware({
-      config: { get: () => "456" },
-      messageSender: mockSender,
-    });
-    const ctx = createMockContext({ from: { id: 123 } });
+  afterAll(() => {
+    process.env = originalEnv;
+  });
+
+  it("Should block unauthorized access", async () => {
+    process.env.ALLOWED_USER = "456";
+    const ctx = {
+      from: {
+        id: "123",
+      },
+    };
     const next = jest.fn();
 
-    await middleware(ctx, next);
+    await authenticate(ctx, next);
 
     expect(next).not.toHaveBeenCalled();
-    expect(mockSender.send).toHaveBeenCalledWith(
-      ctx,
-      "⛔️ Unauthorized access! You are not allowed to use this bot."
+    expect(sendMessage).toHaveBeenCalledWith(
+      ctx, "⛔️ Unauthorized access! You are not allowed to use this bot."
     );
   });
 
-  it("should allow authorized access", async () => {
-    const middleware = createAuthMiddleware({
-      config: { get: () => "123" },
-      messageSender: mockSender,
+    it("Should allow authorized access", async () => {
+      process.env.ALLOWED_USER = "123";
+      const ctx = {
+        from: {
+          id: "123",
+        },
+      };
+      const next = jest.fn();
+
+      await authenticate(ctx, next);
+
+      expect(next).toHaveBeenCalled();
     });
-    const ctx = createMockContext({ from: { id: 123 } });
-    const next = jest.fn();
-
-    await middleware(ctx, next);
-
-    expect(next).toHaveBeenCalled();
-    expect(mockSender.send).not.toHaveBeenCalled();
-  });
 });
