@@ -52,7 +52,7 @@ describe("summaryController", () => {
       "Queries: 10",
       "Blocked: 1 (10.0%)",
       "Cached: 5 (50.0%)",
-      "Forwarded: 4",
+      "Forwarded: 4 (40.0%)",
       "Active clients: 2",
       "Gravity domains: 1,000",
       "Gravity updated: unknown",

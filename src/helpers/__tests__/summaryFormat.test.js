@@ -23,7 +23,7 @@ const METRICS = [
   "Queries: 52,491",
   "Blocked: 8,643 (16.5%)",
   "Cached: 17,952 (34.2%)",
-  "Forwarded: 25,896",
+  "Forwarded: 25,896 (49.3%)",
   "Active clients: 23",
   "Gravity domains: 1,234,567",
   "Gravity updated: 2 hours ago",
@@ -104,13 +104,13 @@ describe("renderSummary", () => {
     expect(renderSummary(model({ messageCount }), NOW_MS)).not.toContain("messages");
   });
 
-  it("shows 0.0% cached when there are no queries", () => {
+  it("shows 0.0% cached and forwarded when there are no queries", () => {
     const output = renderSummary(
       model({ queries: { total: 0, blocked: 0, percentBlocked: 0, cached: 0, forwarded: 0 } }),
       NOW_MS
     );
 
-    expect(output).toContain("Queries: 0\nBlocked: 0 (0.0%)\nCached: 0 (0.0%)");
+    expect(output).toContain("Queries: 0\nBlocked: 0 (0.0%)\nCached: 0 (0.0%)\nForwarded: 0 (0.0%)");
     expect(output).not.toContain("NaN");
   });
 
