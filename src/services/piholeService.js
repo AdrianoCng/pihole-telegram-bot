@@ -34,14 +34,22 @@ export async function getMessages() {
   return Array.isArray(response?.messages) ? response.messages : null;
 }
 
-/** Degrade a supplementary read to its fallback, logging a safe diagnostic. */
-function optional(result, parse, operation, path, fallback) {
+/**
+ * Parse a settled supplementary read. If the read was rejected or the parse
+ * throws, log a safe diagnostic and return `fallback(error)`.
+ */
+function optional(result, { parse, fallback, operation, path }) {
+  const fail = (error) => {
+    logSafeError({ operation, path, error });
+    return fallback(error);
+  };
+
+  if (result.status === "rejected") return fail(result.reason);
+
   try {
-    if (result.status === "rejected") throw result.reason;
     return parse(result.value);
   } catch (error) {
-    logSafeError({ operation, path, error });
-    return fallback;
+    return fail(error);
   }
 }
 
@@ -59,20 +67,18 @@ export async function getSummary({ deadlineMs = SUMMARY_DEADLINE_MS } = {}) {
 
   return {
     ...parseSummaryResponse(summary.value),
-    blockingState: optional(
-      blocking,
-      parseBlockingState,
-      "blocking",
-      API_ENDPOINTS.DNS.BLOCKING,
-      "unavailable"
-    ),
-    messageCount: optional(
-      count,
-      parseMessageCount,
-      "messages-count",
-      API_ENDPOINTS.INFO.MESSAGES_COUNT,
-      null
-    ),
+    blockingState: optional(blocking, {
+      parse: parseBlockingState,
+      fallback: () => "unavailable",
+      operation: "blocking",
+      path: API_ENDPOINTS.DNS.BLOCKING,
+    }),
+    messageCount: optional(count, {
+      parse: parseMessageCount,
+      fallback: () => null,
+      operation: "messages-count",
+      path: API_ENDPOINTS.INFO.MESSAGES_COUNT,
+    }),
   };
 }
 
