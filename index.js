@@ -1,6 +1,12 @@
 import "dotenv/config";
 import bot from "./src/bot.js";
+import api from "./src/api.js";
 import { COMMANDS } from "./src/constants/commands.js";
+import { API_ENDPOINTS } from "./src/constants/api.js";
+import { logSafeError } from "./src/helpers/logSafeError.js";
+import piholeService from "./src/services/piholeService.js";
+
+const SHUTDOWN_LOGOUT_TIMEOUT_MS = 1000;
 
 const telegramCommands = COMMANDS.map(({ trigger, description }) => ({
   command: Array.isArray(trigger) ? trigger[0] : trigger,
@@ -12,5 +18,16 @@ await bot.telegram.setMyCommands(telegramCommands).catch((err) => {
 });
 bot.launch();
 
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+// End the Pi-hole API session best-effort so restarts do not accumulate sessions.
+async function shutdown(signal) {
+  if (api.hasSession()) {
+    await piholeService
+      .logout({ signal: AbortSignal.timeout(SHUTDOWN_LOGOUT_TIMEOUT_MS) })
+      .catch((error) => logSafeError({ operation: "logout", path: API_ENDPOINTS.AUTH, error }));
+  }
+
+  bot.stop(signal);
+}
+
+process.once("SIGINT", () => shutdown("SIGINT"));
+process.once("SIGTERM", () => shutdown("SIGTERM"));

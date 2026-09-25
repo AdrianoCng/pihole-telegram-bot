@@ -4,6 +4,7 @@ import { COMMANDS } from "../constants/commands.js";
 import authenticate from "../middlewares/authenticate.js";
 import typing from "../middlewares/typing.js";
 import { createMockContext } from "./helpers/testUtils.js";
+import { summaryController } from "../controllers/summaryController.js";
 
 jest.mock("telegraf", () => ({
   ...jest.requireActual("telegraf"),
@@ -29,8 +30,8 @@ it("registers authentication before typing and all command aliases", () => {
   expect(registrations.middleware).toEqual([authenticate, typing]);
   expect(registrations.commands).toEqual(COMMANDS.map(({ trigger, handler }) => [trigger, handler]));
   expect(COMMANDS.map(({ trigger }) => trigger)).toEqual([
-    ["authorize", "a"], ["logout", "logoff"], ["messages", "m"],
-    ["status", "s"], ["enable", "e"], ["disable", "d"], ["version", "v"],
+    ["summary", "stats"], ["status", "s"], ["messages", "m"],
+    ["authorize", "a"], ["logout", "logoff"], ["enable", "e"], ["disable", "d"], ["version", "v"],
     ["update", "up"], ["upgravity", "g"], ["reboot", "r"],
     ["upgrade", "upg"], ["bot", "bv"], ["menu"],
   ]);
@@ -42,17 +43,41 @@ it("sends the greeting and two-column keyboard without the menu command", () => 
   const [message, extra] = ctx.reply.mock.calls[0];
   expect(message).toBe("Hello! I'm your Pi-hole bot. How can I help you today?");
   const keyboard = extra.reply_markup.keyboard;
-  expect(keyboard).toHaveLength(6);
-  expect(keyboard.every((row) => row.length === 2)).toBe(true);
+  expect(keyboard.every((row) => row.length >= 1 && row.length <= 2)).toBe(true);
+  expect(keyboard.flat().slice(0, 4)).toEqual(["/summary", "/status", "/messages", "/authorize"]);
+  expect(keyboard.flat()).not.toContain("/stats");
   expect(keyboard.flat()).toEqual(
     COMMANDS.filter((command) => command.showInKeyboard !== false).map(({ trigger }) => "/" + trigger[0])
   );
   expect(extra.reply_markup.resize_keyboard).toBe(true);
 });
 
+it("registers /summary and /stats with the same handler", () => {
+  const [trigger, handler] = registrations.commands.find(([names]) => names.includes("summary"));
+  expect(trigger).toEqual(["summary", "stats"]);
+  expect(handler).toBe(summaryController);
+});
+
+it("rejects unauthorised users before any command runs", async () => {
+  const allowedUser = process.env.ALLOWED_USER;
+  process.env.ALLOWED_USER = "123";
+  const ctx = createMockContext({ from: { id: 999 } });
+  const next = jest.fn();
+  try {
+    await registrations.middleware[0](ctx, next);
+  } finally {
+    process.env.ALLOWED_USER = allowedUser;
+  }
+  expect(next).not.toHaveBeenCalled();
+  expect(ctx.reply).toHaveBeenCalledWith(
+    "⛔️ Unauthorized access! You are not allowed to use this bot.", undefined
+  );
+});
+
 it("lists aliases in help and handles unknown messages", () => {
   const ctx = createMockContext();
   registrations.help(ctx);
+  expect(ctx.reply.mock.calls[0][0]).toContain("/summary, /stats - Show Pi-hole health and activity summary");
   expect(ctx.reply.mock.calls[0][0]).toBe(COMMANDS.map(({ trigger, description }) =>
     trigger.map((name) => "/" + name).join(", ") + " - " + description
   ).join("\n"));

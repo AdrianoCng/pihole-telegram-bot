@@ -192,4 +192,48 @@ describe("api", () => {
       testApiMethodErrors(() => api.delete("/"));
     });
   });
+  describe("request signals", () => {
+    it.each([
+      ["get", (signal) => api.get("/x", { signal })],
+      ["post", (signal) => api.post("/x", {}, { signal })],
+      ["delete", (signal) => api.delete("/x", { signal })],
+    ])("passes the abort signal to fetch for %s", async (_method, call) => {
+      const { signal } = new AbortController();
+      fetch.mockResolvedValueOnce(mockApiResponse({}));
+
+      await call(signal);
+
+      expect(fetch.mock.calls[0][1].signal).toBe(signal);
+    });
+
+    it("propagates fetch aborts and network failures unchanged", async () => {
+      const timeout = new DOMException("timed out", "TimeoutError");
+      const network = new TypeError("fetch failed");
+      fetch.mockRejectedValueOnce(timeout).mockRejectedValueOnce(network);
+
+      await expect(api.get("/x")).rejects.toBe(timeout);
+      await expect(api.get("/x")).rejects.toBe(network);
+    });
+  });
+
+  describe("session headers", () => {
+    it("reports no session for a missing or empty SID", () => {
+      expect(api.hasSession()).toBe(false);
+      api.setHeader("sid", "");
+      expect(api.hasSession()).toBe(false);
+    });
+
+    it("stores and clears the session SID", async () => {
+      api.setSession("session-id");
+      expect(api.hasSession()).toBe(true);
+
+      fetch.mockResolvedValueOnce(mockApiResponse({}));
+      await api.get("/x");
+      expect(fetch.mock.calls[0][1].headers).toEqual({ sid: "session-id" });
+
+      api.clearSession();
+      expect(api.hasSession()).toBe(false);
+      expect(api.headers).not.toHaveProperty("sid");
+    });
+  });
 });

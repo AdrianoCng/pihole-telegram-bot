@@ -16,6 +16,13 @@ describe("registerCommands utility function", () => {
 });
 
 describe("validateCommands utility function", () => {
+  it("accepts the real registry, including the /summary and /stats aliases", () => {
+    expect(validateCommands(COMMANDS)).toBe(true);
+    expect(COMMANDS.flatMap(({ trigger }) => trigger)).toEqual(
+      expect.arrayContaining(["summary", "stats"])
+    );
+  });
+
   it("rejects aliases that collide with another command", () => {
     expect(() => validateCommands([{ trigger: ["status", "s"] }, { trigger: "s" }]))
       .toThrow("Duplicate command triggers found: s");

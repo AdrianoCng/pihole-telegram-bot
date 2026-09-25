@@ -1,8 +1,24 @@
 import * as apiController from "../controllers/apiController.js";
 import * as cliController from "../controllers/cliController.js";
 import * as botController from "../controllers/botController.js";
+import * as summaryController from "../controllers/summaryController.js";
 
 export const COMMANDS = [
+  {
+    trigger: ["summary", "stats"],
+    description: "Show Pi-hole health and activity summary",
+    handler: summaryController.summaryController,
+  },
+  {
+    trigger: ["status", "s"],
+    description: "Display the running status of Pi-hole subsystems",
+    handler: cliController.statusController,
+  },
+  {
+    trigger: ["messages", "m"],
+    description: "Show messages from Pi-hole",
+    handler: apiController.messagesController,
+  },
   {
     trigger: ["authorize", "a"],
     description: "Authorize the bot",
@@ -12,16 +28,6 @@ export const COMMANDS = [
     trigger: ["logout", "logoff"],
     description: "Logout the bot",
     handler: apiController.logoutController,
-  },
-  {
-    trigger: ["messages", "m"],
-    description: "Show messages from Pi-hole",
-    handler: apiController.messagesController,
-  },
-  {
-    trigger: ["status", "s"],
-    description: "Display the running status of Pi-hole subsystems",
-    handler: cliController.statusController,
   },
   {
     trigger: ["enable", "e"],

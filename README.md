@@ -19,9 +19,10 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 
 ## ✨ Features
 
-- 🔐 User authentication
+- 📈 `/summary` dashboard: blocking state, query, cache, client, and gravity statistics
+- 🔐 Automatic Pi-hole API authentication, with manual `/authorize` and `/logout` for troubleshooting
 - 🚫 Enable/disable Pi-hole blocking
-- 📊 Monitor Pi-hole status and view system messages
+- 📊 Monitor Pi-hole subsystem status and view system messages
 - 🔍 Check Pi-hole version information
 - 🔄 Update Pi-hole subsystems and blocklists
 - 🔒 Secure access limited to authorized users
@@ -122,11 +123,12 @@ npm start
 ## 📱 Usage
 
 1. Start a conversation with your bot on Telegram (from any device)
-2. Use the available commands to control your Pi-hole:
+2. Use the available commands to control your Pi-hole. The reply keyboard follows this order, with read-only monitoring commands first:
+   - `/summary` or `/stats` - Show Pi-hole health and activity summary
+   - `/status` or `/s` - Display the running status of Pi-hole subsystems
+   - `/messages` or `/m` - Show messages from Pi-hole
    - `/authorize` or `/a` - Authorize the bot
    - `/logout` or `/logoff` - Logout the bot
-   - `/messages` or `/m` - Show messages from Pi-hole
-   - `/status` or `/s` - Display the running status of Pi-hole subsystems
    - `/enable` or `/e` - Enable Pi-hole subsystems
    - `/disable` or `/d` - Disable Pi-hole subsystems
    - `/version` or `/v` - Show installed version of Pi-hole, Web Interface & FTL
@@ -136,6 +138,24 @@ npm start
    - `/reboot` or `/r` - Reboot the Raspberry Pi
    - `/bot` or `/bv` - Show the version of the bot
    - `/help` - Show available commands and descriptions
+
+`/summary` and `/messages` authenticate with the Pi-hole API automatically, including after a bot restart, and re-authenticate once if the session expires. `/authorize` and `/logout` remain available for manual control. The bot ends its Pi-hole API session on graceful shutdown.
+
+Example `/summary` response:
+
+```text
+🟢 Pi-hole is active
+
+Queries: 52,491
+Blocked: 8,643 (16.5%)
+Cached: 17,952 (34.2%)
+Forwarded: 25,896
+Active clients: 23
+Gravity domains: 1,234,567
+Gravity updated: 2 hours ago
+
+⚠️ Pi-hole messages: 1
+```
 
 ## 🔐 Security
 
