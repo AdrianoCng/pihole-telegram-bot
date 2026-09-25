@@ -4,6 +4,7 @@ import { sendMessage, registerCommands, getMainMenu } from "./helpers/index.js";
 import { COMMANDS } from "./constants/commands.js";
 import typing from "./middlewares/typing.js";
 import authenticate from "./middlewares/authenticate.js";
+import PiholeError from "./errors/PiholeError.js";
 
 const bot = new Telegraf(getEnv("BOT_TOKEN"));
 
@@ -39,7 +40,7 @@ bot.on("message", (ctx) => {
 bot.catch((err, ctx) => {
   console.error(err);
 
-  if (!err?.isApiError) {
+  if (!(err instanceof PiholeError)) {
     throw new Error(err?.message || "An error occurred 🔥");
   }
 

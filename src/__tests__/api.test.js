@@ -1,3 +1,4 @@
+import { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
 import { mockApiResponse, testApiMethodErrors } from "./helpers/testUtils";
 
 describe("api", () => {
@@ -54,9 +55,8 @@ describe("api", () => {
         expect(response).toEqual(mockResponse);
       });
 
-      it("Should include custom headers in the request", async () => {
-        api.setHeader("Authorization", "Bearer token123");
-        api.setHeader("Content-Type", "application/json");
+      it("Should include the session header in the request", async () => {
+        api.setSession("test-sid");
 
         fetch.mockResolvedValueOnce(mockApiResponse({}));
 
@@ -65,10 +65,7 @@ describe("api", () => {
         expect(fetch).toHaveBeenCalledWith(
           expect.any(String),
           expect.objectContaining({
-            headers: {
-              Authorization: "Bearer token123",
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json", sid: "test-sid" },
           })
         );
       });
@@ -106,9 +103,8 @@ describe("api", () => {
         expect(response).toEqual(mockResponse);
       });
 
-      it("Should include custom headers in the request", async () => {
-        api.setHeader("Authorization", "Bearer token123");
-        api.setHeader("Content-Type", "application/json");
+      it("Should include the session header in the request", async () => {
+        api.setSession("test-sid");
 
         fetch.mockResolvedValueOnce(mockApiResponse({}));
 
@@ -116,12 +112,7 @@ describe("api", () => {
 
         expect(fetch).toHaveBeenCalledWith(
           expect.any(String),
-          expect.objectContaining({
-            headers: {
-              Authorization: "Bearer token123",
-              "Content-Type": "application/json",
-            },
-          })
+          expect.objectContaining({ headers: { sid: "test-sid" } })
         );
       });
 
@@ -159,9 +150,8 @@ describe("api", () => {
         expect(response).toEqual(mockResponse);
       });
 
-      it("Should include custom headers in the request", async () => {
-        api.setHeader("Authorization", "Bearer token123");
-        api.setHeader("Content-Type", "application/json");
+      it("Should include the session header in the request", async () => {
+        api.setSession("test-sid");
 
         fetch.mockResolvedValueOnce(mockApiResponse({}));
 
@@ -169,12 +159,7 @@ describe("api", () => {
 
         expect(fetch).toHaveBeenCalledWith(
           expect.any(String),
-          expect.objectContaining({
-            headers: {
-              Authorization: "Bearer token123",
-              "Content-Type": "application/json",
-            },
-          })
+          expect.objectContaining({ headers: { sid: "test-sid" } })
         );
       });
 
@@ -190,6 +175,59 @@ describe("api", () => {
 
     describe("Error Handling", () => {
       testApiMethodErrors(() => api.delete("/"));
+    });
+  });
+
+  describe("request signals", () => {
+    const signal = new AbortController().signal;
+
+    it.each([
+      ["post", () => api.post("/", {}, { signal })],
+      ["get", () => api.get("/", { signal })],
+      ["delete", () => api.delete("/", { signal })],
+    ])("passes the abort signal to fetch for %s", async (_method, request) => {
+      fetch.mockResolvedValueOnce(mockApiResponse({}));
+
+      await request();
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ signal })
+      );
+    });
+  });
+
+  describe("session headers", () => {
+    it("reports no session when the sid header is missing", () => {
+      expect(api.hasSession()).toBe(false);
+    });
+
+    it("does not treat an empty sid as a session", () => {
+      api.headers.sid = "";
+      expect(api.hasSession()).toBe(false);
+    });
+
+    it("stores and clears the session", () => {
+      api.setSession("test-sid");
+      expect(api.hasSession()).toBe(true);
+      expect(api.headers).toEqual({ sid: "test-sid" });
+
+      api.clearSession();
+      expect(api.hasSession()).toBe(false);
+      expect(api.headers).toEqual({});
+    });
+  });
+
+  describe("error type", () => {
+    it("throws a PiholeError carrying the HTTP status", async () => {
+      fetch.mockResolvedValueOnce(mockApiResponse(null, 401, false));
+
+      await expect(api.get("/")).rejects.toMatchObject({
+        name: "PiholeError",
+        code: PIHOLE_ERROR_CODES.HTTP,
+        status: 401,
+        message: "Unauthorized",
+      });
     });
   });
 });

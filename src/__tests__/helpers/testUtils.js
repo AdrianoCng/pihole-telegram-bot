@@ -62,7 +62,7 @@ export const testApiMethodErrors = (apiMethod) => {
   ];
 
   errorCases.forEach(({ status, message }) => {
-    it(`Should throw ApiError with "${message}" for ${status} status`, () => {
+    it(`Should throw PiholeError with "${message}" for ${status} status`, () => {
       global.fetch.mockResolvedValue(mockApiResponse(null, status, false));
       return expect(apiMethod()).rejects.toThrow(message);
     });
@@ -117,12 +117,13 @@ export const setupApiMocks = () => {
   const post = jest.fn();
   const get = jest.fn();
   const deleteFn = jest.fn();
-  const setHeader = jest.fn();
 
   return {
     post,
     get,
     delete: deleteFn,
-    setHeader,
+    hasSession: jest.fn(),
+    setSession: jest.fn(),
+    clearSession: jest.fn(),
   };
 };

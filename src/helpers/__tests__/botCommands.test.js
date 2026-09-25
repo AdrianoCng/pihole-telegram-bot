@@ -34,3 +34,17 @@ describe("validateCommands utility function", () => {
     expect(() => validateCommands(commands)).toThrow();
   });
 });
+
+describe("command registry", () => {
+  it("has collision-free triggers and aliases", () => {
+    expect(validateCommands(COMMANDS)).toBe(true);
+  });
+
+  it("registers the summary command with its alias", () => {
+    const mockBot = { command: jest.fn() };
+
+    registerCommands(mockBot);
+
+    expect(mockBot.command).toHaveBeenCalledWith(["summary", "stats"], expect.any(Function));
+  });
+});
