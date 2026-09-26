@@ -7,7 +7,6 @@ import {
   endSession,
   ensureSession,
   refreshSession,
-  resetSessionState,
 } from "../piholeSession.js";
 
 const PASSWORD = "test-password";
@@ -41,7 +40,6 @@ describe("piholeSession", () => {
     process.env = { ...originalEnv, PIHOLE_PASSWORD: PASSWORD };
     global.fetch = jest.fn();
     api.headers = {};
-    resetSessionState();
   });
 
   afterAll(() => {

@@ -89,8 +89,3 @@ export async function endSession({ signal } = {}) {
   api.clearSession();
   generation += 1;
 }
-
-export function resetSessionState() {
-  refreshInFlight = null;
-  generation = 0;
-}
