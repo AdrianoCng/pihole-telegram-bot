@@ -4,8 +4,6 @@ import { REQUEST_TIMEOUT_MS } from "../constants/timers.js";
 import PiholeError, { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
 import { getEnv } from "../helpers/config.js";
 
-// Internal to the service layer: controllers must not import this module.
-
 let refreshInFlight = null;
 let generation = 0;
 

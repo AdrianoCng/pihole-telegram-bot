@@ -30,8 +30,6 @@ export default function execCommandWithOutput(
       if (code === 0) {
         resolve();
       } else {
-        const errorMessage = `Command failed with exit code ${code}`;
-        onOutput(errorMessage);
         reject(new CommandError(code));
       }
     });

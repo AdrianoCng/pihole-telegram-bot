@@ -19,8 +19,7 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 
 ## ✨ Features
 
-- 📈 Pi-hole health and activity dashboard (`/summary`)
-- 🔐 Automatic Pi-hole API authentication
+- 📈 Pi-hole health and activity dashboard
 - 🚫 Enable/disable Pi-hole blocking
 - 📊 Monitor Pi-hole status and view system messages
 - 🔍 Check Pi-hole version information

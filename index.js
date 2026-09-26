@@ -5,8 +5,7 @@ import { API_ENDPOINTS } from "./src/constants/api.js";
 import { COMMANDS } from "./src/constants/commands.js";
 import { logSafeError } from "./src/helpers/logSafeError.js";
 import piholeService from "./src/services/piholeService.js";
-
-const SHUTDOWN_LOGOUT_TIMEOUT_MS = 1000;
+import { SHUTDOWN_LOGOUT_TIMEOUT_MS } from "./src/constants/timers.js";
 
 const telegramCommands = COMMANDS.map(({ trigger, description }) => ({
   command: Array.isArray(trigger) ? trigger[0] : trigger,
