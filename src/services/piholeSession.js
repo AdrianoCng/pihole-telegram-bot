@@ -85,7 +85,12 @@ export async function authenticatedGet(path, { signal } = {}) {
 }
 
 export async function endSession({ signal } = {}) {
-  await api.delete(API_ENDPOINTS.AUTH, { signal: requestSignal(signal) });
-  api.clearSession();
-  generation += 1;
+  try {
+    await api.delete(API_ENDPOINTS.AUTH, { signal: requestSignal(signal) });
+  } catch (error) {
+    if (!isUnauthorized(error)) throw error;
+  } finally {
+    api.clearSession();
+    generation += 1;
+  }
 }

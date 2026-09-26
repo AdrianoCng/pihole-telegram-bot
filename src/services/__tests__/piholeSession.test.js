@@ -305,12 +305,12 @@ describe("piholeSession", () => {
       expect(api.hasSession()).toBe(false);
     });
 
-    it("keeps the session when logout fails", async () => {
+    it("clears the session when logout fails", async () => {
       api.setSession("test-sid");
       routeFetch({ [`DELETE ${AUTH_URL}`]: [new TypeError("fetch failed")] });
 
       await expect(endSession()).rejects.toThrow("fetch failed");
-      expect(api.hasSession()).toBe(true);
+      expect(api.hasSession()).toBe(false);
     });
 
     it("forces a new authentication after logout", async () => {
