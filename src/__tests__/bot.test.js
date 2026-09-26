@@ -1,3 +1,4 @@
+import { it, expect, vi } from "vitest";
 import { Telegraf } from "telegraf";
 import bot from "../bot.js";
 import authenticate from "../middlewares/authenticate.js";
@@ -6,15 +7,17 @@ import handleBotError from "../middlewares/errorHandler.js";
 import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../constants/timers.js";
 import { createMockContext } from "./helpers/testUtils.js";
 
-jest.mock("telegraf", () => ({
-  ...jest.requireActual("telegraf"),
-  Telegraf: jest.fn().mockImplementation(() => ({
-    use: jest.fn(), command: jest.fn(), start: jest.fn(),
-    help: jest.fn(), on: jest.fn(), catch: jest.fn(),
-  })),
+vi.mock("telegraf", async (importOriginal) => ({
+  ...await importOriginal(),
+  Telegraf: vi.fn(function () {
+    return {
+      use: vi.fn(), command: vi.fn(), start: vi.fn(),
+      help: vi.fn(), on: vi.fn(), catch: vi.fn(),
+    };
+  }),
 }));
 
-// Capture registration before Jest clears mocks for each test.
+// Capture registration before Vitest clears mocks for each test.
 const registrations = {
   token: Telegraf.mock.calls[0][0],
   options: Telegraf.mock.calls[0][1],

@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 /**
  * Shared test utilities for creating consistent mocks and reducing test boilerplate
  */
@@ -17,7 +18,7 @@ export const createMockContext = (overrides = {}) => {
       id: 123,
       ...overrides.chat,
     },
-    reply: jest.fn(),
+    reply: vi.fn(),
     ...overrides,
   };
 };
@@ -59,19 +60,19 @@ export const mockApiResponse = (data, status = 200, ok = true) => {
 export const createMockProcess = (options = {}) => {
   const { stdoutData = "", stderrData = "", exitCode = 0, spawnError } = options;
 
-  const stdoutOnMock = jest.fn((event, callback) => {
+  const stdoutOnMock = vi.fn((event, callback) => {
     if (event === "data" && stdoutData) {
       callback(Buffer.from(stdoutData));
     }
   });
 
-  const stderrOnMock = jest.fn((event, callback) => {
+  const stderrOnMock = vi.fn((event, callback) => {
     if (event === "data" && stderrData) {
       callback(Buffer.from(stderrData));
     }
   });
 
-  const processOnceMock = jest.fn((event, callback) => {
+  const processOnceMock = vi.fn((event, callback) => {
     if (event === "close" && !spawnError) {
       callback(exitCode);
     }

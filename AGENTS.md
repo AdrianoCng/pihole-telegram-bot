@@ -7,9 +7,10 @@ A Telegram bot for remotely controlling Pi-hole on a Raspberry Pi. Built with No
 - `npm run dev` — development with nodemon
 - `npm start` — production start
 - `npm run start:prod` — production with PM2
-- `npm test` — full Jest suite
-- `npm run test:coverage` — coverage with 80% thresholds
-- Single suite: `npx jest src/controllers/__tests__/apiController.test.js`
+- `npm test` — full Vitest suite (single run)
+- `npm run test:coverage` — informational V8 coverage report (no thresholds)
+- `npm run test:watch` — rerun tests on changes
+- Single suite: `npm test -- src/__tests__/api.test.js`
 
 ## Architecture
 
@@ -78,7 +79,8 @@ Missing values fail when read: IP and token at initialization, password on autho
 
 ## Testing
 
-- Jest with Babel transpiles ESM; the Babel configuration preserves module-relative `import.meta.url` values.
+- Vitest runs ESM tests in the Node environment; import test APIs and `vi` explicitly from `vitest`. Development/testing requires Node 22.12+ on the 22.x line or Node 24.x.
+- Use asynchronous partial mock factories and constructable functions for constructor mocks. Startup tests dynamically import the entrypoint with mocked external boundaries.
 - Tests live in colocated `__tests__/` directories. Mock external effects (Telegram, HTTP, sudo), and test observable results through commands and service APIs. Avoid mocking every internal layer.
 - Shared utilities and fixed, non-secret initialization fixtures live in `src/__tests__/helpers/`.
 - Isolate environment variables, fetch mocks, and shared API headers between tests.

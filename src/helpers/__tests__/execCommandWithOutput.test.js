@@ -1,17 +1,18 @@
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { spawn } from "child_process";
 import execCommandWithOutput from "../execCommandWithOutput.js";
 import { createMockProcess } from "../../__tests__/helpers/testUtils.js";
 import { COMMAND_TIMEOUT_MS } from "../../constants/timers.js";
 
-jest.mock("child_process", () => ({ spawn: jest.fn() }));
+vi.mock("child_process", () => ({ spawn: vi.fn() }));
 
 describe("execCommandWithOutput", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("runs a sudo command and reports stdout", async () => {
-    const onOutput = jest.fn();
+    const onOutput = vi.fn();
     const process = createMockProcess({ stdoutData: "some output" });
     spawn.mockReturnValue(process);
 
@@ -27,7 +28,7 @@ describe("execCommandWithOutput", () => {
   });
 
   it("reports stderr and rejects on a nonzero exit", async () => {
-    const onOutput = jest.fn();
+    const onOutput = vi.fn();
     spawn.mockReturnValue(
       createMockProcess({ stderrData: "permission denied", exitCode: 1 })
     );
@@ -56,7 +57,7 @@ describe("execCommandWithOutput", () => {
   });
 
   it("uses the command timeout for the child-process abort signal", async () => {
-    const timeout = jest.spyOn(AbortSignal, "timeout");
+    const timeout = vi.spyOn(AbortSignal, "timeout");
     spawn.mockReturnValue(createMockProcess());
 
     await execCommandWithOutput("status");

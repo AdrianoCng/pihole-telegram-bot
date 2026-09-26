@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import api from "../../api.js";
 import { API_ENDPOINTS } from "../../constants/api.js";
 import { REQUEST_TIMEOUT_MS } from "../../constants/timers.js";
@@ -39,11 +40,11 @@ describe("piholeSession", () => {
 
   beforeEach(() => {
     process.env = { ...originalEnv, PIHOLE_PASSWORD: PASSWORD };
-    global.fetch = jest.fn();
+    global.fetch = vi.fn();
     api.headers = {};
   });
 
-  afterAll(() => {
+  afterEach(() => {
     process.env = originalEnv;
     global.fetch = originalFetch;
     api.headers = {};
@@ -262,7 +263,7 @@ describe("piholeSession", () => {
     });
 
     it("applies a per-request timeout without a caller signal", async () => {
-      const timeout = jest.spyOn(AbortSignal, "timeout");
+      const timeout = vi.spyOn(AbortSignal, "timeout");
       api.setSession("test-sid");
       routeFetch({ [`GET ${READ_URL}`]: [mockApiResponse({ ok: true })] });
 

@@ -1,15 +1,16 @@
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import execCommandWithOutput from "../../helpers/execCommandWithOutput.js";
 import systemService from "../systemService.js";
 
-jest.mock("../../helpers/execCommandWithOutput.js");
+vi.mock("../../helpers/execCommandWithOutput.js");
 
 describe("systemService", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("reboots through the command executor", async () => {
-    const onOutput = jest.fn();
+    const onOutput = vi.fn();
 
     await systemService.reboot(onOutput);
 
@@ -17,7 +18,7 @@ describe("systemService", () => {
   });
 
   it("runs the host upgrade steps sequentially", async () => {
-    const onOutput = jest.fn();
+    const onOutput = vi.fn();
 
     await systemService.upgradeHost(onOutput);
 
@@ -34,7 +35,7 @@ describe("systemService", () => {
       .mockResolvedValueOnce()
       .mockRejectedValueOnce(new Error("upgrade failed"));
 
-    await expect(systemService.upgradeHost(jest.fn())).rejects.toThrow(
+    await expect(systemService.upgradeHost(vi.fn())).rejects.toThrow(
       "upgrade failed"
     );
     expect(execCommandWithOutput).toHaveBeenCalledTimes(2);

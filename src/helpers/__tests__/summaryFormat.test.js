@@ -1,3 +1,4 @@
+import { it, expect } from "vitest";
 import { renderSummary } from "../summaryFormat.js";
 
 const now = Date.UTC(2026, 8, 25, 12);

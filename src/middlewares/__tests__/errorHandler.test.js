@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { DEFAULT_ERROR_MESSAGES } from "../../constants/errorMessages.js";
 import CommandError from "../../errors/CommandError.js";
 import PiholeError, { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
@@ -5,15 +6,15 @@ import { sendMessage } from "../../helpers/index.js";
 import { logSafeError } from "../../helpers/logSafeError.js";
 import handleBotError, { userMessage } from "../errorHandler.js";
 
-jest.mock("../../helpers/index.js", () => ({ sendMessage: jest.fn() }));
-jest.mock("../../helpers/logSafeError.js", () => ({ logSafeError: jest.fn() }));
+vi.mock("../../helpers/index.js", () => ({ sendMessage: vi.fn() }));
+vi.mock("../../helpers/logSafeError.js", () => ({ logSafeError: vi.fn() }));
 
 const piholeError = (code, status) =>
   new PiholeError({ code, message: "Static failure", status, path: "/test" });
 
 describe("errorHandler", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it.each([

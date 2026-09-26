@@ -13,6 +13,7 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 - [🛠️ Installation](#️-installation)
 - [🚀 Running the Bot](#-running-the-bot)
 - [📱 Usage](#-usage)
+- [🧪 Testing](#-testing)
 - [🔐 Security](#-security)
 - [📄 License](#-license)
 - [🙏 Acknowledgements](#-acknowledgements)
@@ -163,6 +164,22 @@ The status line is red when blocking is disabled and orange when the blocking st
 ### API authentication
 
 `/summary` and `/messages` sign in to the Pi-hole API automatically using `PIHOLE_PASSWORD`, and sign in again once if the session has expired. You no longer need to run `/authorize` after restarting the bot. `/authorize` and `/logout` remain available for manual troubleshooting. On a graceful shutdown (`SIGINT`/`SIGTERM`, including PM2 restarts) the bot ends its Pi-hole API session so that restarts do not use up Pi-hole's session limit.
+
+## 🧪 Testing
+
+Development and testing use Vitest and require Node 22.12+ on the 22.x line or Node 24.x. CI runs on Node 22.
+
+```bash
+npm ci --include=dev
+npm test                                  # Run the full suite once
+npm run test:watch                        # Rerun tests on changes
+npm test -- src/__tests__/api.test.js      # Run one suite
+npm run test:coverage                     # Generate V8 coverage reports
+```
+
+Tests mock Telegram, HTTP, and system command effects. They use fixed initialization fixtures and do not require a local `.env` file. Import test APIs and `vi` explicitly from `vitest`.
+
+Coverage is informational, with no pass/fail percentage threshold. Reports are written to `coverage/`, including an HTML report at `coverage/lcov-report/index.html`.
 
 ## 🔐 Security
 

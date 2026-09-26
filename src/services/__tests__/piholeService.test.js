@@ -1,11 +1,12 @@
+import { it, expect, beforeEach, vi } from "vitest";
 import { API_ENDPOINTS } from "../../constants/api.js";
 import PiholeError, { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
 import { logSafeError } from "../../helpers/logSafeError.js";
 import { authenticatedGet, refreshSession } from "../piholeSession.js";
 import piholeService from "../piholeService.js";
 
-jest.mock("../piholeSession.js");
-jest.mock("../../helpers/logSafeError.js");
+vi.mock("../piholeSession.js");
+vi.mock("../../helpers/logSafeError.js");
 
 const summary = {
   queries: { total: 10, blocked: 2, percent_blocked: 20, cached: 3, forwarded: 5 },
@@ -24,7 +25,7 @@ function reads({ blocking = { blocking: "enabled" }, count = { count: 3 }, stats
   });
 }
 
-beforeEach(() => jest.resetAllMocks());
+beforeEach(() => { vi.resetAllMocks(); });
 
 it("treats an invalid session differently from rejected credentials", async () => {
   refreshSession.mockRejectedValueOnce(new PiholeError({

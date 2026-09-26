@@ -1,3 +1,4 @@
+import { it, expect } from "vitest";
 import { parseBlockingState, parseMessageCount, parseSummaryResponse } from "../summaryParsers.js";
 
 const valid = () => ({

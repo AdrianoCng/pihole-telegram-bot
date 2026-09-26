@@ -1,18 +1,17 @@
+import { it, expect, beforeEach, vi } from "vitest";
 import { registerCommands } from "../helpers/botCommands.js";
 import piholeService from "../services/piholeService.js";
 import systemService from "../services/systemService.js";
 
-jest.mock("../services/piholeService.js", () => ({
-  __esModule: true,
+vi.mock("../services/piholeService.js", () => ({
   default: {
-    authorize: jest.fn(), logout: jest.fn(), getMessages: jest.fn(), getSummary: jest.fn(),
-    getStatus: jest.fn(), enable: jest.fn(), disable: jest.fn(), getVersion: jest.fn(),
-    update: jest.fn(), updateGravity: jest.fn(),
+    authorize: vi.fn(), logout: vi.fn(), getMessages: vi.fn(), getSummary: vi.fn(),
+    getStatus: vi.fn(), enable: vi.fn(), disable: vi.fn(), getVersion: vi.fn(),
+    update: vi.fn(), updateGravity: vi.fn(),
   },
 }));
-jest.mock("../services/systemService.js", () => ({
-  __esModule: true,
-  default: { reboot: jest.fn(), upgradeHost: jest.fn() },
+vi.mock("../services/systemService.js", () => ({
+  default: { reboot: vi.fn(), upgradeHost: vi.fn() },
 }));
 
 const handlers = new Map();
@@ -24,10 +23,10 @@ registerCommands({
   },
 });
 
-const context = () => ({ reply: jest.fn().mockResolvedValue(undefined) });
+const context = () => ({ reply: vi.fn().mockResolvedValue(undefined) });
 const run = (trigger, ctx = context()) => handlers.get(trigger)(ctx);
 
-beforeEach(() => jest.resetAllMocks());
+beforeEach(() => { vi.resetAllMocks(); });
 
 it("routes aliases to the same command", () => {
   expect(handlers.get("stats")).toBe(handlers.get("summary"));

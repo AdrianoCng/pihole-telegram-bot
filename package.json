@@ -8,8 +8,9 @@
     "start": "node index.js",
     "start:prod": "pm2 start index.js --name pihole-telegram-bot",
     "dev": "nodemon index.js",
-    "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch"
   },
   "author": "Adriano Cangiamila",
   "license": "ISC",
@@ -35,11 +36,8 @@
     "telegraf": "^4.12.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.27.4",
-    "@babel/preset-env": "^7.27.2",
-    "@types/jest": "^30.0.0",
-    "babel-jest": "^30.0.0",
-    "jest": "^30.0.0",
-    "nodemon": "^3.1.7"
+    "@vitest/coverage-v8": "5.0.2",
+    "nodemon": "^3.1.7",
+    "vitest": "5.0.2"
   }
 }

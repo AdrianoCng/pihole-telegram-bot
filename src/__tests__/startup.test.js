@@ -1,61 +1,62 @@
-import { transformFileSync } from "@babel/core";
-import vm from "node:vm";
-import { fileURLToPath } from "node:url";
+import { it, expect, afterEach, vi } from "vitest";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { API_ENDPOINTS } from "../constants/api.js";
 import { COMMANDS } from "../constants/commands.js";
-import { SHUTDOWN_LOGOUT_TIMEOUT_MS } from "../constants/timers.js";
 
-const entry = fileURLToPath(new URL("../../index.js", import.meta.url));
-const { code } = transformFileSync(entry);
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.doUnmock("dotenv/config");
+  vi.doUnmock("../bot.js");
+  vi.doUnmock("../api.js");
+  vi.doUnmock("../services/piholeService.js");
+  vi.doUnmock("../helpers/logSafeError.js");
+  vi.resetModules();
+});
 
-function loadEntrypoint({ failure = false, hasSession = false, logout = async () => {} } = {}) {
+async function loadEntrypoint({ failure = false, hasSession = false, logout = async () => {} } = {}) {
   const events = [];
   const bot = {
-    telegram: { setMyCommands: jest.fn(async () => {
+    telegram: { setMyCommands: vi.fn(async () => {
       events.push("register");
       if (failure) throw new Error("Telegram unavailable");
     }) },
-    launch: jest.fn(() => events.push("launch")),
-    stop: jest.fn((signal) => events.push("stop:" + signal)),
+    launch: vi.fn(() => events.push("launch")),
+    stop: vi.fn((signal) => events.push("stop:" + signal)),
   };
-  const api = { hasSession: jest.fn(() => hasSession) };
+  const api = { hasSession: vi.fn(() => hasSession) };
   const piholeService = {
-    logout: jest.fn(async (options) => {
+    logout: vi.fn(async (options) => {
       events.push("logout");
       return logout(options);
     }),
   };
-  const logSafeError = jest.fn();
-  const processMock = { once: jest.fn() };
-  const consoleMock = { error: jest.fn() };
-  const ready = vm.runInNewContext("(async () => {" + code + "\n})()", {
-    require: (name) => {
-      if (name === "dotenv/config") return {};
-      if (name === "./src/bot.js") return { __esModule: true, default: bot };
-      if (name === "./src/api.js") return { __esModule: true, default: api };
-      if (name === "./src/constants/api.js") return { API_ENDPOINTS };
-      if (name === "./src/constants/commands.js") return { COMMANDS };
-      if (name === "./src/constants/timers.js") return { SHUTDOWN_LOGOUT_TIMEOUT_MS };
-      if (name === "./src/helpers/logSafeError.js") return { logSafeError };
-      if (name === "./src/services/piholeService.js") return { __esModule: true, default: piholeService };
-      throw new Error("Unexpected import: " + name);
-    },
-    process: processMock,
-    console: consoleMock,
-    AbortSignal,
+  const logSafeError = vi.fn();
+  const handlers = new Map();
+  const originalOnce = process.once;
+  vi.spyOn(process, "once").mockImplementation(function (event, callback) {
+    if (event === "SIGINT" || event === "SIGTERM") {
+      handlers.set(event, callback);
+      return this;
+    }
+    return originalOnce.call(this, event, callback);
   });
-  const handler = async (signal) => {
-    const [, callback] = processMock.once.mock.calls.find(([name]) => name === signal);
-    await callback();
-  };
-  return { ready, events, bot, api, piholeService, logSafeError, processMock, consoleMock, handler };
+  const consoleMock = { error: vi.spyOn(console, "error").mockImplementation(() => {}) };
+
+  vi.resetModules();
+  vi.doMock("dotenv/config", () => ({}));
+  vi.doMock("../bot.js", () => ({ default: bot }));
+  vi.doMock("../api.js", () => ({ default: api }));
+  vi.doMock("../services/piholeService.js", () => ({ default: piholeService }));
+  vi.doMock("../helpers/logSafeError.js", () => ({ logSafeError }));
+  await import("../../index.js");
+
+  const handler = async (signal) => { await handlers.get(signal)(); };
+  return { events, bot, piholeService, logSafeError, handlers, consoleMock, handler };
 }
 
 it.each([false, true])("launches after autocomplete registration (failure: %s)", async (failure) => {
-  const { ready, events, bot, processMock, consoleMock, piholeService, handler } = loadEntrypoint({ failure });
-  await ready;
+  const { events, bot, handlers, consoleMock, piholeService, handler } = await loadEntrypoint({ failure });
   expect(events).toEqual(["register", "launch"]);
   expect(bot.telegram.setMyCommands).toHaveBeenCalledWith(
     COMMANDS.map(({ trigger, description }) => ({ command: trigger[0], description }))
@@ -67,7 +68,7 @@ it.each([false, true])("launches after autocomplete registration (failure: %s)",
   } else {
     expect(consoleMock.error).not.toHaveBeenCalled();
   }
-  expect(processMock.once.mock.calls.map(([signal]) => signal)).toEqual(["SIGINT", "SIGTERM"]);
+  expect([...handlers.keys()]).toEqual(["SIGINT", "SIGTERM"]);
   for (const signal of ["SIGINT", "SIGTERM"]) {
     await handler(signal);
     expect(bot.stop).toHaveBeenLastCalledWith(signal);
@@ -76,8 +77,7 @@ it.each([false, true])("launches after autocomplete registration (failure: %s)",
 });
 
 it.each(["SIGINT", "SIGTERM"])("ends the Pi-hole session before stopping on %s", async (signal) => {
-  const { ready, events, piholeService, logSafeError, handler } = loadEntrypoint({ hasSession: true });
-  await ready;
+  const { events, piholeService, logSafeError, handler } = await loadEntrypoint({ hasSession: true });
   await handler(signal);
   expect(events.slice(-2)).toEqual(["logout", "stop:" + signal]);
   const [[{ signal: abortSignal }]] = piholeService.logout.mock.calls;
@@ -87,24 +87,22 @@ it.each(["SIGINT", "SIGTERM"])("ends the Pi-hole session before stopping on %s",
 
 it("stops the bot and logs safely when shutdown logout fails", async () => {
   const error = new TypeError("fetch failed");
-  const { ready, events, logSafeError, handler } = loadEntrypoint({
+  const { events, logSafeError, handler } = await loadEntrypoint({
     hasSession: true,
     logout: async () => { throw error; },
   });
-  await ready;
   await handler("SIGINT");
   expect(events.slice(-2)).toEqual(["logout", "stop:SIGINT"]);
   expect(logSafeError).toHaveBeenCalledWith({ operation: "logout", path: API_ENDPOINTS.AUTH, error });
 });
 
 it("bounds shutdown logout with a one-second timeout", async () => {
-  const { ready, events, handler } = loadEntrypoint({
+  const { events, handler } = await loadEntrypoint({
     hasSession: true,
     logout: ({ signal }) => new Promise((_resolve, reject) => {
       signal.addEventListener("abort", () => reject(signal.reason));
     }),
   });
-  await ready;
   const started = Date.now();
   await handler("SIGTERM");
   expect(Date.now() - started).toBeLessThan(2000);

@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import PiholeError, { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
 import CommandError from "../../errors/CommandError.js";
 import { logSafeError } from "../logSafeError.js";
@@ -6,7 +7,7 @@ describe("logSafeError", () => {
   let log;
 
   beforeEach(() => {
-    log = jest.spyOn(console, "error").mockImplementation(() => {});
+    log = vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {

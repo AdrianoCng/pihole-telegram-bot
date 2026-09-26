@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
 import { mockApiResponse } from "./helpers/testUtils.js";
 
 describe("Pi-hole HTTP client", () => {
@@ -5,16 +6,15 @@ describe("Pi-hole HTTP client", () => {
   const originalFetch = global.fetch;
 
   beforeAll(async () => {
-    global.fetch = jest.fn();
     api = (await import("../api.js")).default;
   });
 
   beforeEach(() => {
-    global.fetch.mockReset();
+    global.fetch = vi.fn();
     api.clearSession();
   });
 
-  afterAll(() => {
+  afterEach(() => {
     api.clearSession();
     global.fetch = originalFetch;
   });
