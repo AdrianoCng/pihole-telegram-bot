@@ -55,7 +55,6 @@ function optional(result, { parse, fallback, operation, path }) {
 
 export async function getSummary({ deadlineMs = SUMMARY_DEADLINE_MS } = {}) {
   const signal = AbortSignal.timeout(deadlineMs);
-  await ensureSession({ signal });
 
   const [summary, blocking, count] = await Promise.allSettled([
     authenticatedGet(API_ENDPOINTS.STATS.SUMMARY, { signal }),
