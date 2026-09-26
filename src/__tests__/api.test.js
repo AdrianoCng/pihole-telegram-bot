@@ -219,14 +219,19 @@ describe("api", () => {
   });
 
   describe("error type", () => {
-    it("throws a PiholeError carrying the HTTP status", async () => {
+    it.each([
+      ["post", "/post-path", () => api.post("/post-path", {})],
+      ["get", "/get-path", () => api.get("/get-path")],
+      ["delete", "/delete-path", () => api.delete("/delete-path")],
+    ])("throws a PiholeError carrying the HTTP status and path for %s", async (_method, path, request) => {
       fetch.mockResolvedValueOnce(mockApiResponse(null, 401, false));
 
-      await expect(api.get("/")).rejects.toMatchObject({
+      await expect(request()).rejects.toMatchObject({
         name: "PiholeError",
         code: PIHOLE_ERROR_CODES.HTTP,
         status: 401,
         message: "Unauthorized",
+        path,
       });
     });
   });

@@ -27,7 +27,12 @@ describe("execCommandWithOutput", () => {
 
     await expect(
       execCommandWithOutput("restricted", [], onOutput)
-    ).rejects.toThrow("Command failed with exit code 1");
+    ).rejects.toMatchObject({
+      name: "CommandError",
+      code: "COMMAND_FAILED",
+      exitCode: 1,
+      message: "Command failed",
+    });
 
     expect(onOutput).toHaveBeenCalledWith("permission denied");
     expect(onOutput).toHaveBeenCalledWith("Command failed with exit code 1");

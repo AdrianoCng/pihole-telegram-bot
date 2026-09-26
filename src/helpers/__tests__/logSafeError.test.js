@@ -1,4 +1,5 @@
 import PiholeError, { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
+import CommandError from "../../errors/CommandError.js";
 import { logSafeError } from "../logSafeError.js";
 
 describe("logSafeError", () => {
@@ -12,17 +13,21 @@ describe("logSafeError", () => {
     log.mockRestore();
   });
 
-  const logged = () => JSON.parse(log.mock.calls[0][1]);
+  const logged = () => JSON.parse(log.mock.calls[0][0]);
 
   it("logs only allowlisted fields", () => {
-    const error = new PiholeError(PIHOLE_ERROR_CODES.HTTP, "Unauthorized", 401);
+    const error = new PiholeError({
+      code: PIHOLE_ERROR_CODES.HTTP,
+      message: "Unauthorized",
+      status: 401,
+      path: "/auth",
+    });
     error.headers = { sid: "secret-sid" };
     error.password = "test-password";
 
     logSafeError({ operation: "summary", path: "/stats/summary", error });
 
     expect(log).toHaveBeenCalledTimes(1);
-    expect(log.mock.calls[0][0]).toBe("[pihole] Request failed:");
     expect(logged()).toEqual({
       operation: "summary",
       path: "/stats/summary",
@@ -35,7 +40,11 @@ describe("logSafeError", () => {
   });
 
   it("reports failures that followed the retry", () => {
-    const error = new PiholeError(PIHOLE_ERROR_CODES.HTTP, "Unauthorized", 401);
+    const error = new PiholeError({
+      code: PIHOLE_ERROR_CODES.HTTP,
+      message: "Unauthorized",
+      status: 401,
+    });
     error.afterRetry = true;
 
     logSafeError({ operation: "blocking", path: "/dns/blocking", error });
@@ -64,5 +73,21 @@ describe("logSafeError", () => {
     logSafeError({ operation: "summary", path: "/stats/summary" });
 
     expect(logged()).toEqual({ operation: "summary", path: "/stats/summary", afterRetry: false });
+  });
+
+  it("defaults the path from the error and includes command exit codes", () => {
+    const error = new CommandError(4);
+    error.path = "sudo";
+
+    logSafeError({ operation: "upgrade", error });
+
+    expect(logged()).toEqual({
+      operation: "upgrade",
+      path: "sudo",
+      name: "CommandError",
+      code: "COMMAND_FAILED",
+      exitCode: 4,
+      afterRetry: false,
+    });
   });
 });

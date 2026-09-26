@@ -112,6 +112,7 @@ describe("piholeSession", () => {
       await expect(refreshSession()).rejects.toMatchObject({
         name: "PiholeError",
         code: PIHOLE_ERROR_CODES.INVALID_SESSION,
+        path: API_ENDPOINTS.AUTH,
       });
       expect(api.hasSession()).toBe(false);
     });

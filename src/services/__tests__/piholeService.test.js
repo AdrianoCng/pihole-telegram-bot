@@ -6,7 +6,6 @@ import spawnPiholeCommand from "../../helpers/spawnPiholeCommand.js";
 import {
   authenticatedGet,
   endSession,
-  ensureSession,
   refreshSession,
 } from "../piholeSession.js";
 import piholeService from "../piholeService.js";
@@ -28,7 +27,10 @@ const SUMMARY_PAYLOAD = {
 };
 
 const invalidResponse = () =>
-  new PiholeError(PIHOLE_ERROR_CODES.INVALID_RESPONSE, "Pi-hole returned an invalid response");
+  new PiholeError({
+    code: PIHOLE_ERROR_CODES.INVALID_RESPONSE,
+    message: "Pi-hole returned an invalid response",
+  });
 
 function deferred() {
   let resolve;
@@ -57,7 +59,6 @@ function mockReads({ summary, blocking, count }) {
 describe("piholeService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    ensureSession.mockResolvedValue();
   });
 
   describe("authorize", () => {
@@ -70,14 +71,21 @@ describe("piholeService", () => {
 
     it("returns false for an invalid session response", async () => {
       refreshSession.mockRejectedValue(
-        new PiholeError(PIHOLE_ERROR_CODES.INVALID_SESSION, "Pi-hole returned an invalid session")
+        new PiholeError({
+          code: PIHOLE_ERROR_CODES.INVALID_SESSION,
+          message: "Pi-hole returned an invalid session",
+        })
       );
 
       await expect(piholeService.authorize()).resolves.toBe(false);
     });
 
     it("propagates rejected credentials and configuration errors", async () => {
-      const unauthorized = new PiholeError(PIHOLE_ERROR_CODES.HTTP, "Unauthorized", 401);
+      const unauthorized = new PiholeError({
+        code: PIHOLE_ERROR_CODES.HTTP,
+        message: "Unauthorized",
+        status: 401,
+      });
       refreshSession.mockRejectedValueOnce(unauthorized);
       await expect(piholeService.authorize()).rejects.toBe(unauthorized);
 
@@ -144,10 +152,8 @@ describe("piholeService", () => {
       expect(logSafeError).not.toHaveBeenCalled();
     });
 
-    it("establishes the session before starting all reads concurrently", async () => {
-      const session = deferred();
+    it("starts all authenticated reads concurrently", async () => {
       const reads = {};
-      ensureSession.mockReturnValue(session.promise);
       authenticatedGet.mockImplementation((path) => {
         reads[path] = deferred();
         return reads[path].promise;
@@ -155,10 +161,6 @@ describe("piholeService", () => {
 
       const result = piholeService.getSummary();
       await Promise.resolve();
-      expect(authenticatedGet).not.toHaveBeenCalled();
-
-      session.resolve();
-      await new Promise((resolve) => setImmediate(resolve));
 
       expect(Object.keys(reads)).toEqual([
         API_ENDPOINTS.STATS.SUMMARY,
@@ -166,7 +168,6 @@ describe("piholeService", () => {
         API_ENDPOINTS.INFO.MESSAGES_COUNT,
       ]);
       const [[, { signal }]] = authenticatedGet.mock.calls;
-      expect(ensureSession).toHaveBeenCalledWith({ signal });
       expect(authenticatedGet.mock.calls.every(([, options]) => options.signal === signal)).toBe(true);
 
       reads[API_ENDPOINTS.INFO.MESSAGES_COUNT].resolve({ count: 0 });
@@ -201,7 +202,7 @@ describe("piholeService", () => {
     });
 
     it.each([
-      ["a rejected", new PiholeError(PIHOLE_ERROR_CODES.HTTP, "Not Found", 404)],
+      ["a rejected", new PiholeError({ code: PIHOLE_ERROR_CODES.HTTP, message: "Not Found", status: 404 })],
       ["a malformed", { count: -1 }],
     ])("omits the message count after %s count response", async (_case, count) => {
       mockReads({ summary: SUMMARY_PAYLOAD, blocking: { blocking: "enabled" }, count });
@@ -216,7 +217,11 @@ describe("piholeService", () => {
     });
 
     it("propagates the original error when the summary read fails", async () => {
-      const error = new PiholeError(PIHOLE_ERROR_CODES.HTTP, "Internal Server Error", 500);
+      const error = new PiholeError({
+        code: PIHOLE_ERROR_CODES.HTTP,
+        message: "Internal Server Error",
+        status: 500,
+      });
       mockReads({ summary: error, blocking: { blocking: "enabled" }, count: { count: 0 } });
 
       await expect(piholeService.getSummary()).rejects.toBe(error);
@@ -230,14 +235,6 @@ describe("piholeService", () => {
       });
 
       await expect(piholeService.getSummary()).rejects.toMatchObject(invalidResponse());
-    });
-
-    it("propagates a failure to establish the session", async () => {
-      const error = new PiholeError(PIHOLE_ERROR_CODES.HTTP, "Unauthorized", 401);
-      ensureSession.mockRejectedValue(error);
-
-      await expect(piholeService.getSummary()).rejects.toBe(error);
-      expect(authenticatedGet).not.toHaveBeenCalled();
     });
 
     it("aborts stalled reads at the command deadline", async () => {

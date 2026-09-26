@@ -27,10 +27,11 @@ async function authenticate(signal) {
   const session = response?.session;
 
   if (session?.valid !== true || typeof session.sid !== "string" || session.sid === "") {
-    throw new PiholeError(
-      PIHOLE_ERROR_CODES.INVALID_SESSION,
-      "Pi-hole returned an invalid session"
-    );
+    throw new PiholeError({
+      code: PIHOLE_ERROR_CODES.INVALID_SESSION,
+      message: "Pi-hole returned an invalid session",
+      path: API_ENDPOINTS.AUTH,
+    });
   }
 
   api.setSession(session.sid);

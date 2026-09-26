@@ -7,13 +7,15 @@ export const PIHOLE_ERROR_CODES = {
 /**
  * A failure talking to Pi-hole: an HTTP error status or an invalid payload.
  * Messages must be static strings because errors are logged in full.
+ * `path` is the static endpoint that failed, when known.
  */
 class PiholeError extends Error {
-  constructor(code, message, status) {
+  constructor({code, message, status, path}) {
     super(message);
     this.name = "PiholeError";
     this.code = code;
     this.status = status;
+    this.path = path;
   }
 }
 

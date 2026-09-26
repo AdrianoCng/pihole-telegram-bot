@@ -1,10 +1,10 @@
 import PiholeError, { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
 
 function invalidResponse() {
-  return new PiholeError(
-    PIHOLE_ERROR_CODES.INVALID_RESPONSE,
-    "Pi-hole returned an invalid response"
-  );
+  return new PiholeError({
+    code: PIHOLE_ERROR_CODES.INVALID_RESPONSE,
+    message: "Pi-hole returned an invalid response",
+  });
 }
 
 function isCount(value) {

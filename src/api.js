@@ -13,7 +13,7 @@ const api = {
   clearSession() {
     delete this.headers.sid;
   },
-  handleErrors(response) {
+  handleErrors(response, path) {
     if (response.ok) return;
 
     const errorMessage = {
@@ -24,11 +24,12 @@ const api = {
       404: "Not Found",
     };
 
-    throw new PiholeError(
-      PIHOLE_ERROR_CODES.HTTP,
-      errorMessage[response.status] || "Internal Server Error",
-      response.status
-    );
+    throw new PiholeError({
+      code: PIHOLE_ERROR_CODES.HTTP,
+      message: errorMessage[response.status] || "Internal Server Error",
+      status: response.status,
+      path,
+    });
   },
   parseResponse(response) {
     const contentLength = response.headers.get("Content-Length");
@@ -47,7 +48,7 @@ const api = {
       signal,
     });
 
-    this.handleErrors(response);
+    this.handleErrors(response, path);
 
     return this.parseResponse(response);
   },
@@ -57,7 +58,7 @@ const api = {
       signal,
     });
 
-    this.handleErrors(response);
+    this.handleErrors(response, path);
 
     return this.parseResponse(response);
   },
@@ -68,7 +69,7 @@ const api = {
       signal,
     });
 
-    this.handleErrors(response);
+    this.handleErrors(response, path);
 
     return this.parseResponse(response);
   },

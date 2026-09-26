@@ -85,4 +85,16 @@ describe("API controllers", () => {
       "❌ Failed to retrieve messages: Invalid response from server"
     );
   });
+
+  it.each([
+    ["authorizeController", () => piholeService.authorize.mockResolvedValue(true)],
+    ["logoutController", () => piholeService.logout.mockResolvedValue()],
+    ["messagesController", () => piholeService.getMessages.mockResolvedValue([])],
+  ])("awaits and propagates reply failures from %s", async (controller, arrange) => {
+    const error = new Error("Telegram unavailable");
+    arrange();
+    sendMessage.mockRejectedValue(error);
+
+    await expect(apiController[controller](ctx)).rejects.toBe(error);
+  });
 });

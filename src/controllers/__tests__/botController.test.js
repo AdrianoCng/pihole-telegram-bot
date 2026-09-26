@@ -40,9 +40,20 @@ describe("Bot Controller", () => {
 
   describe("menuController", () => {
     it("Should send the menu", async () => {
-      botController.menuController(mockCtx);
+      await botController.menuController(mockCtx);
 
       expect(sendMessage).toHaveBeenCalledWith(mockCtx, "Here are the available commands:", getMainMenu());
     });
+  });
+
+  it.each([
+    ["botVersionController", () => botService.getVersion.mockResolvedValue("1.2.3")],
+    ["menuController", () => {}],
+  ])("awaits and propagates reply failures from %s", async (controller, arrange) => {
+    const error = new Error("Telegram unavailable");
+    arrange();
+    sendMessage.mockRejectedValue(error);
+
+    await expect(botController[controller](mockCtx)).rejects.toBe(error);
   });
 });

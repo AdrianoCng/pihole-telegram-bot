@@ -32,6 +32,14 @@ describe("Authenticate Middleware", () => {
     );
   });
 
+  it("awaits and propagates an unauthorized reply failure", async () => {
+    process.env.ALLOWED_USER = "456";
+    const error = new Error("Telegram unavailable");
+    sendMessage.mockRejectedValue(error);
+
+    await expect(authenticate({ from: { id: "123" } }, jest.fn())).rejects.toBe(error);
+  });
+
     it("Should allow authorized access", async () => {
       process.env.ALLOWED_USER = "123";
       const ctx = {

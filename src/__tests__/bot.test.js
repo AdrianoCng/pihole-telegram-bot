@@ -3,7 +3,7 @@ import bot from "../bot.js";
 import { COMMANDS } from "../constants/commands.js";
 import authenticate from "../middlewares/authenticate.js";
 import typing from "../middlewares/typing.js";
-import PiholeError, { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
+import handleBotError from "../middlewares/errorHandler.js";
 import { createMockContext } from "./helpers/testUtils.js";
 
 jest.mock("telegraf", () => ({
@@ -64,18 +64,6 @@ it("lists aliases in help and handles unknown messages", () => {
   expect(ctx.reply).toHaveBeenLastCalledWith("Sorry, I don't understand that.", undefined);
 });
 
-it("replies to Pi-hole errors and propagates other errors", () => {
-  const log = jest.spyOn(console, "error").mockImplementation(() => {});
-  const ctx = createMockContext();
-  try {
-    registrations.error(new PiholeError(PIHOLE_ERROR_CODES.HTTP, "Unauthorized", 401), ctx);
-    expect(ctx.reply).toHaveBeenLastCalledWith("Unauthorized", undefined);
-    registrations.error(new PiholeError(PIHOLE_ERROR_CODES.HTTP, ""), ctx);
-    expect(ctx.reply).toHaveBeenLastCalledWith("An error occurred 🔥", undefined);
-    expect(() => registrations.error({ isApiError: true, message: "legacy" }, ctx)).toThrow("legacy");
-    expect(() => registrations.error(new Error("unexpected"), ctx)).toThrow("unexpected");
-    expect(() => registrations.error(null, ctx)).toThrow("An error occurred 🔥");
-  } finally {
-    log.mockRestore();
-  }
+it("registers the central error boundary", () => {
+  expect(registrations.error).toBe(handleBotError);
 });
