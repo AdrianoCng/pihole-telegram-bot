@@ -65,10 +65,14 @@ describe("execCommandWithOutput", () => {
     timeout.mockRestore();
   });
 
-  it("propagates child-process spawn errors", async () => {
+  it("maps child-process spawn errors to command failures", async () => {
     const error = new Error("spawn failed");
     spawn.mockReturnValue(createMockProcess({ spawnError: error }));
 
-    await expect(execCommandWithOutput("status")).rejects.toBe(error);
+    await expect(execCommandWithOutput("status")).rejects.toMatchObject({
+      name: "CommandError",
+      code: "COMMAND_FAILED",
+      message: "Command failed",
+    });
   });
 });
