@@ -13,13 +13,14 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 - [🛠️ Installation](#️-installation)
 - [🚀 Running the Bot](#-running-the-bot)
 - [📱 Usage](#-usage)
+- [🧪 Testing](#-testing)
 - [🔐 Security](#-security)
 - [📄 License](#-license)
 - [🙏 Acknowledgements](#-acknowledgements)
 
 ## ✨ Features
 
-- 🔐 User authentication
+- 📈 Pi-hole health and activity dashboard
 - 🚫 Enable/disable Pi-hole blocking
 - 📊 Monitor Pi-hole status and view system messages
 - 🔍 Check Pi-hole version information
@@ -123,19 +124,62 @@ npm start
 
 1. Start a conversation with your bot on Telegram (from any device)
 2. Use the available commands to control your Pi-hole:
+   - `/summary` or `/stats` - Show Pi-hole health and activity summary
+   - `/status` or `/s` - Display the running status of Pi-hole subsystems
+   - `/messages` or `/m` - Show messages from Pi-hole
    - `/authorize` or `/a` - Authorize the bot
    - `/logout` or `/logoff` - Logout the bot
-   - `/messages` or `/m` - Show messages from Pi-hole
-   - `/status` or `/s` - Display the running status of Pi-hole subsystems
    - `/enable` or `/e` - Enable Pi-hole subsystems
    - `/disable` or `/d` - Disable Pi-hole subsystems
    - `/version` or `/v` - Show installed version of Pi-hole, Web Interface & FTL
    - `/update` or `/up` - Update Pi-hole subsystems
    - `/upgravity` or `/g` - Update the list of ad-serving domains
-   - `/upgrade` or `/upg` - Upgrade host system
    - `/reboot` or `/r` - Reboot the Raspberry Pi
+   - `/upgrade` or `/upg` - Upgrade host system
    - `/bot` or `/bv` - Show the version of the bot
    - `/help` - Show available commands and descriptions
+
+The reply keyboard lists read-only monitoring commands first (`/summary`, `/status`, `/messages`), followed by session commands and then maintenance and destructive commands.
+
+### Summary dashboard
+
+`/summary` replies with a single message such as:
+
+```text
+🟢 Pi-hole is active
+
+Queries: 52,491
+Blocked: 8,643 (16.5%)
+Cached: 17,952 (34.2%)
+Forwarded: 25,896
+Active clients: 23
+Gravity domains: 1,234,567
+Gravity updated: 2 hours ago
+
+⚠️ Pi-hole messages: 1
+```
+
+The status line is red when blocking is disabled and orange when the blocking state cannot be determined. The message-count line appears only when Pi-hole has messages.
+
+### API authentication
+
+`/summary` and `/messages` sign in to the Pi-hole API automatically using `PIHOLE_PASSWORD`, and sign in again once if the session has expired. You no longer need to run `/authorize` after restarting the bot. `/authorize` and `/logout` remain available for manual troubleshooting. On a graceful shutdown (`SIGINT`/`SIGTERM`, including PM2 restarts) the bot ends its Pi-hole API session so that restarts do not use up Pi-hole's session limit.
+
+## 🧪 Testing
+
+Development and testing use Vitest and require Node 22.12+ on the 22.x line or Node 24.x. CI runs on Node 22.
+
+```bash
+npm ci --include=dev
+npm test                                  # Run the full suite once
+npm run test:watch                        # Rerun tests on changes
+npm test -- src/__tests__/api.test.js      # Run one suite
+npm run test:coverage                     # Generate V8 coverage reports
+```
+
+Tests mock Telegram, HTTP, and system command effects. They use fixed initialization fixtures and do not require a local `.env` file. Import test APIs and `vi` explicitly from `vitest`.
+
+Coverage is informational, with no pass/fail percentage threshold. Reports are written to `coverage/`, including an HTML report at `coverage/lcov-report/index.html`.
 
 ## 🔐 Security
 

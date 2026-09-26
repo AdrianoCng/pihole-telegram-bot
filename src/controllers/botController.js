@@ -4,11 +4,11 @@ import botService from "../services/botService.js";
 export async function botVersionController(ctx) {
   const version = await botService.getVersion();
 
-  sendMessage(ctx, `The bot version is v${version}`);
+  await sendMessage(ctx, `The bot version is v${version}`);
 }
 
 export async function menuController(ctx) {
-  sendMessage(ctx, "Here are the available commands:", getMainMenu());
+  await sendMessage(ctx, "Here are the available commands:", getMainMenu());
 }
 
 export default {

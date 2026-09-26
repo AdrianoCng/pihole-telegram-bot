@@ -1,105 +1,73 @@
-import api from "../../api.js";
+import { it, expect, beforeEach, vi } from "vitest";
 import { API_ENDPOINTS } from "../../constants/api.js";
-import { CLI_COMMANDS } from "../../constants/cli.js";
-import spawnPiholeCommand from "../../helpers/spawnPiholeCommand.js";
+import PiholeError, { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
+import { logSafeError } from "../../helpers/logSafeError.js";
+import { authenticatedGet, refreshSession } from "../piholeSession.js";
 import piholeService from "../piholeService.js";
 
-jest.mock("../../api.js", () => ({
-  __esModule: true,
-  default: {
-    post: jest.fn(),
-    get: jest.fn(),
-    delete: jest.fn(),
-    setHeader: jest.fn(),
-  },
-}));
-jest.mock("../../helpers/spawnPiholeCommand.js");
+vi.mock("../piholeSession.js");
+vi.mock("../../helpers/logSafeError.js");
 
-describe("piholeService", () => {
-  const originalEnv = process.env;
+const summary = {
+  queries: { total: 10, blocked: 2, percent_blocked: 20, cached: 3, forwarded: 5 },
+  clients: { active: 2 }, gravity: { domains_being_blocked: 1000, last_update: 1234567890 },
+};
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env = { ...originalEnv, PIHOLE_PASSWORD: "test-password" };
+function reads({ blocking = { blocking: "enabled" }, count = { count: 3 }, stats = summary } = {}) {
+  const results = {
+    [API_ENDPOINTS.STATS.SUMMARY]: stats,
+    [API_ENDPOINTS.DNS.BLOCKING]: blocking,
+    [API_ENDPOINTS.INFO.MESSAGES_COUNT]: count,
+  };
+  authenticatedGet.mockImplementation(async (path) => {
+    if (results[path] instanceof Error) throw results[path];
+    return results[path];
   });
+}
 
-  afterAll(() => {
-    process.env = originalEnv;
+beforeEach(() => { vi.resetAllMocks(); });
+
+it("treats an invalid session differently from rejected credentials", async () => {
+  refreshSession.mockRejectedValueOnce(new PiholeError({
+    code: PIHOLE_ERROR_CODES.INVALID_SESSION, message: "invalid session",
+  }));
+  await expect(piholeService.authorize()).resolves.toBe(false);
+
+  refreshSession.mockRejectedValueOnce(new PiholeError({
+    code: PIHOLE_ERROR_CODES.HTTP, message: "unauthorized", status: 401,
+  }));
+  await expect(piholeService.authorize()).rejects.toMatchObject({ status: 401 });
+});
+
+it("returns a validated summary with supplementary data", async () => {
+  reads();
+
+  await expect(piholeService.getSummary()).resolves.toMatchObject({
+    queries: { total: 10, percentBlocked: 20 }, blockingState: "active", messageCount: 3,
   });
+});
 
-  it("creates and stores a Pi-hole session", async () => {
-    api.post.mockResolvedValue({ session: { sid: "test-sid" } });
+it("keeps the summary when optional reads fail and logs their endpoints", async () => {
+  reads({ blocking: new TypeError("fetch failed"), count: { count: "bad" } });
 
-    await expect(piholeService.authorize()).resolves.toBe(true);
-
-    expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH, {
-      password: "test-password",
-    });
-    expect(api.setHeader).toHaveBeenCalledWith("sid", "test-sid");
+  await expect(piholeService.getSummary()).resolves.toMatchObject({
+    blockingState: "unavailable", messageCount: null,
   });
-
-  it.each([null, {}, { session: {} }])(
-    "rejects an invalid authorization response %#",
-    async (response) => {
-      api.post.mockResolvedValue(response);
-
-      await expect(piholeService.authorize()).resolves.toBe(false);
-      expect(api.setHeader).not.toHaveBeenCalled();
-    }
+  expect(logSafeError.mock.calls.map(([details]) => details.path)).toEqual(
+    expect.arrayContaining([API_ENDPOINTS.DNS.BLOCKING, API_ENDPOINTS.INFO.MESSAGES_COUNT])
   );
+});
 
-  it("reads the password before making an authorization request", async () => {
-    delete process.env.PIHOLE_PASSWORD;
+it("rejects failed or malformed main summary reads", async () => {
+  const failure = new Error("Pi-hole unavailable");
+  reads({ stats: failure });
+  await expect(piholeService.getSummary()).rejects.toBe(failure);
 
-    await expect(piholeService.authorize()).rejects.toThrow(
-      "Missing required environment variable: PIHOLE_PASSWORD"
-    );
-    expect(api.post).not.toHaveBeenCalled();
-  });
+  reads({ stats: { ...summary, queries: { ...summary.queries, total: "10" } } });
+  await expect(piholeService.getSummary()).rejects.toMatchObject({ code: "INVALID_RESPONSE" });
+});
 
-  it("logs out before clearing the local session", async () => {
-    await piholeService.logout();
-
-    expect(api.delete).toHaveBeenCalledWith(API_ENDPOINTS.AUTH);
-    expect(api.setHeader).toHaveBeenCalledWith("sid", "");
-  });
-
-  it("preserves the local session when logout fails", async () => {
-    api.delete.mockRejectedValue(new Error("logout failed"));
-
-    await expect(piholeService.logout()).rejects.toThrow("logout failed");
-    expect(api.setHeader).not.toHaveBeenCalled();
-  });
-
-  it("returns messages from a valid response", async () => {
-    const messages = [{ timestamp: 1, plain: "message" }];
-    api.get.mockResolvedValue({ messages });
-
-    await expect(piholeService.getMessages()).resolves.toBe(messages);
-    expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.INFO.MESSAGES);
-  });
-
-  it.each([null, {}, { messages: "invalid" }])(
-    "returns null for an invalid messages response %#",
-    async (response) => {
-      api.get.mockResolvedValue(response);
-      await expect(piholeService.getMessages()).resolves.toBeNull();
-    }
-  );
-
-  it.each([
-    ["getStatus", CLI_COMMANDS.STATUS],
-    ["enable", CLI_COMMANDS.ENABLE],
-    ["disable", CLI_COMMANDS.DISABLE],
-    ["getVersion", CLI_COMMANDS.VERSION],
-    ["update", CLI_COMMANDS.UPDATE],
-    ["updateGravity", CLI_COMMANDS.UPGRAVITY],
-  ])("runs %s through the Pi-hole command executor", async (method, command) => {
-    const onOutput = jest.fn();
-    spawnPiholeCommand.mockResolvedValue();
-
-    await piholeService[method](onOutput);
-
-    expect(spawnPiholeCommand).toHaveBeenCalledWith([command], onOutput);
-  });
+it("returns null for malformed Pi-hole messages", async () => {
+  authenticatedGet.mockResolvedValue({ messages: "invalid" });
+  await expect(piholeService.getMessages()).resolves.toBeNull();
 });

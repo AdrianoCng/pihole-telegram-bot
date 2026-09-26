@@ -1,195 +1,60 @@
-import { mockApiResponse, testApiMethodErrors } from "./helpers/testUtils";
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
+import { mockApiResponse } from "./helpers/testUtils.js";
 
-describe("api", () => {
+describe("Pi-hole HTTP client", () => {
   let api;
-  const originalENV = process.env;
-  const TEST_PIHOLE_IP = "192.168.1.100";
-
   const originalFetch = global.fetch;
-  global.fetch = jest.fn();
-
-  beforeAll(() => {
-    process.env = {
-      ...originalENV,
-      PIHOLE_IP: TEST_PIHOLE_IP,
-    };
-  });
-
-  afterAll(() => {
-    process.env = originalENV;
-    global.fetch = originalFetch;
-  });
 
   beforeAll(async () => {
-    // Dynamic import after environment is set
-    const apiModule = await import("../api");
-    api = apiModule.default;
+    api = (await import("../api.js")).default;
   });
 
   beforeEach(() => {
-    fetch.mockClear();
-    api.headers = {};
+    global.fetch = vi.fn();
+    api.clearSession();
   });
 
-  describe("api.post", () => {
-    describe("Successful requests", () => {
-      it("Should make POST requests with correct URL and data", async () => {
-        const mockPayload = {
-          foo: "bar",
-        };
-        const mockPath = "/example";
-        const mockResponse = {
-          name: "John Doe",
-        };
-
-        fetch.mockResolvedValueOnce(mockApiResponse(mockResponse));
-
-        const response = await api.post(mockPath, mockPayload);
-
-        expect(fetch).toHaveBeenCalledWith(`${TEST_PIHOLE_IP}/api${mockPath}`, {
-          method: "POST",
-          body: JSON.stringify(mockPayload),
-          headers: { "Content-Type": "application/json" },
-        });
-        expect(response).toEqual(mockResponse);
-      });
-
-      it("Should include custom headers in the request", async () => {
-        api.setHeader("Authorization", "Bearer token123");
-        api.setHeader("Content-Type", "application/json");
-
-        fetch.mockResolvedValueOnce(mockApiResponse({}));
-
-        await api.post("/", {});
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            headers: {
-              Authorization: "Bearer token123",
-              "Content-Type": "application/json",
-            },
-          })
-        );
-      });
-
-      it("Should return null when Content-Length is 0", async () => {
-        const mockResponse = mockApiResponse(null);
-        fetch.mockResolvedValueOnce(mockResponse);
-
-        const response = await api.post("/", {});
-
-        expect(response).toBeNull();
-      });
-    });
-
-    describe("Error Handling", () => {
-      testApiMethodErrors(() => api.post("/", {}));
-    });
+  afterEach(() => {
+    api.clearSession();
+    global.fetch = originalFetch;
   });
 
-  describe("api.get", () => {
-    describe("Successful requests", () => {
-      it("Should make GET requests with correct URL", async () => {
-        const mockPath = "/example";
-        const mockResponse = {
-          name: "John Doe",
-        };
+  it("sends JSON to the Pi-hole API and returns the response", async () => {
+    global.fetch.mockResolvedValue(mockApiResponse({ ok: true }));
 
-        fetch.mockResolvedValueOnce(mockApiResponse(mockResponse));
-
-        const response = await api.get(mockPath);
-
-        expect(fetch).toHaveBeenCalledWith(`${TEST_PIHOLE_IP}/api${mockPath}`, {
-          headers: {},
-        });
-        expect(response).toEqual(mockResponse);
-      });
-
-      it("Should include custom headers in the request", async () => {
-        api.setHeader("Authorization", "Bearer token123");
-        api.setHeader("Content-Type", "application/json");
-
-        fetch.mockResolvedValueOnce(mockApiResponse({}));
-
-        await api.get("/");
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            headers: {
-              Authorization: "Bearer token123",
-              "Content-Type": "application/json",
-            },
-          })
-        );
-      });
-
-      it("Should return null when Content-Length is 0", async () => {
-        const mockResponse = mockApiResponse(null);
-        fetch.mockResolvedValueOnce(mockResponse);
-
-        const response = await api.get("/");
-
-        expect(response).toBeNull();
-      });
-    });
-
-    describe("Error Handling", () => {
-      testApiMethodErrors(() => api.get("/"));
-    });
+    await expect(api.post("/auth", { password: "example" })).resolves.toEqual({ ok: true });
+    const [url, options] = global.fetch.mock.calls[0];
+    expect(url).toBe("http://pihole.test/api/auth");
+    expect(options.method).toBe("POST");
+    expect(JSON.parse(options.body)).toEqual({ password: "example" });
   });
 
-  describe("api.delete", () => {
-    describe("Successful requests", () => {
-      it("Should make DELETE requests with correct URL", async () => {
-        const mockPath = "/example";
-        const mockResponse = {
-          name: "John Doe",
-        };
+  it("uses the active session for reads and removes it on logout", async () => {
+    global.fetch.mockResolvedValue(mockApiResponse(null));
+    api.setSession("test-sid");
 
-        fetch.mockResolvedValueOnce(mockApiResponse(mockResponse));
+    await expect(api.get("/stats/summary")).resolves.toBeNull();
+    expect(global.fetch.mock.calls[0][1].headers.sid).toBe("test-sid");
 
-        const response = await api.delete(mockPath);
+    await api.delete("/auth");
+    api.clearSession();
+    expect(api.hasSession()).toBe(false);
+  });
 
-        expect(fetch).toHaveBeenCalledWith(`${TEST_PIHOLE_IP}/api${mockPath}`, {
-          method: "DELETE",
-          headers: {},
-        });
-        expect(response).toEqual(mockResponse);
-      });
+  it("passes an abort signal through to fetch", async () => {
+    const signal = new AbortController().signal;
+    global.fetch.mockResolvedValue(mockApiResponse({}));
 
-      it("Should include custom headers in the request", async () => {
-        api.setHeader("Authorization", "Bearer token123");
-        api.setHeader("Content-Type", "application/json");
+    await api.get("/stats/summary", { signal });
 
-        fetch.mockResolvedValueOnce(mockApiResponse({}));
+    expect(global.fetch.mock.calls[0][1].signal).toBe(signal);
+  });
 
-        await api.delete("/");
+  it("maps HTTP failures to an error with status and endpoint", async () => {
+    global.fetch.mockResolvedValue(mockApiResponse(null, 401, false));
 
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            headers: {
-              Authorization: "Bearer token123",
-              "Content-Type": "application/json",
-            },
-          })
-        );
-      });
-
-      it("Should return null when Content-Length is 0", async () => {
-        const mockResponse = mockApiResponse(null);
-        fetch.mockResolvedValueOnce(mockResponse);
-
-        const response = await api.delete("/");
-
-        expect(response).toBeNull();
-      });
-    });
-
-    describe("Error Handling", () => {
-      testApiMethodErrors(() => api.delete("/"));
+    await expect(api.get("/stats/summary")).rejects.toMatchObject({
+      code: "HTTP", status: 401, path: "/stats/summary",
     });
   });
 });

@@ -1,17 +1,18 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import authenticate from "../authenticate";
 import { sendMessage } from "../../helpers/index.js";
 
-jest.mock("../../helpers/index.js");
+vi.mock("../../helpers/index.js");
 
 describe("Authenticate Middleware", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     process.env = { ...originalEnv };
   });
 
-  afterAll(() => {
+  afterEach(() => {
     process.env = originalEnv;
   });
 
@@ -22,7 +23,7 @@ describe("Authenticate Middleware", () => {
         id: "123",
       },
     };
-    const next = jest.fn();
+    const next = vi.fn();
 
     await authenticate(ctx, next);
 
@@ -32,6 +33,14 @@ describe("Authenticate Middleware", () => {
     );
   });
 
+  it("awaits and propagates an unauthorized reply failure", async () => {
+    process.env.ALLOWED_USER = "456";
+    const error = new Error("Telegram unavailable");
+    sendMessage.mockRejectedValue(error);
+
+    await expect(authenticate({ from: { id: "123" } }, vi.fn())).rejects.toBe(error);
+  });
+
     it("Should allow authorized access", async () => {
       process.env.ALLOWED_USER = "123";
       const ctx = {
@@ -39,7 +48,7 @@ describe("Authenticate Middleware", () => {
           id: "123",
         },
       };
-      const next = jest.fn();
+      const next = vi.fn();
 
       await authenticate(ctx, next);
 

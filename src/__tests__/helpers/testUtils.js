@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 /**
  * Shared test utilities for creating consistent mocks and reducing test boilerplate
  */
@@ -17,7 +18,7 @@ export const createMockContext = (overrides = {}) => {
       id: 123,
       ...overrides.chat,
     },
-    reply: jest.fn(),
+    reply: vi.fn(),
     ...overrides,
   };
 };
@@ -48,81 +49,43 @@ export const mockApiResponse = (data, status = 200, ok = true) => {
 };
 
 /**
- * Test helper for parameterized error case testing
- * @param {Function} apiMethod - The API method to test (e.g., () => api.get("/"))
- */
-export const testApiMethodErrors = (apiMethod) => {
-  const errorCases = [
-    { status: 400, message: "Bad Request" },
-    { status: 401, message: "Unauthorized" },
-    { status: 402, message: "Request failed" },
-    { status: 403, message: "Forbidden" },
-    { status: 404, message: "Not Found" },
-    { status: 500, message: "Internal Server Error" },
-  ];
-
-  errorCases.forEach(({ status, message }) => {
-    it(`Should throw ApiError with "${message}" for ${status} status`, () => {
-      global.fetch.mockResolvedValue(mockApiResponse(null, status, false));
-      return expect(apiMethod()).rejects.toThrow(message);
-    });
-  });
-};
-
-/**
  * Creates a mock child process object for testing spawn/exec commands
  * @param {Object} options - Configuration options
  * @param {string} options.stdoutData - Data to emit on stdout
  * @param {string} options.stderrData - Data to emit on stderr
  * @param {number} options.exitCode - Exit code for the process
+ * @param {Error} options.spawnError - Error emitted instead of a close event
  * @returns {Object} Mock process object
  */
 export const createMockProcess = (options = {}) => {
-  const { stdoutData = "", stderrData = "", exitCode = 0 } = options;
+  const { stdoutData = "", stderrData = "", exitCode = 0, spawnError } = options;
 
-  const stdoutOnMock = jest.fn((event, callback) => {
+  const stdoutOnMock = vi.fn((event, callback) => {
     if (event === "data" && stdoutData) {
       callback(Buffer.from(stdoutData));
     }
   });
 
-  const stderrOnMock = jest.fn((event, callback) => {
+  const stderrOnMock = vi.fn((event, callback) => {
     if (event === "data" && stderrData) {
       callback(Buffer.from(stderrData));
     }
   });
 
-  const processOnMock = jest.fn((event, callback) => {
-    if (event === "close") {
+  const processOnceMock = vi.fn((event, callback) => {
+    if (event === "close" && !spawnError) {
       callback(exitCode);
     }
+    if (event === "error" && spawnError) callback(spawnError);
   });
 
   return {
-    on: processOnMock,
+    once: processOnceMock,
     stdout: {
       on: stdoutOnMock,
     },
     stderr: {
       on: stderrOnMock,
     },
-  };
-};
-
-/**
- * Setup standard API mocks for tests
- * @returns {Object} Mock functions
- */
-export const setupApiMocks = () => {
-  const post = jest.fn();
-  const get = jest.fn();
-  const deleteFn = jest.fn();
-  const setHeader = jest.fn();
-
-  return {
-    post,
-    get,
-    delete: deleteFn,
-    setHeader,
   };
 };

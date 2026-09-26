@@ -1,13 +1,19 @@
 import { getEnv } from "./helpers/config.js";
-import ApiError from "./ApiError.js";
+import PiholeError, { PIHOLE_ERROR_CODES } from "./errors/PiholeError.js";
 
 const api = {
   BASE_URL: `${getEnv("PIHOLE_IP")}/api`,
   headers: {},
-  setHeader(key, value) {
-    this.headers[key] = value;
+  hasSession() {
+    return typeof this.headers.sid === "string" && this.headers.sid !== "";
   },
-  handleErrors(response) {
+  setSession(sid) {
+    this.headers.sid = sid;
+  },
+  clearSession() {
+    delete this.headers.sid;
+  },
+  handleErrors(response, path) {
     if (response.ok) return;
 
     const errorMessage = {
@@ -18,10 +24,12 @@ const api = {
       404: "Not Found",
     };
 
-    throw new ApiError(
-      response.status,
-      errorMessage[response.status] || "Internal Server Error"
-    );
+    throw new PiholeError({
+      code: PIHOLE_ERROR_CODES.HTTP,
+      message: errorMessage[response.status] || "Internal Server Error",
+      status: response.status,
+      path,
+    });
   },
   parseResponse(response) {
     const contentLength = response.headers.get("Content-Length");
@@ -32,33 +40,36 @@ const api = {
 
     return response.json();
   },
-  async post(path, data) {
+  async post(path, data, { signal } = {}) {
     const response = await fetch(`${this.BASE_URL}${path}`, {
       method: "POST",
       body: JSON.stringify(data),
       headers: { "Content-Type": "application/json", ...this.headers },
+      signal,
     });
 
-    this.handleErrors(response);
+    this.handleErrors(response, path);
 
     return this.parseResponse(response);
   },
-  async get(path) {
+  async get(path, { signal } = {}) {
     const response = await fetch(`${this.BASE_URL}${path}`, {
-      headers: this.headers,
+      headers: { ...this.headers },
+      signal,
     });
 
-    this.handleErrors(response);
+    this.handleErrors(response, path);
 
     return this.parseResponse(response);
   },
-  async delete(path) {
+  async delete(path, { signal } = {}) {
     const response = await fetch(`${this.BASE_URL}${path}`, {
       method: "DELETE",
-      headers: this.headers,
+      headers: { ...this.headers },
+      signal,
     });
 
-    this.handleErrors(response);
+    this.handleErrors(response, path);
 
     return this.parseResponse(response);
   },

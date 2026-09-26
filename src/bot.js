@@ -4,8 +4,12 @@ import { sendMessage, registerCommands, getMainMenu } from "./helpers/index.js";
 import { COMMANDS } from "./constants/commands.js";
 import typing from "./middlewares/typing.js";
 import authenticate from "./middlewares/authenticate.js";
+import handleBotError from "./middlewares/errorHandler.js";
+import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "./constants/timers.js";
 
-const bot = new Telegraf(getEnv("BOT_TOKEN"));
+const bot = new Telegraf(getEnv("BOT_TOKEN"), {
+  handlerTimeout: TELEGRAM_MESSAGE_TIMEOUT_MS,
+});
 
 bot.use(authenticate);
 
@@ -36,14 +40,6 @@ bot.on("message", (ctx) => {
   sendMessage(ctx, "Sorry, I don't understand that.");
 });
 
-bot.catch((err, ctx) => {
-  console.error(err);
-
-  if (!err?.isApiError) {
-    throw new Error(err?.message || "An error occurred 🔥");
-  }
-
-  sendMessage(ctx, err?.message || "An error occurred 🔥");
-});
+bot.catch(handleBotError);
 
 export default bot;
