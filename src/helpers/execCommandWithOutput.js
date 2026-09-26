@@ -34,6 +34,8 @@ export default function execCommandWithOutput(
       }
     });
 
-    process.once("error", reject);
+    process.once("error", () => {
+      reject(new CommandError());
+    });
   });
 }
