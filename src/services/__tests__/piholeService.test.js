@@ -167,8 +167,11 @@ describe("piholeService", () => {
         API_ENDPOINTS.DNS.BLOCKING,
         API_ENDPOINTS.INFO.MESSAGES_COUNT,
       ]);
-      const [[, { signal }]] = authenticatedGet.mock.calls;
-      expect(authenticatedGet.mock.calls.every(([, options]) => options.signal === signal)).toBe(true);
+      expect(authenticatedGet.mock.calls).toEqual([
+        [API_ENDPOINTS.STATS.SUMMARY],
+        [API_ENDPOINTS.DNS.BLOCKING],
+        [API_ENDPOINTS.INFO.MESSAGES_COUNT],
+      ]);
 
       reads[API_ENDPOINTS.INFO.MESSAGES_COUNT].resolve({ count: 0 });
       reads[API_ENDPOINTS.DNS.BLOCKING].resolve({ blocking: "disabled" });
@@ -237,18 +240,6 @@ describe("piholeService", () => {
       await expect(piholeService.getSummary()).rejects.toMatchObject(invalidResponse());
     });
 
-    it("aborts stalled reads at the command deadline", async () => {
-      authenticatedGet.mockImplementation(
-        (_path, { signal }) =>
-          new Promise((_resolve, reject) => {
-            signal.addEventListener("abort", () => reject(signal.reason));
-          })
-      );
-
-      await expect(piholeService.getSummary({ deadlineMs: 50 })).rejects.toMatchObject({
-        name: "TimeoutError",
-      });
-    });
   });
 
   it.each([

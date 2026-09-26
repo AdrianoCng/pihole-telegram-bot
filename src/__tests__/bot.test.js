@@ -4,6 +4,7 @@ import { COMMANDS } from "../constants/commands.js";
 import authenticate from "../middlewares/authenticate.js";
 import typing from "../middlewares/typing.js";
 import handleBotError from "../middlewares/errorHandler.js";
+import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../constants/timers.js";
 import { createMockContext } from "./helpers/testUtils.js";
 
 jest.mock("telegraf", () => ({
@@ -17,6 +18,7 @@ jest.mock("telegraf", () => ({
 // Capture registration before Jest clears mocks for each test.
 const registrations = {
   token: Telegraf.mock.calls[0][0],
+  options: Telegraf.mock.calls[0][1],
   middleware: bot.use.mock.calls.map(([middleware]) => middleware),
   commands: [...bot.command.mock.calls],
   start: bot.start.mock.calls[0][0],
@@ -27,6 +29,7 @@ const registrations = {
 
 it("registers authentication before typing and all command aliases", () => {
   expect(registrations.token).toBe("123:test-token");
+  expect(registrations.options).toEqual({ handlerTimeout: TELEGRAM_MESSAGE_TIMEOUT_MS });
   expect(registrations.middleware).toEqual([authenticate, typing]);
   expect(registrations.commands).toEqual(COMMANDS.map(({ trigger, handler }) => [trigger, handler]));
   expect(COMMANDS.map(({ trigger }) => trigger)).toEqual([

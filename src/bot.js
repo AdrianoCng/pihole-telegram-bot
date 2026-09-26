@@ -5,8 +5,11 @@ import { COMMANDS } from "./constants/commands.js";
 import typing from "./middlewares/typing.js";
 import authenticate from "./middlewares/authenticate.js";
 import handleBotError from "./middlewares/errorHandler.js";
+import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "./constants/timers.js";
 
-const bot = new Telegraf(getEnv("BOT_TOKEN"));
+const bot = new Telegraf(getEnv("BOT_TOKEN"), {
+  handlerTimeout: TELEGRAM_MESSAGE_TIMEOUT_MS,
+});
 
 bot.use(authenticate);
 

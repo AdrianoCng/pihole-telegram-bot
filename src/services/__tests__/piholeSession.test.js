@@ -1,5 +1,6 @@
 import api from "../../api.js";
 import { API_ENDPOINTS } from "../../constants/api.js";
+import { REQUEST_TIMEOUT_MS } from "../../constants/timers.js";
 import { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
 import { mockApiResponse } from "../../__tests__/helpers/testUtils.js";
 import {
@@ -261,6 +262,7 @@ describe("piholeSession", () => {
     });
 
     it("applies a per-request timeout without a caller signal", async () => {
+      const timeout = jest.spyOn(AbortSignal, "timeout");
       api.setSession("test-sid");
       routeFetch({ [`GET ${READ_URL}`]: [mockApiResponse({ ok: true })] });
 
@@ -269,6 +271,8 @@ describe("piholeSession", () => {
       const [[, { signal }]] = global.fetch.mock.calls;
       expect(signal).toBeInstanceOf(AbortSignal);
       expect(signal.aborted).toBe(false);
+      expect(timeout).toHaveBeenCalledWith(REQUEST_TIMEOUT_MS);
+      timeout.mockRestore();
     });
 
     it("rejects when the caller's deadline aborts a stalled request", async () => {

@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, SUMMARY_DEADLINE_MS } from "../constants/api.js";
+import { API_ENDPOINTS } from "../constants/api.js";
 import { CLI_COMMANDS } from "../constants/cli.js";
 import { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
 import { logSafeError } from "../helpers/logSafeError.js";
@@ -11,7 +11,6 @@ import {
 import {
   authenticatedGet,
   endSession,
-  ensureSession,
   refreshSession,
 } from "./piholeSession.js";
 
@@ -53,13 +52,11 @@ function optional(result, { parse, fallback, operation, path }) {
   }
 }
 
-export async function getSummary({ deadlineMs = SUMMARY_DEADLINE_MS } = {}) {
-  const signal = AbortSignal.timeout(deadlineMs);
-
+export async function getSummary() {
   const [summary, blocking, count] = await Promise.allSettled([
-    authenticatedGet(API_ENDPOINTS.STATS.SUMMARY, { signal }),
-    authenticatedGet(API_ENDPOINTS.DNS.BLOCKING, { signal }),
-    authenticatedGet(API_ENDPOINTS.INFO.MESSAGES_COUNT, { signal }),
+    authenticatedGet(API_ENDPOINTS.STATS.SUMMARY),
+    authenticatedGet(API_ENDPOINTS.DNS.BLOCKING),
+    authenticatedGet(API_ENDPOINTS.INFO.MESSAGES_COUNT),
   ]);
 
   if (summary.status === "rejected") throw summary.reason;

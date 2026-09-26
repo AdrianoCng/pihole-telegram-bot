@@ -1,5 +1,6 @@
 import api from "../api.js";
-import { API_ENDPOINTS, REQUEST_TIMEOUT_MS } from "../constants/api.js";
+import { API_ENDPOINTS } from "../constants/api.js";
+import { REQUEST_TIMEOUT_MS } from "../constants/timers.js";
 import PiholeError, { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
 import { getEnv } from "../helpers/config.js";
 

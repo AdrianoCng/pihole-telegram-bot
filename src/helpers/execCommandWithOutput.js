@@ -1,4 +1,5 @@
 import { spawn } from "child_process";
+import { COMMAND_TIMEOUT_MS } from "../constants/timers.js";
 import CommandError from "../errors/CommandError.js";
 
 /**
@@ -14,7 +15,8 @@ export default function execCommandWithOutput(
   onOutput = () => {}
 ) {
   return new Promise((resolve, reject) => {
-    const process = spawn("sudo", [command, ...args]);
+    const signal = AbortSignal.timeout(COMMAND_TIMEOUT_MS);
+    const process = spawn("sudo", ["-n", command, ...args], { signal });
 
     process.stdout.on("data", (chunk) => {
       onOutput(chunk.toString());
@@ -24,7 +26,7 @@ export default function execCommandWithOutput(
       onOutput(chunk.toString());
     });
 
-    process.on("close", (code) => {
+    process.once("close", (code) => {
       if (code === 0) {
         resolve();
       } else {
@@ -33,5 +35,7 @@ export default function execCommandWithOutput(
         reject(new CommandError(code));
       }
     });
+
+    process.once("error", reject);
   });
 }

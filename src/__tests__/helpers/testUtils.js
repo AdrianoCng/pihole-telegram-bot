@@ -75,10 +75,11 @@ export const testApiMethodErrors = (apiMethod) => {
  * @param {string} options.stdoutData - Data to emit on stdout
  * @param {string} options.stderrData - Data to emit on stderr
  * @param {number} options.exitCode - Exit code for the process
+ * @param {Error} options.spawnError - Error emitted instead of a close event
  * @returns {Object} Mock process object
  */
 export const createMockProcess = (options = {}) => {
-  const { stdoutData = "", stderrData = "", exitCode = 0 } = options;
+  const { stdoutData = "", stderrData = "", exitCode = 0, spawnError } = options;
 
   const stdoutOnMock = jest.fn((event, callback) => {
     if (event === "data" && stdoutData) {
@@ -92,14 +93,15 @@ export const createMockProcess = (options = {}) => {
     }
   });
 
-  const processOnMock = jest.fn((event, callback) => {
-    if (event === "close") {
+  const processOnceMock = jest.fn((event, callback) => {
+    if (event === "close" && !spawnError) {
       callback(exitCode);
     }
+    if (event === "error" && spawnError) callback(spawnError);
   });
 
   return {
-    on: processOnMock,
+    once: processOnceMock,
     stdout: {
       on: stdoutOnMock,
     },
