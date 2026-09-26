@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { API_ENDPOINTS } from "../constants/api.js";
 import { COMMANDS } from "../constants/commands.js";
+import { SHUTDOWN_LOGOUT_TIMEOUT_MS } from "../constants/timers.js";
 
 const entry = fileURLToPath(new URL("../../index.js", import.meta.url));
 const { code } = transformFileSync(entry);
@@ -36,6 +37,7 @@ function loadEntrypoint({ failure = false, hasSession = false, logout = async ()
       if (name === "./src/api.js") return { __esModule: true, default: api };
       if (name === "./src/constants/api.js") return { API_ENDPOINTS };
       if (name === "./src/constants/commands.js") return { COMMANDS };
+      if (name === "./src/constants/timers.js") return { SHUTDOWN_LOGOUT_TIMEOUT_MS };
       if (name === "./src/helpers/logSafeError.js") return { logSafeError };
       if (name === "./src/services/piholeService.js") return { __esModule: true, default: piholeService };
       throw new Error("Unexpected import: " + name);

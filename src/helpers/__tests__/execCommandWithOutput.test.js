@@ -40,7 +40,7 @@ describe("execCommandWithOutput", () => {
     });
 
     expect(onOutput).toHaveBeenCalledWith("permission denied");
-    expect(onOutput).toHaveBeenCalledWith("Command failed with exit code 1");
+    expect(onOutput).toHaveBeenCalledTimes(1);
   });
 
   it("supports omitted arguments and output callbacks", async () => {
