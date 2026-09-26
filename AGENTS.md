@@ -79,9 +79,10 @@ Missing values fail when read: IP and token at initialization, password on autho
 ## Testing
 
 - Jest with Babel transpiles ESM; the Babel configuration preserves module-relative `import.meta.url` values.
-- Tests live in colocated `__tests__/` directories and use module mocks for imported dependencies.
+- Tests live in colocated `__tests__/` directories. Mock external effects (Telegram, HTTP, sudo), and test observable results through commands and service APIs. Avoid mocking every internal layer.
 - Shared utilities and fixed, non-secret initialization fixtures live in `src/__tests__/helpers/`.
 - Isolate environment variables, fetch mocks, and shared API headers between tests.
 - Startup tests mock external boundaries; native ESM subprocess checks verify import ordering and version lookup outside the repository.
-- Coverage excludes bot wiring, helper re-exports, test utilities, and typing middleware. Bot wiring has separate behavioral tests.
+- Coverage is an informational report, not a pass/fail threshold. Prefer a few representative success, failure, and boundary cases over exhaustive branch tables.
+- Do not assert private call counts, module wiring, or the full command order unless that detail protects an observable behavior. Keep user-facing text, command effects, session retry, and safe error handling covered.
 - Never run actual reboot, upgrade, Pi-hole, or Telegram operations in tests.

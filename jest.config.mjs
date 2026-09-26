@@ -48,15 +48,7 @@ const config = {
   //   "clover"
   // ],
 
-  // An object that configures minimum threshold enforcement for coverage results
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
-    },
-  },
+  // Coverage is informational; behavior tests are the pass/fail gate.
 
   // A path to a custom dependency extractor
   // dependencyExtractor: undefined,

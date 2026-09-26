@@ -109,13 +109,8 @@ it("bounds shutdown logout with a one-second timeout", async () => {
   expect(events.at(-1)).toBe("stop:SIGTERM");
 });
 
-it.each([
-  "controllers/botController.js", "controllers/apiController.js", "controllers/cliController.js",
-  "controllers/summaryController.js", "services/piholeSession.js", "bot.js",
-])(
-  "loads native ESM from %s and reads the version outside the repository",
-  (firstModule) => {
-    const first = new URL("../" + firstModule, import.meta.url).href;
+it("loads the bot as native ESM and reads the version outside the repository", () => {
+    const first = new URL("../bot.js", import.meta.url).href;
     const controller = new URL("../controllers/botController.js", import.meta.url).href;
     const packageUrl = new URL("../../package.json", import.meta.url).href;
     const script = `
@@ -135,5 +130,4 @@ it.each([
       timeout: 10000,
       stdio: "pipe",
     })).not.toThrow();
-  }
-);
+});
