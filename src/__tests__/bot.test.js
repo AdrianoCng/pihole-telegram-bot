@@ -10,11 +10,16 @@ import { PAUSE_ACTION_PATTERN } from "../constants/pause.js";
 import { pauseActionController } from "../controllers/pauseController.js";
 
 vi.mock("telegraf", async (importOriginal) => ({
-  ...await importOriginal(),
+  ...(await importOriginal()),
   Telegraf: vi.fn(function () {
     return {
-      use: vi.fn(), command: vi.fn(), start: vi.fn(),
-      help: vi.fn(), on: vi.fn(), catch: vi.fn(), action: vi.fn(),
+      use: vi.fn(),
+      command: vi.fn(),
+      start: vi.fn(),
+      help: vi.fn(),
+      on: vi.fn(),
+      catch: vi.fn(),
+      action: vi.fn(),
     };
   }),
 }));
@@ -37,9 +42,11 @@ it("registers authentication before commands and configures the Telegram timeout
   expect(registrations.options).toEqual({ handlerTimeout: TELEGRAM_MESSAGE_TIMEOUT_MS });
   expect(registrations.middleware[0]).toBe(authenticate);
   expect(registrations.middleware).toContain(typing);
-  expect(registrations.commands).toEqual(expect.arrayContaining([
-    expect.arrayContaining([expect.arrayContaining(["summary", "stats"]), expect.any(Function)]),
-  ]));
+  expect(registrations.commands).toEqual(
+    expect.arrayContaining([
+      expect.arrayContaining([expect.arrayContaining(["summary", "stats"]), expect.any(Function)]),
+    ])
+  );
 });
 
 it("sends a greeting with visible commands in the keyboard", () => {

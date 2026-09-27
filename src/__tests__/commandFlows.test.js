@@ -6,9 +6,17 @@ import { pauseActionController } from "../controllers/pauseController.js";
 
 vi.mock("../services/piholeService.js", () => ({
   default: {
-    authorize: vi.fn(), logout: vi.fn(), getMessages: vi.fn(), getSummary: vi.fn(),
-    getStatus: vi.fn(), enable: vi.fn(), disable: vi.fn(), pause: vi.fn(), getVersion: vi.fn(),
-    update: vi.fn(), updateGravity: vi.fn(),
+    authorize: vi.fn(),
+    logout: vi.fn(),
+    getMessages: vi.fn(),
+    getSummary: vi.fn(),
+    getStatus: vi.fn(),
+    enable: vi.fn(),
+    disable: vi.fn(),
+    pause: vi.fn(),
+    getVersion: vi.fn(),
+    update: vi.fn(),
+    updateGravity: vi.fn(),
   },
 }));
 vi.mock("../services/systemService.js", () => ({
@@ -27,7 +35,9 @@ registerCommands({
 const context = () => ({ reply: vi.fn().mockResolvedValue(undefined) });
 const run = (trigger, ctx = context()) => handlers.get(trigger)(ctx);
 
-beforeEach(() => { vi.resetAllMocks(); });
+beforeEach(() => {
+  vi.resetAllMocks();
+});
 
 it("routes aliases to the same command", () => {
   expect(handlers.get("stats")).toBe(handlers.get("summary"));
@@ -39,7 +49,10 @@ it("sends a summary as one readable reply", async () => {
   piholeService.getSummary.mockResolvedValue({
     blockingState: "active",
     queries: { total: 10, blocked: 1, percentBlocked: 10, cached: 5, forwarded: 4 },
-    activeClients: 2, gravityDomains: 1000, gravityLastUpdate: 0, messageCount: 3,
+    activeClients: 2,
+    gravityDomains: 1000,
+    gravityLastUpdate: 0,
+    messageCount: 3,
   });
   const ctx = context();
 
@@ -105,7 +118,10 @@ it("offers preset and custom pause durations", async () => {
   const [message, extra] = ctx.reply.mock.calls[0];
   expect(message).toBe("Pause blocking for how long?");
   expect(extra.reply_markup.inline_keyboard.flat().map((b) => b.callback_data)).toEqual([
-    "pause:10", "pause:30", "pause:300", "pause:custom",
+    "pause:10",
+    "pause:30",
+    "pause:300",
+    "pause:custom",
   ]);
   expect(piholeService.pause).not.toHaveBeenCalled();
 });
@@ -117,9 +133,7 @@ it("pauses for a custom duration given as an argument", async () => {
   await run("pause", ctx);
 
   expect(piholeService.pause).toHaveBeenCalledWith(120, expect.any(Function));
-  expect(ctx.reply.mock.calls.map(([message]) => message)).toEqual([
-    "✅ Pi-hole Disabled",
-  ]);
+  expect(ctx.reply.mock.calls.map(([message]) => message)).toEqual(["✅ Pi-hole Disabled"]);
 });
 
 it("rejects an invalid pause duration without pausing", async () => {

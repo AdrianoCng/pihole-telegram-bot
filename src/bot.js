@@ -19,11 +19,7 @@ registerCommands(bot);
 registerActions(bot);
 
 bot.start((ctx) => {
-  sendMessage(
-    ctx,
-    "Hello! I'm your Pi-hole bot. How can I help you today?",
-    getMainMenu()
-  );
+  sendMessage(ctx, "Hello! I'm your Pi-hole bot. How can I help you today?", getMainMenu());
 });
 
 bot.help((ctx) => {

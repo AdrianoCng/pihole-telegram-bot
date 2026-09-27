@@ -10,7 +10,7 @@ export const PIHOLE_ERROR_CODES = {
  * `path` is the static endpoint that failed, when known.
  */
 class PiholeError extends Error {
-  constructor({code, message, status, path}) {
+  constructor({ code, message, status, path }) {
     super(message);
     this.name = "PiholeError";
     this.code = code;

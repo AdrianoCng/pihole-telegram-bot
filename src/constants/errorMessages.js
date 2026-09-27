@@ -10,7 +10,8 @@ export const ERROR_KINDS = {
 export const NETWORK_ERROR_NAMES = new Set(["TypeError", "TimeoutError", "AbortError"]);
 
 export const DEFAULT_ERROR_MESSAGES = {
-  [ERROR_KINDS.AUTHENTICATION]: "❌ Pi-hole authentication failed. Check the configured credentials.",
+  [ERROR_KINDS.AUTHENTICATION]:
+    "❌ Pi-hole authentication failed. Check the configured credentials.",
   [ERROR_KINDS.INVALID_RESPONSE]: "❌ Pi-hole returned an invalid response.",
   [ERROR_KINDS.NOT_RESPONDING]: "❌ Pi-hole is not responding. Try again shortly.",
   [ERROR_KINDS.REQUEST_FAILED]: "❌ Pi-hole request failed.",

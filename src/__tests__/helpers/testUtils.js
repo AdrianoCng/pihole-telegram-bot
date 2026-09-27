@@ -32,7 +32,7 @@ export const createMockContext = (overrides = {}) => {
  */
 export const mockApiResponse = (data, status = 200, ok = true) => {
   const contentLength = data !== null && data !== undefined ? JSON.stringify(data).length : 0;
-  
+
   return {
     ok,
     status,

@@ -18,20 +18,16 @@ describe("execCommandWithOutput", () => {
 
     await execCommandWithOutput("ls", ["-la"], onOutput);
 
-    expect(spawn).toHaveBeenCalledWith(
-      "sudo",
-      ["-n", "ls", "-la"],
-      { signal: expect.any(AbortSignal) }
-    );
+    expect(spawn).toHaveBeenCalledWith("sudo", ["-n", "ls", "-la"], {
+      signal: expect.any(AbortSignal),
+    });
     expect(onOutput).toHaveBeenCalledWith("some output");
     expect(process.once.mock.calls.map(([event]) => event)).toEqual(["close", "error"]);
   });
 
   it("reports stderr and rejects on a nonzero exit", async () => {
     const onOutput = vi.fn();
-    spawn.mockReturnValue(
-      createMockProcess({ stderrData: "permission denied", exitCode: 1 })
-    );
+    spawn.mockReturnValue(createMockProcess({ stderrData: "permission denied", exitCode: 1 }));
 
     await expect(execCommandWithOutput("restricted", [], onOutput)).rejects.toMatchObject({
       name: "CommandError",
@@ -49,11 +45,9 @@ describe("execCommandWithOutput", () => {
 
     await expect(execCommandWithOutput("reboot")).resolves.toBeUndefined();
 
-    expect(spawn).toHaveBeenCalledWith(
-      "sudo",
-      ["-n", "reboot"],
-      { signal: expect.any(AbortSignal) }
-    );
+    expect(spawn).toHaveBeenCalledWith("sudo", ["-n", "reboot"], {
+      signal: expect.any(AbortSignal),
+    });
   });
 
   it("uses the command timeout for the child-process abort signal", async () => {

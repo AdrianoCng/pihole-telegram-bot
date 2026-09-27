@@ -9,11 +9,7 @@ import CommandError from "../errors/CommandError.js";
  * @param {(output: string) => void} onOutput
  * @returns {Promise<void>}
  */
-export default function execCommandWithOutput(
-  command,
-  args = [],
-  onOutput = () => {}
-) {
+export default function execCommandWithOutput(command, args = [], onOutput = () => {}) {
   return new Promise((resolve, reject) => {
     const signal = AbortSignal.timeout(COMMAND_TIMEOUT_MS);
     const process = spawn("sudo", ["-n", command, ...args], { signal });

@@ -27,9 +27,12 @@ it.each([
   ["a negative count", { ...valid(), clients: { active: -1 } }],
   ["an invalid percentage", { ...valid(), queries: { ...valid().queries, percent_blocked: 101 } }],
 ])("rejects %s with a static error", (_case, response) => {
-  expect(() => parseSummaryResponse(response)).toThrow(expect.objectContaining({
-    code: "INVALID_RESPONSE", message: "Pi-hole returned an invalid response",
-  }));
+  expect(() => parseSummaryResponse(response)).toThrow(
+    expect.objectContaining({
+      code: "INVALID_RESPONSE",
+      message: "Pi-hole returned an invalid response",
+    })
+  );
 });
 
 it("maps blocking states and treats unknown states as unavailable", () => {
@@ -40,7 +43,9 @@ it("maps blocking states and treats unknown states as unavailable", () => {
 
 it("accepts zero messages and rejects malformed counts", () => {
   expect(parseMessageCount({ count: 0 })).toBe(0);
-  expect(() => parseMessageCount({ count: "3" })).toThrow(expect.objectContaining({
-    code: "INVALID_RESPONSE",
-  }));
+  expect(() => parseMessageCount({ count: "3" })).toThrow(
+    expect.objectContaining({
+      code: "INVALID_RESPONSE",
+    })
+  );
 });

@@ -6,9 +6,7 @@ export function validateCommands(commands) {
   const duplicates = [];
 
   commands.forEach((command) => {
-    const triggers = Array.isArray(command.trigger)
-      ? command.trigger
-      : [command.trigger];
+    const triggers = Array.isArray(command.trigger) ? command.trigger : [command.trigger];
 
     triggers.forEach((trigger) => {
       if (allTriggers.has(trigger)) {
@@ -20,9 +18,7 @@ export function validateCommands(commands) {
   });
 
   if (duplicates.length > 0) {
-    throw new Error(
-      `Duplicate command triggers found: ${duplicates.join(", ")}`
-    );
+    throw new Error(`Duplicate command triggers found: ${duplicates.join(", ")}`);
   }
 
   return true;

@@ -15,8 +15,7 @@ const pauseKeyboard = () =>
     { columns: 2 }
   );
 
-const USAGE_MESSAGE =
-  "Send /pause <time>, e.g. /pause 90s, /pause 15m or /pause 1h (max 24h).";
+const USAGE_MESSAGE = "Send /pause <time>, e.g. /pause 90s, /pause 15m or /pause 1h (max 24h).";
 
 async function runPause(ctx, seconds) {
   await piholeService.pause(seconds, (output) => sendMessage(ctx, output));

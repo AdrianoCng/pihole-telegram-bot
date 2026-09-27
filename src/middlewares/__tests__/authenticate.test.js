@@ -29,7 +29,8 @@ describe("Authenticate Middleware", () => {
 
     expect(next).not.toHaveBeenCalled();
     expect(sendMessage).toHaveBeenCalledWith(
-      ctx, "⛔️ Unauthorized access! You are not allowed to use this bot."
+      ctx,
+      "⛔️ Unauthorized access! You are not allowed to use this bot."
     );
   });
 
@@ -41,17 +42,17 @@ describe("Authenticate Middleware", () => {
     await expect(authenticate({ from: { id: "123" } }, vi.fn())).rejects.toBe(error);
   });
 
-    it("Should allow authorized access", async () => {
-      process.env.ALLOWED_USER = "123";
-      const ctx = {
-        from: {
-          id: "123",
-        },
-      };
-      const next = vi.fn();
+  it("Should allow authorized access", async () => {
+    process.env.ALLOWED_USER = "123";
+    const ctx = {
+      from: {
+        id: "123",
+      },
+    };
+    const next = vi.fn();
 
-      await authenticate(ctx, next);
+    await authenticate(ctx, next);
 
-      expect(next).toHaveBeenCalled();
-    });
+    expect(next).toHaveBeenCalled();
+  });
 });
