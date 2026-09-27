@@ -73,14 +73,9 @@ it.each([false, true])(
     expect(bot.telegram.setMyCommands).toHaveBeenCalledWith(
       COMMANDS.map(({ trigger, description }) => ({ command: trigger[0], description }))
     );
-    if (failure) {
-      expect(consoleMock.error).toHaveBeenCalledWith(
-        "[warn] Failed to register commands with Telegram:",
-        "Telegram unavailable"
-      );
-    } else {
-      expect(consoleMock.error).not.toHaveBeenCalled();
-    }
+    expect(consoleMock.error.mock.calls).toEqual(
+      failure ? [["[warn] Failed to register commands with Telegram:", "Telegram unavailable"]] : []
+    );
     expect([...handlers.keys()]).toEqual(["SIGINT", "SIGTERM"]);
     for (const signal of ["SIGINT", "SIGTERM"]) {
       await handler(signal);
