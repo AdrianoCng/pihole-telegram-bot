@@ -8,9 +8,7 @@ export const getMainMenu = () => {
         return acc;
       }
 
-      const trigger = Array.isArray(command.trigger)
-        ? command.trigger[0]
-        : command.trigger;
+      const trigger = Array.isArray(command.trigger) ? command.trigger[0] : command.trigger;
       return [...acc, `/${trigger}`];
     }, []),
     { columns: 2 }

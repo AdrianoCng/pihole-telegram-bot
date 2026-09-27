@@ -54,7 +54,9 @@ describe("Pi-hole HTTP client", () => {
     global.fetch.mockResolvedValue(mockApiResponse(null, 401, false));
 
     await expect(api.get("/stats/summary")).rejects.toMatchObject({
-      code: "HTTP", status: 401, path: "/stats/summary",
+      code: "HTTP",
+      status: 401,
+      path: "/stats/summary",
     });
   });
 });

@@ -4,12 +4,7 @@ import { API_ENDPOINTS } from "../../constants/api.js";
 import { REQUEST_TIMEOUT_MS } from "../../constants/timers.js";
 import { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
 import { mockApiResponse } from "../../__tests__/helpers/testUtils.js";
-import {
-  authenticatedGet,
-  endSession,
-  ensureSession,
-  refreshSession,
-} from "../piholeSession.js";
+import { authenticatedGet, endSession, ensureSession, refreshSession } from "../piholeSession.js";
 
 const PASSWORD = "test-password";
 const AUTH_URL = `${api.BASE_URL}${API_ENDPOINTS.AUTH}`;
@@ -197,7 +192,12 @@ describe("piholeSession", () => {
       routeFetch({
         [`POST ${AUTH_URL}`]: [mockApiResponse(validSession("fresh-sid"))],
         [`GET ${READ_URL}`]: [
-          (options) => mockApiResponse(null, options.headers.sid === "fresh-sid" ? 200 : 401, options.headers.sid === "fresh-sid"),
+          (options) =>
+            mockApiResponse(
+              null,
+              options.headers.sid === "fresh-sid" ? 200 : 401,
+              options.headers.sid === "fresh-sid"
+            ),
         ],
       });
 
@@ -217,7 +217,10 @@ describe("piholeSession", () => {
       routeFetch({
         [`POST ${AUTH_URL}`]: [mockApiResponse(validSession("fresh-sid"))],
         [`GET ${READ_URL}`]: [
-          () => new Promise((resolve) => { releaseRead = () => resolve(mockApiResponse(null, 401, false)); }),
+          () =>
+            new Promise((resolve) => {
+              releaseRead = () => resolve(mockApiResponse(null, 401, false));
+            }),
           mockApiResponse({ ok: true }),
         ],
       });
@@ -280,9 +283,10 @@ describe("piholeSession", () => {
       api.setSession("test-sid");
       routeFetch({
         [`GET ${READ_URL}`]: [
-          (options) => new Promise((_resolve, reject) => {
-            options.signal.addEventListener("abort", () => reject(options.signal.reason));
-          }),
+          (options) =>
+            new Promise((_resolve, reject) => {
+              options.signal.addEventListener("abort", () => reject(options.signal.reason));
+            }),
         ],
       });
 

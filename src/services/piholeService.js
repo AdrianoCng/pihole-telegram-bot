@@ -8,11 +8,7 @@ import {
   parseMessageCount,
   parseSummaryResponse,
 } from "../helpers/summaryParsers.js";
-import {
-  authenticatedGet,
-  endSession,
-  refreshSession,
-} from "./piholeSession.js";
+import { authenticatedGet, endSession, refreshSession } from "./piholeSession.js";
 
 export async function authorize() {
   try {
