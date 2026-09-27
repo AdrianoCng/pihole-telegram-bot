@@ -1,8 +1,27 @@
 {
   "name": "pihole-telegram-bot",
-  "type": "module",
   "version": "1.3.0",
   "description": "Control your pihole with this telegram bot",
+  "keywords": [
+    "ad-blocker",
+    "bot",
+    "controller",
+    "dns",
+    "pi-hole",
+    "pihole",
+    "telegram"
+  ],
+  "homepage": "https://github.com/AdrianoCng/pihole-telegram-bot#readme",
+  "bugs": {
+    "url": "https://github.com/AdrianoCng/pihole-telegram-bot/issues"
+  },
+  "license": "ISC",
+  "author": "Adriano Cangiamila",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AdrianoCng/pihole-telegram-bot"
+  },
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -10,26 +29,12 @@
     "dev": "nodemon index.js",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest --watch"
-  },
-  "author": "Adriano Cangiamila",
-  "license": "ISC",
-  "keywords": [
-    "pihole",
-    "telegram",
-    "bot",
-    "pi-hole",
-    "controller",
-    "dns",
-    "ad-blocker"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/AdrianoCng/pihole-telegram-bot"
-  },
-  "homepage": "https://github.com/AdrianoCng/pihole-telegram-bot#readme",
-  "bugs": {
-    "url": "https://github.com/AdrianoCng/pihole-telegram-bot/issues"
+    "test:watch": "vitest --watch",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "check": "npm run format:check && npm run lint",
+    "prepare": "husky"
   },
   "dependencies": {
     "dotenv": "^18.0.1",
@@ -37,7 +42,10 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "5.0.2",
+    "husky": "^9.1.7",
     "nodemon": "^3.1.7",
+    "oxfmt": "^0.70.0",
+    "oxlint": "^1.85.0",
     "vitest": "5.0.2"
   }
 }

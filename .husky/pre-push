@@ -1,0 +1,9 @@
+# Lint is check-only: report errors and block the push.
+npx oxlint || exit 1
+
+# Formatting is fixed in place; block the push if anything changed so the fix gets committed.
+npx oxfmt
+if ! git diff --quiet; then
+  echo "oxfmt reformatted files. Commit the changes and push again."
+  exit 1
+fi
