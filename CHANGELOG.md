@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/AdrianoCng/pihole-telegram-bot/compare/v1.3.0...v1.4.0) (2026-09-27)
+
+
+### Features
+
+* add timed /pause command ([#28](https://github.com/AdrianoCng/pihole-telegram-bot/issues/28)) ([ffcb56b](https://github.com/AdrianoCng/pihole-telegram-bot/commit/ffcb56b655cbb227283602f97a1f108005a20eae))
+
 ## [1.3.0](https://github.com/AdrianoCng/pihole-telegram-bot/compare/v1.2.2...v1.3.0) (2026-09-27)
 
 
