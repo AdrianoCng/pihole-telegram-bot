@@ -1,7 +1,19 @@
+import { Markup } from "telegraf";
 import piholeService from "../services/piholeService.js";
 import { sendMessage } from "../helpers/index.js";
 import { parseDuration } from "../helpers/duration.js";
-import { pauseKeyboard } from "../helpers/keyboard.js";
+import { PAUSE_ACTION_PREFIX, PAUSE_CUSTOM_ACTION, PAUSE_PRESETS } from "../constants/pause.js";
+
+const pauseKeyboard = () =>
+  Markup.inlineKeyboard(
+    [
+      ...PAUSE_PRESETS.map(({ label, seconds }) =>
+        Markup.button.callback(label, `${PAUSE_ACTION_PREFIX}${seconds}`)
+      ),
+      Markup.button.callback("Custom…", PAUSE_CUSTOM_ACTION),
+    ],
+    { columns: 2 }
+  );
 
 const USAGE_MESSAGE =
   "Send /pause <time>, e.g. /pause 90s, /pause 15m or /pause 1h (max 24h).";
