@@ -35,9 +35,7 @@ describe("systemService", () => {
       .mockResolvedValueOnce()
       .mockRejectedValueOnce(new Error("upgrade failed"));
 
-    await expect(systemService.upgradeHost(vi.fn())).rejects.toThrow(
-      "upgrade failed"
-    );
+    await expect(systemService.upgradeHost(vi.fn())).rejects.toThrow("upgrade failed");
     expect(execCommandWithOutput).toHaveBeenCalledTimes(2);
   });
 });

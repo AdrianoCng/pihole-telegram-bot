@@ -37,10 +37,16 @@ describe("errorHandler", () => {
     const error = piholeError(PIHOLE_ERROR_CODES.HTTP, 500);
     const ctx = { command: "summary" };
     let resolveReply;
-    sendMessage.mockReturnValue(new Promise((resolve) => { resolveReply = resolve; }));
+    sendMessage.mockReturnValue(
+      new Promise((resolve) => {
+        resolveReply = resolve;
+      })
+    );
 
     let settled = false;
-    const handling = handleBotError(error, ctx).then(() => { settled = true; });
+    const handling = handleBotError(error, ctx).then(() => {
+      settled = true;
+    });
     await Promise.resolve();
 
     expect(logSafeError).toHaveBeenCalledWith({ operation: "summary", error });

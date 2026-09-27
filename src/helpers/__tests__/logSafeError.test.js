@@ -56,11 +56,20 @@ describe("logSafeError", () => {
   it("accepts an explicit retry flag", () => {
     logSafeError({ operation: "logout", path: "/auth", error: new Error("x"), afterRetry: true });
 
-    expect(logged()).toEqual({ operation: "logout", path: "/auth", name: "Error", afterRetry: true });
+    expect(logged()).toEqual({
+      operation: "logout",
+      path: "/auth",
+      name: "Error",
+      afterRetry: true,
+    });
   });
 
   it("omits fields a native error does not have", () => {
-    logSafeError({ operation: "summary", path: "/stats/summary", error: new TypeError("fetch failed") });
+    logSafeError({
+      operation: "summary",
+      path: "/stats/summary",
+      error: new TypeError("fetch failed"),
+    });
 
     expect(logged()).toEqual({
       operation: "summary",

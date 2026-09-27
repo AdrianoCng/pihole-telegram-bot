@@ -6,6 +6,12 @@
 - `npm start` starts the bot with Node.js.
 - `npm run start:prod` starts the bot with PM2.
 
+## Lint and format
+
+- `npm run lint` runs oxlint (config in `.oxlintrc.json`).
+- `npm run format` formats files in place with oxfmt (config in `.oxfmtrc.json`); `npm run format:check` only checks.
+- `npm run check` runs the format check and lint, as CI does.
+
 ## Test
 
 - `npm test` runs the full Vitest suite once.
