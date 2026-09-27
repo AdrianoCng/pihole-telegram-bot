@@ -13,3 +13,4 @@
 - `npm run test:watch` reruns tests on changes.
 - `npm run test:coverage` generates an informational V8 coverage report; it has no threshold.
 - Place tests in `__tests__/` directories near the code they cover.
+- Never run real reboot, upgrade, or pihole operations in tests
