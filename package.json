@@ -34,7 +34,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "check": "npm run format:check && npm run lint",
-    "prepare": "husky"
+    "prepare": "node .husky/install.mjs"
   },
   "dependencies": {
     "dotenv": "^18.0.1",
