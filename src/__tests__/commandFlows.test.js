@@ -2,11 +2,12 @@ import { it, expect, beforeEach, vi } from "vitest";
 import { registerCommands } from "../helpers/botCommands.js";
 import piholeService from "../services/piholeService.js";
 import systemService from "../services/systemService.js";
+import { pauseActionController } from "../controllers/pauseController.js";
 
 vi.mock("../services/piholeService.js", () => ({
   default: {
     authorize: vi.fn(), logout: vi.fn(), getMessages: vi.fn(), getSummary: vi.fn(),
-    getStatus: vi.fn(), enable: vi.fn(), disable: vi.fn(), getVersion: vi.fn(),
+    getStatus: vi.fn(), enable: vi.fn(), disable: vi.fn(), pause: vi.fn(), getVersion: vi.fn(),
     update: vi.fn(), updateGravity: vi.fn(),
   },
 }));
@@ -94,4 +95,74 @@ it("sends Pi-hole command output and propagates a failed upgrade", async () => {
   await run("enable", ctx);
   expect(ctx.reply).toHaveBeenCalledWith("blocking enabled", undefined);
   await expect(run("upg", ctx)).rejects.toThrow("upgrade failed");
+});
+
+it("offers preset and custom pause durations", async () => {
+  const ctx = { ...context(), payload: "" };
+
+  await run("pause", ctx);
+
+  const [message, extra] = ctx.reply.mock.calls[0];
+  expect(message).toBe("Pause blocking for how long?");
+  expect(extra.reply_markup.inline_keyboard.flat().map((b) => b.callback_data)).toEqual([
+    "pause:10", "pause:30", "pause:300", "pause:custom",
+  ]);
+  expect(piholeService.pause).not.toHaveBeenCalled();
+});
+
+it("pauses for a custom duration given as an argument", async () => {
+  const ctx = { ...context(), payload: "2m" };
+  piholeService.pause.mockImplementation(async (seconds, output) => output("[✓] Pi-hole Disabled"));
+
+  await run("pause", ctx);
+
+  expect(piholeService.pause).toHaveBeenCalledWith(120, expect.any(Function));
+  expect(ctx.reply.mock.calls.map(([message]) => message)).toEqual([
+    "✅ Pi-hole Disabled",
+  ]);
+});
+
+it("rejects an invalid pause duration without pausing", async () => {
+  const ctx = { ...context(), payload: "nonsense" };
+
+  await run("p", ctx);
+
+  expect(piholeService.pause).not.toHaveBeenCalled();
+  expect(ctx.reply.mock.calls[0][0]).toMatch(/^❌ Invalid duration\. Send \/pause <time>/);
+});
+
+it("does not confirm a pause that failed", async () => {
+  const ctx = { ...context(), payload: "30s" };
+  const error = new Error("pause failed");
+  piholeService.pause.mockRejectedValue(error);
+
+  await expect(run("pause", ctx)).rejects.toBe(error);
+  expect(ctx.reply).not.toHaveBeenCalled();
+});
+
+const actionContext = (choice) => ({
+  ...context(),
+  match: [`pause:${choice}`, choice],
+  answerCbQuery: vi.fn().mockResolvedValue(true),
+  editMessageReplyMarkup: vi.fn().mockResolvedValue(true),
+});
+
+it("pauses for a preset chosen from the keyboard", async () => {
+  const ctx = actionContext("30");
+
+  await pauseActionController(ctx);
+
+  expect(ctx.answerCbQuery).toHaveBeenCalled();
+  expect(ctx.editMessageReplyMarkup).toHaveBeenCalledWith(undefined);
+  expect(piholeService.pause).toHaveBeenCalledWith(30, expect.any(Function));
+});
+
+it("explains how to send a custom pause duration", async () => {
+  const ctx = actionContext("custom");
+
+  await pauseActionController(ctx);
+
+  expect(ctx.answerCbQuery).toHaveBeenCalled();
+  expect(piholeService.pause).not.toHaveBeenCalled();
+  expect(ctx.reply.mock.calls[0][0]).toMatch(/^Send \/pause <time>/);
 });

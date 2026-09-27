@@ -1,6 +1,6 @@
 import { getEnv } from "./helpers/config.js";
 import { Telegraf } from "telegraf";
-import { sendMessage, registerCommands, getMainMenu } from "./helpers/index.js";
+import { sendMessage, registerCommands, getMainMenu, registerActions } from "./helpers/index.js";
 import { COMMANDS } from "./constants/commands.js";
 import typing from "./middlewares/typing.js";
 import authenticate from "./middlewares/authenticate.js";
@@ -16,6 +16,7 @@ bot.use(authenticate);
 bot.use(typing);
 
 registerCommands(bot);
+registerActions(bot);
 
 bot.start((ctx) => {
   sendMessage(

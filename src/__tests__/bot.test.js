@@ -6,13 +6,15 @@ import typing from "../middlewares/typing.js";
 import handleBotError from "../middlewares/errorHandler.js";
 import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../constants/timers.js";
 import { createMockContext } from "./helpers/testUtils.js";
+import { PAUSE_ACTION_PATTERN } from "../constants/pause.js";
+import { pauseActionController } from "../controllers/pauseController.js";
 
 vi.mock("telegraf", async (importOriginal) => ({
   ...await importOriginal(),
   Telegraf: vi.fn(function () {
     return {
       use: vi.fn(), command: vi.fn(), start: vi.fn(),
-      help: vi.fn(), on: vi.fn(), catch: vi.fn(),
+      help: vi.fn(), on: vi.fn(), catch: vi.fn(), action: vi.fn(),
     };
   }),
 }));
@@ -27,6 +29,7 @@ const registrations = {
   help: bot.help.mock.calls[0][0],
   message: bot.on.mock.calls[0],
   error: bot.catch.mock.calls[0][0],
+  actions: [...bot.action.mock.calls],
 };
 
 it("registers authentication before commands and configures the Telegram timeout", () => {
@@ -62,4 +65,8 @@ it("lists aliases in help and handles unknown messages", () => {
 
 it("registers the central error boundary", () => {
   expect(registrations.error).toBe(handleBotError);
+});
+
+it("routes pause buttons to the pause action handler", () => {
+  expect(registrations.actions).toEqual([[PAUSE_ACTION_PATTERN, pauseActionController]]);
 });

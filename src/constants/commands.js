@@ -2,6 +2,7 @@ import * as apiController from "../controllers/apiController.js";
 import * as cliController from "../controllers/cliController.js";
 import * as botController from "../controllers/botController.js";
 import * as summaryController from "../controllers/summaryController.js";
+import * as pauseController from "../controllers/pauseController.js";
 
 export const COMMANDS = [
   {
@@ -38,6 +39,11 @@ export const COMMANDS = [
     trigger: ["disable", "d"],
     description: "Disable Pi-hole subsystems",
     handler: cliController.disableController,
+  },
+  {
+    trigger: ["pause", "p"],
+    description: "Temporarily disable blocking",
+    handler: pauseController.pauseController,
   },
   {
     trigger: ["version", "v"],

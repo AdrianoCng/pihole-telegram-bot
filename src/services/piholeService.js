@@ -90,6 +90,10 @@ export function disable(onOutput) {
   return spawnPiholeCommand([CLI_COMMANDS.DISABLE], onOutput);
 }
 
+export function pause(seconds, onOutput) {
+  return spawnPiholeCommand([CLI_COMMANDS.DISABLE, `${seconds}s`], onOutput);
+}
+
 export function getVersion(onOutput) {
   return spawnPiholeCommand([CLI_COMMANDS.VERSION], onOutput);
 }
@@ -110,6 +114,7 @@ export default {
   getStatus,
   enable,
   disable,
+  pause,
   getVersion,
   update,
   updateGravity,

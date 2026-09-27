@@ -4,9 +4,11 @@ import PiholeError, { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
 import { logSafeError } from "../../helpers/logSafeError.js";
 import { authenticatedGet, refreshSession } from "../piholeSession.js";
 import piholeService from "../piholeService.js";
+import spawnPiholeCommand from "../../helpers/spawnPiholeCommand.js";
 
 vi.mock("../piholeSession.js");
 vi.mock("../../helpers/logSafeError.js");
+vi.mock("../../helpers/spawnPiholeCommand.js");
 
 const summary = {
   queries: { total: 10, blocked: 2, percent_blocked: 20, cached: 3, forwarded: 5 },
@@ -70,4 +72,12 @@ it("rejects failed or malformed main summary reads", async () => {
 it("returns null for malformed Pi-hole messages", async () => {
   authenticatedGet.mockResolvedValue({ messages: "invalid" });
   await expect(piholeService.getMessages()).resolves.toBeNull();
+});
+
+it("pauses blocking with a timed Pi-hole disable", async () => {
+  const onOutput = vi.fn();
+
+  await piholeService.pause(300, onOutput);
+
+  expect(spawnPiholeCommand).toHaveBeenCalledWith(["disable", "300s"], onOutput);
 });
