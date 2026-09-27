@@ -1,4 +1,5 @@
 import { COMMANDS } from "../constants/commands.js";
+import { ACTIONS } from "../constants/actions.js";
 
 export function validateCommands(commands) {
   const allTriggers = new Set();
@@ -32,5 +33,13 @@ export function registerCommands(bot) {
 
   COMMANDS.forEach(({ trigger, handler }) => {
     bot.command(trigger, handler);
+  });
+}
+
+export function registerActions(bot) {
+  validateCommands(ACTIONS);
+  
+  ACTIONS.forEach(({ trigger, handler }) => {
+    bot.action(trigger, handler);
   });
 }

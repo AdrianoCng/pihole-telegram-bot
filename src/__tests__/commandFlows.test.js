@@ -97,9 +97,6 @@ it("sends Pi-hole command output and propagates a failed upgrade", async () => {
   await expect(run("upg", ctx)).rejects.toThrow("upgrade failed");
 });
 
-const paused = (duration) =>
-  `⏸ Blocking paused for ${duration}. It will resume automatically, or send /enable to resume now.`;
-
 it("offers preset and custom pause durations", async () => {
   const ctx = { ...context(), payload: "" };
 
@@ -122,7 +119,6 @@ it("pauses for a custom duration given as an argument", async () => {
   expect(piholeService.pause).toHaveBeenCalledWith(120, expect.any(Function));
   expect(ctx.reply.mock.calls.map(([message]) => message)).toEqual([
     "✅ Pi-hole Disabled",
-    paused("2 min"),
   ]);
 });
 
@@ -159,7 +155,6 @@ it("pauses for a preset chosen from the keyboard", async () => {
   expect(ctx.answerCbQuery).toHaveBeenCalled();
   expect(ctx.editMessageReplyMarkup).toHaveBeenCalledWith(undefined);
   expect(piholeService.pause).toHaveBeenCalledWith(30, expect.any(Function));
-  expect(ctx.reply).toHaveBeenLastCalledWith(paused("30 sec"), undefined);
 });
 
 it("explains how to send a custom pause duration", async () => {

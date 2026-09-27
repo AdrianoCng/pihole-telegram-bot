@@ -15,16 +15,3 @@ export function parseDuration(text) {
 
   return seconds;
 }
-
-/** Format seconds as a short label, for example "10 sec" or "1 h 30 min". */
-export function formatDuration(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-
-  return [
-    hours && `${hours} h`,
-    minutes && `${minutes} min`,
-    secs && `${secs} sec`,
-  ].filter(Boolean).join(" ");
-}
