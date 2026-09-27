@@ -22,6 +22,7 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
 
 - 📈 Pi-hole health and activity dashboard
 - 🚫 Enable/disable Pi-hole blocking
+- ⏸ Pause blocking temporarily (10 sec, 30 sec, 5 min, or a custom time)
 - 📊 Monitor Pi-hole status and view system messages
 - 🔍 Check Pi-hole version information
 - 🔄 Update Pi-hole subsystems and blocklists
@@ -131,6 +132,7 @@ npm start
    - `/logout` or `/logoff` - Logout the bot
    - `/enable` or `/e` - Enable Pi-hole subsystems
    - `/disable` or `/d` - Disable Pi-hole subsystems
+   - `/pause` or `/p` - Temporarily disable blocking. Pick a preset (10 sec, 30 sec, 5 min) or send a custom time, e.g. `/pause 90s`, `/pause 15m`, `/pause 1h` (max 24h)
    - `/version` or `/v` - Show installed version of Pi-hole, Web Interface & FTL
    - `/update` or `/up` - Update Pi-hole subsystems
    - `/upgravity` or `/g` - Update the list of ad-serving domains
