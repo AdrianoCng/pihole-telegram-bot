@@ -38,7 +38,7 @@ export function registerCommands(bot) {
 
 export function registerActions(bot) {
   validateCommands(ACTIONS);
-  
+
   ACTIONS.forEach(({ trigger, handler }) => {
     bot.action(trigger, handler);
   });
