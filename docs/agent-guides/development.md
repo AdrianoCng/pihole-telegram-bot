@@ -11,7 +11,7 @@
 - `npm run lint` runs oxlint (config in `.oxlintrc.json`).
 - `npm run format` formats files in place with oxfmt (config in `.oxfmtrc.json`); `npm run format:check` only checks.
 - `npm run check` runs the format check and lint, as CI does.
-- The Husky `pre-push` hook fails on lint errors without fixing them. It then runs oxfmt and aborts the push if files were reformatted, so commit the changes and push again.
+- The Husky `pre-commit` hook runs lint-staged, which runs `oxlint --fix` and `oxfmt` on staged files and re-stages the fixes. The commit is blocked if lint errors remain.
 
 ## Test
 

@@ -43,9 +43,17 @@
   "devDependencies": {
     "@vitest/coverage-v8": "5.0.2",
     "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "nodemon": "^3.1.7",
     "oxfmt": "^0.70.0",
     "oxlint": "^1.85.0",
     "vitest": "5.0.2"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs}": [
+      "oxlint --fix",
+      "oxfmt --no-error-on-unmatched-pattern"
+    ],
+    "*.{json,md,yml,yaml}": "oxfmt --no-error-on-unmatched-pattern"
   }
 }
