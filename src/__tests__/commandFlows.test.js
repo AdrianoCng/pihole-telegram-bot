@@ -10,6 +10,7 @@ vi.mock("../services/piholeService.js", () => ({
     logout: vi.fn(),
     getMessages: vi.fn(),
     getSummary: vi.fn(),
+    getTop: vi.fn(),
     getStatus: vi.fn(),
     enable: vi.fn(),
     disable: vi.fn(),
@@ -42,6 +43,7 @@ beforeEach(() => {
 it("routes aliases to the same command", () => {
   expect(handlers.get("stats")).toBe(handlers.get("summary"));
   expect(handlers.get("s")).toBe(handlers.get("status"));
+  expect(handlers.get("t")).toBe(handlers.get("top"));
   expect(handlers.get("upg")).toBe(handlers.get("upgrade"));
 });
 
@@ -61,6 +63,20 @@ it("sends a summary as one readable reply", async () => {
   expect(ctx.reply).toHaveBeenCalledTimes(1);
   expect(ctx.reply.mock.calls[0][0]).toContain("🟢 Pi-hole is active\n\nQueries: 10");
   expect(ctx.reply.mock.calls[0][0]).toContain("⚠️ Pi-hole messages: 3");
+});
+
+it("sends top domains and clients as one reply", async () => {
+  piholeService.getTop.mockResolvedValue({
+    topDomains: [{ domain: "ads.example.com", count: 3 }],
+    topClients: null,
+  });
+  const ctx = context();
+
+  await run("t", ctx);
+
+  expect(ctx.reply).toHaveBeenCalledTimes(1);
+  expect(ctx.reply.mock.calls[0][0]).toContain("1. ads.example.com — 3");
+  expect(ctx.reply.mock.calls[0][0]).toContain("⚠️ Top clients unavailable");
 });
 
 it("reports authorization and logout outcomes", async () => {

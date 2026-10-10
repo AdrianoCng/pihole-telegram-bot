@@ -94,3 +94,54 @@ it("pauses blocking with a timed Pi-hole disable", async () => {
 
   expect(spawnPiholeCommand).toHaveBeenCalledWith(["disable", "300s"], onOutput);
 });
+
+const topDomainsPath = `${API_ENDPOINTS.STATS.TOP_DOMAINS}?blocked=true&count=10`;
+const topClientsPath = `${API_ENDPOINTS.STATS.TOP_CLIENTS}?count=5`;
+
+function topReads({
+  domains = { domains: [{ domain: "ads.example.com", count: 7 }] },
+  clients = { clients: [{ ip: "192.168.1.2", name: "laptop", count: 9 }] },
+} = {}) {
+  const results = { [topDomainsPath]: domains, [topClientsPath]: clients };
+  authenticatedGet.mockImplementation(async (path) => {
+    if (results[path] instanceof Error) throw results[path];
+    return results[path];
+  });
+}
+
+it("reads top blocked domains and clients", async () => {
+  topReads();
+
+  await expect(piholeService.getTop()).resolves.toEqual({
+    topDomains: [{ domain: "ads.example.com", count: 7 }],
+    topClients: [{ ip: "192.168.1.2", name: "laptop", count: 9 }],
+  });
+  expect(authenticatedGet.mock.calls.map(([path]) => path)).toEqual([
+    topDomainsPath,
+    topClientsPath,
+  ]);
+});
+
+it("keeps the other top section when one read fails", async () => {
+  topReads({ domains: new TypeError("fetch failed") });
+  await expect(piholeService.getTop()).resolves.toMatchObject({
+    topDomains: null,
+    topClients: [{ ip: "192.168.1.2" }],
+  });
+  expect(logSafeError).toHaveBeenCalledWith(
+    expect.objectContaining({ path: API_ENDPOINTS.STATS.TOP_DOMAINS })
+  );
+
+  topReads({ clients: { clients: "bad" } });
+  await expect(piholeService.getTop()).resolves.toMatchObject({
+    topDomains: [{ domain: "ads.example.com" }],
+    topClients: null,
+  });
+});
+
+it("rejects when both top reads fail", async () => {
+  const failure = new TypeError("fetch failed");
+  topReads({ domains: failure, clients: new Error("clients failed") });
+
+  await expect(piholeService.getTop()).rejects.toBe(failure);
+});

@@ -126,6 +126,7 @@ npm start
 1. Start a conversation with your bot on Telegram (from any device)
 2. Use the available commands to control your Pi-hole:
    - `/summary` or `/stats` - Show Pi-hole health and activity summary
+   - `/top` or `/t` - Show the top 10 blocked domains and top 5 clients
    - `/status` or `/s` - Display the running status of Pi-hole subsystems
    - `/messages` or `/m` - Show messages from Pi-hole
    - `/authorize` or `/a` - Authorize the bot
@@ -141,31 +142,11 @@ npm start
    - `/bot` or `/bv` - Show the version of the bot
    - `/help` - Show available commands and descriptions
 
-The reply keyboard lists read-only monitoring commands first (`/summary`, `/status`, `/messages`), followed by session commands and then maintenance and destructive commands.
-
-### Summary dashboard
-
-`/summary` replies with a single message such as:
-
-```text
-🟢 Pi-hole is active
-
-Queries: 52,491
-Blocked: 8,643 (16.5%)
-Cached: 17,952 (34.2%)
-Forwarded: 25,896
-Active clients: 23
-Gravity domains: 1,234,567
-Gravity updated: 2 hours ago
-
-⚠️ Pi-hole messages: 1
-```
-
-The status line is red when blocking is disabled and orange when the blocking state cannot be determined. The message-count line appears only when Pi-hole has messages.
+The reply keyboard lists read-only monitoring commands first (`/summary`, `/top`, `/status`, `/messages`), followed by session commands and then maintenance and destructive commands.
 
 ### API authentication
 
-`/summary` and `/messages` sign in to the Pi-hole API automatically using `PIHOLE_PASSWORD`, and sign in again once if the session has expired. You no longer need to run `/authorize` after restarting the bot. `/authorize` and `/logout` remain available for manual troubleshooting. On a graceful shutdown (`SIGINT`/`SIGTERM`, including PM2 restarts) the bot ends its Pi-hole API session so that restarts do not use up Pi-hole's session limit.
+`/summary`, `/top` and `/messages` sign in to the Pi-hole API automatically using `PIHOLE_PASSWORD`, and sign in again once if the session has expired. You no longer need to run `/authorize` after restarting the bot. `/authorize` and `/logout` remain available for manual troubleshooting. On a graceful shutdown (`SIGINT`/`SIGTERM`, including PM2 restarts) the bot ends its Pi-hole API session so that restarts do not use up Pi-hole's session limit.
 
 ## 🧪 Testing
 

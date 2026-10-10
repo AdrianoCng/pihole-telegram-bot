@@ -1,27 +1,4 @@
-import PiholeError, { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
-
-function invalidResponse() {
-  return new PiholeError({
-    code: PIHOLE_ERROR_CODES.INVALID_RESPONSE,
-    message: "Pi-hole returned an invalid response",
-  });
-}
-
-function isCount(value) {
-  return Number.isInteger(value) && value >= 0;
-}
-
-function requireCount(value) {
-  if (!isCount(value)) throw invalidResponse();
-  return value;
-}
-
-function requirePercentage(value) {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 100) {
-    throw invalidResponse();
-  }
-  return value;
-}
+import { requireCount, requirePercentage } from "./validators.js";
 
 /** Validate the required /stats/summary payload. Never coerces or defaults. */
 export function parseSummaryResponse(payload) {
