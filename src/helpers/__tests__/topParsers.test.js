@@ -3,7 +3,10 @@ import { parseTopClients, parseTopDomains } from "../topParsers.js";
 import { TOP_BLOCKED_DOMAINS_COUNT, TOP_CLIENTS_COUNT } from "../../constants/top.js";
 
 it("parses top domains and caps them at the configured count", () => {
-  const domains = Array.from({ length: 12 }, (_, i) => ({ domain: `d${i}.com`, count: i }));
+  const domains = Array.from({ length: TOP_BLOCKED_DOMAINS_COUNT + 1 }, (_, i) => ({
+    domain: `d${i}.com`,
+    count: i,
+  }));
 
   const parsed = parseTopDomains({ domains });
 
