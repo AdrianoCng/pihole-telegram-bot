@@ -75,7 +75,8 @@ it("sends top domains and clients as one reply", async () => {
   await run("t", ctx);
 
   expect(ctx.reply).toHaveBeenCalledTimes(1);
-  expect(ctx.reply.mock.calls[0][0]).toContain("1. ads.example.com — 3");
+  expect(ctx.reply.mock.calls[0][0]).toContain("1. <code>ads.example.com</code> — 3");
+  expect(ctx.reply.mock.calls[0][1]).toEqual({ parse_mode: "HTML" });
   expect(ctx.reply.mock.calls[0][0]).toContain("⚠️ Top clients unavailable");
 });
 

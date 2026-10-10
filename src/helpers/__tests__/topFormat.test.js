@@ -16,28 +16,55 @@ it("renders top blocked domains and clients", () => {
     })
   ).toBe(
     [
-      "🚫 Top blocked domains",
-      "1. doubleclick.net — 1,234",
-      "2. ads.example.com — 5",
+      "<b>🚫 Top blocked domains</b>",
+      "1. <code>doubleclick.net</code> — 1,234",
+      "2. <code>ads.example.com</code> — 5",
       "",
-      "💻 Top clients",
-      "1. laptop (192.168.1.10) — 5,678",
-      "2. 192.168.1.20 — 900",
-      "3. 192.168.1.30 — 1",
+      "<b>💻 Top clients</b>",
+      "1. laptop (<code>192.168.1.10</code>) — 5,678",
+      "2. <code>192.168.1.20</code> — 900",
+      "3. <code>192.168.1.30</code> — 1",
     ].join("\n")
   );
 });
 
+it("escapes HTML in labels", () => {
+  expect(renderTop({ topDomains: [{ domain: "a<b>&c", count: 1 }], topClients: [] })).toContain(
+    "<code>a&lt;b&gt;&amp;c</code>"
+  );
+});
+
+it("escapes HTML in client names", () => {
+  expect(
+    renderTop({ topDomains: [], topClients: [{ ip: "10.0.0.2", name: "a<b>&c", count: 1 }] })
+  ).toContain("1. a&lt;b&gt;&amp;c (<code>10.0.0.2</code>) — 1");
+});
+
+it("truncates client names before escaping so entities are not cut", () => {
+  const output = renderTop({
+    topDomains: [],
+    topClients: [{ ip: "10.0.0.2", name: "&".repeat(100), count: 1 }],
+  });
+
+  expect(output).toContain(`1. ${"&amp;".repeat(59)}… (<code>10.0.0.2</code>) — 1`);
+});
+
 it("shows unavailable and empty sections", () => {
   expect(renderTop({ topDomains: null, topClients: [] })).toBe(
-    ["⚠️ Top blocked domains unavailable", "", "💻 Top clients", "No client activity yet"].join(
-      "\n"
-    )
+    [
+      "⚠️ Top blocked domains unavailable",
+      "",
+      "<b>💻 Top clients</b>",
+      "No client activity yet",
+    ].join("\n")
   );
   expect(renderTop({ topDomains: [], topClients: null })).toBe(
-    ["🚫 Top blocked domains", "No blocked domains yet", "", "⚠️ Top clients unavailable"].join(
-      "\n"
-    )
+    [
+      "<b>🚫 Top blocked domains</b>",
+      "No blocked domains yet",
+      "",
+      "⚠️ Top clients unavailable",
+    ].join("\n")
   );
 });
 
@@ -50,5 +77,5 @@ it("truncates long labels and stays within the Telegram message limit", () => {
 
   expect(output.length).toBeLessThanOrEqual(4096);
   expect(output).not.toContain(long);
-  expect(output).toContain(`1. ${"a".repeat(59)}… — 1,000,000,000`);
+  expect(output).toContain(`1. <code>${"a".repeat(59)}…</code> — 1,000,000,000`);
 });

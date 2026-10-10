@@ -5,16 +5,20 @@ function truncate(value, maxLength = TOP_LABEL_MAX_LENGTH) {
   return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
 }
 
-function clientLabel({ ip, name }) {
-  return name && name !== ip ? `${truncate(name)} (${ip})` : ip;
+function escapeHtml(value) {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+
+function code(value) {
+  return `<code>${escapeHtml(value)}</code>`;
 }
 
 function renderSection(title, entries, { unavailable, empty, label }) {
   if (entries === null) return [`⚠️ ${unavailable}`];
-  if (entries.length === 0) return [title, empty];
+  if (entries.length === 0) return [`<b>${title}</b>`, empty];
 
   return [
-    title,
+    `<b>${title}</b>`,
     ...entries.map((entry, index) => `${index + 1}. ${label(entry)} — ${formatCount(entry.count)}`),
   ];
 }
@@ -24,13 +28,14 @@ export function renderTop({ topDomains, topClients }) {
     ...renderSection("🚫 Top blocked domains", topDomains, {
       unavailable: "Top blocked domains unavailable",
       empty: "No blocked domains yet",
-      label: ({ domain }) => truncate(domain),
+      label: ({ domain }) => code(truncate(domain)),
     }),
     "",
     ...renderSection("💻 Top clients", topClients, {
       unavailable: "Top clients unavailable",
       empty: "No client activity yet",
-      label: clientLabel,
+      label: ({ ip, name }) =>
+        name && name !== ip ? `${escapeHtml(truncate(name))} (${code(ip)})` : code(ip),
     }),
   ].join("\n");
 
