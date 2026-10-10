@@ -5,6 +5,7 @@ import { logSafeError } from "../../helpers/logSafeError.js";
 import { authenticatedGet, refreshSession } from "../piholeSession.js";
 import piholeService from "../piholeService.js";
 import spawnPiholeCommand from "../../helpers/spawnPiholeCommand.js";
+import { TOP_BLOCKED_DOMAINS_COUNT, TOP_CLIENTS_COUNT } from "../../constants/top.js";
 
 vi.mock("../piholeSession.js");
 vi.mock("../../helpers/logSafeError.js");
@@ -95,8 +96,8 @@ it("pauses blocking with a timed Pi-hole disable", async () => {
   expect(spawnPiholeCommand).toHaveBeenCalledWith(["disable", "300s"], onOutput);
 });
 
-const topDomainsPath = `${API_ENDPOINTS.STATS.TOP_DOMAINS}?blocked=true&count=10`;
-const topClientsPath = `${API_ENDPOINTS.STATS.TOP_CLIENTS}?count=5`;
+const topDomainsPath = `${API_ENDPOINTS.STATS.TOP_DOMAINS}?blocked=true&count=${TOP_BLOCKED_DOMAINS_COUNT}`;
+const topClientsPath = `${API_ENDPOINTS.STATS.TOP_CLIENTS}?count=${TOP_CLIENTS_COUNT}`;
 
 function topReads({
   domains = { domains: [{ domain: "ads.example.com", count: 7 }] },
