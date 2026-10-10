@@ -1,22 +1,23 @@
 import { it, expect } from "vitest";
 import { parseTopClients, parseTopDomains } from "../topParsers.js";
+import { TOP_BLOCKED_DOMAINS_COUNT, TOP_CLIENTS_COUNT } from "../../constants/top.js";
 
-it("parses top domains and caps them at ten", () => {
+it("parses top domains and caps them at the configured count", () => {
   const domains = Array.from({ length: 12 }, (_, i) => ({ domain: `d${i}.com`, count: i }));
 
   const parsed = parseTopDomains({ domains });
 
-  expect(parsed).toHaveLength(10);
+  expect(parsed).toHaveLength(TOP_BLOCKED_DOMAINS_COUNT);
   expect(parsed[0]).toEqual({ domain: "d0.com", count: 0 });
 });
 
-it("parses top clients with optional names and caps them at five", () => {
+it("parses top clients with optional names and caps them at the configured count", () => {
   const clients = Array.from({ length: 7 }, (_, i) => ({ ip: `10.0.0.${i}`, count: i }));
   clients[1].name = "phone";
 
   const parsed = parseTopClients({ clients });
 
-  expect(parsed).toHaveLength(5);
+  expect(parsed).toHaveLength(TOP_CLIENTS_COUNT);
   expect(parsed[0]).toEqual({ ip: "10.0.0.0", name: "", count: 0 });
   expect(parsed[1].name).toBe("phone");
 });
