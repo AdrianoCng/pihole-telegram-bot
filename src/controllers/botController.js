@@ -1,4 +1,5 @@
-import { sendMessage, getMainMenu } from "../helpers/index.js";
+import sendMessage from "../helpers/sendMessage.js";
+import { getMainMenu } from "../helpers/keyboard.js";
 import botService from "../services/botService.js";
 
 export async function botVersionController(ctx) {

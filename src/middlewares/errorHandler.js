@@ -1,6 +1,6 @@
 import { DEFAULT_ERROR_MESSAGES } from "../constants/errorMessages.js";
 import { classifyError } from "../errors/classifyError.js";
-import { sendMessage } from "../helpers/index.js";
+import sendMessage from "../helpers/sendMessage.js";
 import { logSafeError } from "../helpers/logSafeError.js";
 
 export function userMessage(error) {

@@ -1,5 +1,5 @@
 import piholeService from "../services/piholeService.js";
-import { sendMessage } from "../helpers/index.js";
+import sendMessage from "../helpers/sendMessage.js";
 
 export async function authorizeController(ctx) {
   const authorized = await piholeService.authorize();

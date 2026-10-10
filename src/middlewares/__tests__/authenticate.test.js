@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import authenticate from "../authenticate";
-import { sendMessage } from "../../helpers/index.js";
+import sendMessage from "../../helpers/sendMessage.js";
 
-vi.mock("../../helpers/index.js");
+vi.mock("../../helpers/sendMessage.js");
 
 describe("Authenticate Middleware", () => {
   const originalEnv = process.env;
