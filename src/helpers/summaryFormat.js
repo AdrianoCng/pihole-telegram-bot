@@ -1,33 +1,11 @@
 import { formatCount, formatPercentage } from "./numberFormat.js";
+import { formatAge } from "./timeFormat.js";
 
 const STATUS_LINES = {
   active: "🟢 Pi-hole is active",
   disabled: "🔴 Pi-hole blocking is disabled",
   unavailable: "🟠 Pi-hole status is unavailable",
 };
-
-const MINUTE_MS = 60 * 1000;
-const HOUR_MS = 60 * MINUTE_MS;
-const DAY_MS = 24 * HOUR_MS;
-
-function plural(value, unit) {
-  return `${value} ${unit}${value === 1 ? "" : "s"} ago`;
-}
-
-/** Relative age of a Unix timestamp in seconds, or "unknown" when invalid. */
-export function formatGravityAge(timestamp, nowMs) {
-  if (typeof timestamp !== "number" || !Number.isFinite(timestamp) || timestamp <= 0) {
-    return "unknown";
-  }
-
-  const ageMs = nowMs - timestamp * 1000;
-
-  if (ageMs < 0) return "unknown";
-  if (ageMs < MINUTE_MS) return "just now";
-  if (ageMs < HOUR_MS) return plural(Math.floor(ageMs / MINUTE_MS), "minute");
-  if (ageMs < DAY_MS) return plural(Math.floor(ageMs / HOUR_MS), "hour");
-  return plural(Math.floor(ageMs / DAY_MS), "day");
-}
 
 export function renderSummary(model, nowMs) {
   const { queries } = model;
@@ -43,7 +21,7 @@ export function renderSummary(model, nowMs) {
     `Forwarded: ${formatCount(queries.forwarded)} (${formatPercentage(forwardedPercentage)})`,
     `Active clients: ${formatCount(model.activeClients)}`,
     `Gravity domains: ${formatCount(model.gravityDomains)}`,
-    `Gravity updated: ${formatGravityAge(model.gravityLastUpdate, nowMs)}`,
+    `Gravity updated: ${formatAge(model.gravityLastUpdate, nowMs)}`,
   ];
 
   if (model.messageCount > 0) {

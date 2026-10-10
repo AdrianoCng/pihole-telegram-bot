@@ -11,6 +11,7 @@ vi.mock("../services/piholeService.js", () => ({
     getMessages: vi.fn(),
     getSummary: vi.fn(),
     getTop: vi.fn(),
+    getRecentBlocked: vi.fn(),
     getStatus: vi.fn(),
     enable: vi.fn(),
     disable: vi.fn(),
@@ -44,6 +45,7 @@ it("routes aliases to the same command", () => {
   expect(handlers.get("stats")).toBe(handlers.get("summary"));
   expect(handlers.get("s")).toBe(handlers.get("status"));
   expect(handlers.get("t")).toBe(handlers.get("top"));
+  expect(handlers.get("rc")).toBe(handlers.get("recent"));
   expect(handlers.get("upg")).toBe(handlers.get("upgrade"));
 });
 
@@ -78,6 +80,21 @@ it("sends top domains and clients as one reply", async () => {
   expect(ctx.reply.mock.calls[0][0]).toContain("1. <code>ads.example.com</code> — 3");
   expect(ctx.reply.mock.calls[0][1]).toEqual({ parse_mode: "HTML" });
   expect(ctx.reply.mock.calls[0][0]).toContain("⚠️ Top clients unavailable");
+});
+
+it("sends recently blocked domains as one reply", async () => {
+  piholeService.getRecentBlocked.mockResolvedValue([
+    { domain: "ads.example.com", time: Date.now() / 1000, ip: "10.0.0.2", name: "" },
+  ]);
+  const ctx = context();
+
+  await run("rc", ctx);
+
+  expect(ctx.reply).toHaveBeenCalledTimes(1);
+  expect(ctx.reply.mock.calls[0][0]).toContain(
+    "1. <code>ads.example.com</code> — just now · <code>10.0.0.2</code>"
+  );
+  expect(ctx.reply.mock.calls[0][1]).toEqual({ parse_mode: "HTML" });
 });
 
 it("reports authorization and logout outcomes", async () => {

@@ -127,6 +127,7 @@ npm start
 2. Use the available commands to control your Pi-hole:
    - `/summary` or `/stats` - Show Pi-hole health and activity summary
    - `/top` or `/t` - Show the top 10 blocked domains and top 5 clients
+   - `/recent` or `/rc` - Show the 10 most recently blocked domains, with when and which client asked for them
    - `/status` or `/s` - Display the running status of Pi-hole subsystems
    - `/messages` or `/m` - Show messages from Pi-hole
    - `/authorize` or `/a` - Authorize the bot
@@ -142,11 +143,11 @@ npm start
    - `/bot` or `/bv` - Show the version of the bot
    - `/help` - Show available commands and descriptions
 
-The reply keyboard lists read-only monitoring commands first (`/summary`, `/top`, `/status`, `/messages`), followed by session commands and then maintenance and destructive commands.
+The reply keyboard lists read-only monitoring commands first (`/summary`, `/top`, `/recent`, `/status`, `/messages`), followed by session commands and then maintenance and destructive commands.
 
 ### API authentication
 
-`/summary`, `/top` and `/messages` sign in to the Pi-hole API automatically using `PIHOLE_PASSWORD`, and sign in again once if the session has expired. You no longer need to run `/authorize` after restarting the bot. `/authorize` and `/logout` remain available for manual troubleshooting. On a graceful shutdown (`SIGINT`/`SIGTERM`, including PM2 restarts) the bot ends its Pi-hole API session so that restarts do not use up Pi-hole's session limit.
+`/summary`, `/top`, `/recent` and `/messages` sign in to the Pi-hole API automatically using `PIHOLE_PASSWORD`, and sign in again once if the session has expired. You no longer need to run `/authorize` after restarting the bot. `/authorize` and `/logout` remain available for manual troubleshooting. On a graceful shutdown (`SIGINT`/`SIGTERM`, including PM2 restarts) the bot ends its Pi-hole API session so that restarts do not use up Pi-hole's session limit.
 
 ## 🧪 Testing
 

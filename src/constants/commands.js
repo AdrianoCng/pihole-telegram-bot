@@ -4,6 +4,7 @@ import * as botController from "../controllers/botController.js";
 import * as summaryController from "../controllers/summaryController.js";
 import * as pauseController from "../controllers/pauseController.js";
 import * as topController from "../controllers/topController.js";
+import * as recentController from "../controllers/recentController.js";
 
 export const COMMANDS = [
   {
@@ -15,6 +16,11 @@ export const COMMANDS = [
     trigger: ["top", "t"],
     description: "Show top blocked domains and clients",
     handler: topController.topController,
+  },
+  {
+    trigger: ["recent", "rc"],
+    description: "Show the most recently blocked domains",
+    handler: recentController.recentController,
   },
   {
     trigger: ["status", "s"],

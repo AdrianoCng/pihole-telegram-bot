@@ -6,6 +6,7 @@ import { authenticatedGet, refreshSession } from "../piholeSession.js";
 import piholeService from "../piholeService.js";
 import spawnPiholeCommand from "../../helpers/spawnPiholeCommand.js";
 import { TOP_BLOCKED_DOMAINS_COUNT, TOP_CLIENTS_COUNT } from "../../constants/top.js";
+import { RECENT_BLOCKED_COUNT } from "../../constants/recent.js";
 
 vi.mock("../piholeSession.js");
 vi.mock("../../helpers/logSafeError.js");
@@ -145,4 +146,26 @@ it("rejects when both top reads fail", async () => {
   topReads({ domains: failure, clients: new Error("clients failed") });
 
   await expect(piholeService.getTop()).rejects.toBe(failure);
+});
+
+const recentPath = `${API_ENDPOINTS.QUERIES}?upstream=blocklist&length=${RECENT_BLOCKED_COUNT}`;
+
+it("reads recently blocked queries", async () => {
+  authenticatedGet.mockResolvedValue({
+    queries: [
+      { time: 1758801600, domain: "ads.example.com", client: { ip: "10.0.0.2", name: null } },
+    ],
+  });
+
+  await expect(piholeService.getRecentBlocked()).resolves.toEqual([
+    { domain: "ads.example.com", time: 1758801600, ip: "10.0.0.2", name: "" },
+  ]);
+  expect(authenticatedGet).toHaveBeenCalledWith(recentPath);
+});
+
+it("propagates recent read failures", async () => {
+  const failure = new TypeError("fetch failed");
+  authenticatedGet.mockRejectedValue(failure);
+
+  await expect(piholeService.getRecentBlocked()).rejects.toBe(failure);
 });
