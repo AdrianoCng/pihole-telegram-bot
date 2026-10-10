@@ -1,6 +1,6 @@
 import piholeService from "../services/piholeService.js";
 import systemService from "../services/systemService.js";
-import { sendMessage } from "../helpers/index.js";
+import sendMessage from "../helpers/sendMessage.js";
 
 const sendOutputTo = (ctx) => (output) => sendMessage(ctx, output);
 

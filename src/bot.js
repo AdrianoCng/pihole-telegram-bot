@@ -1,6 +1,8 @@
 import { getEnv } from "./helpers/config.js";
 import { Telegraf } from "telegraf";
-import { sendMessage, registerCommands, getMainMenu, registerActions } from "./helpers/index.js";
+import sendMessage from "./helpers/sendMessage.js";
+import { registerCommands, registerActions } from "./helpers/botCommands.js";
+import { getMainMenu } from "./helpers/keyboard.js";
 import { COMMANDS } from "./constants/commands.js";
 import typing from "./middlewares/typing.js";
 import authenticate from "./middlewares/authenticate.js";
