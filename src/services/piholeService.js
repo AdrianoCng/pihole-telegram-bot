@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from "../constants/api.js";
 import { CLI_COMMANDS } from "../constants/cli.js";
+import { TOP_BLOCKED_DOMAINS_COUNT, TOP_CLIENTS_COUNT } from "../constants/top.js";
 import { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
 import { logSafeError } from "../helpers/logSafeError.js";
 import spawnPiholeCommand from "../helpers/spawnPiholeCommand.js";
@@ -8,6 +9,7 @@ import {
   parseMessageCount,
   parseSummaryResponse,
 } from "../helpers/summaryParsers.js";
+import { parseTopClients, parseTopDomains } from "../helpers/topParsers.js";
 import { authenticatedGet, endSession, refreshSession } from "./piholeSession.js";
 
 export async function authorize() {
@@ -74,6 +76,41 @@ export async function getSummary() {
   };
 }
 
+/**
+ * Read top blocked domains and top clients concurrently. Either section may be
+ * null when its read fails; reject only when both fail.
+ */
+export async function getTop() {
+  const { TOP_DOMAINS, TOP_CLIENTS } = API_ENDPOINTS.STATS;
+  const [domains, clients] = await Promise.allSettled([
+    authenticatedGet(`${TOP_DOMAINS}?blocked=true&count=${TOP_BLOCKED_DOMAINS_COUNT}`),
+    authenticatedGet(`${TOP_CLIENTS}?count=${TOP_CLIENTS_COUNT}`),
+  ]);
+
+  const errors = [];
+  const fallback = (error) => {
+    errors.push(error);
+    return null;
+  };
+
+  const topDomains = optional(domains, {
+    parse: parseTopDomains,
+    fallback,
+    operation: "top-domains",
+    path: TOP_DOMAINS,
+  });
+  const topClients = optional(clients, {
+    parse: parseTopClients,
+    fallback,
+    operation: "top-clients",
+    path: TOP_CLIENTS,
+  });
+
+  if (topDomains === null && topClients === null) throw errors[0];
+
+  return { topDomains, topClients };
+}
+
 export function getStatus(onOutput) {
   return spawnPiholeCommand([CLI_COMMANDS.STATUS], onOutput);
 }
@@ -107,6 +144,7 @@ export default {
   logout,
   getMessages,
   getSummary,
+  getTop,
   getStatus,
   enable,
   disable,

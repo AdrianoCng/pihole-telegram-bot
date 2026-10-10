@@ -1,4 +1,4 @@
-const countFormatter = new Intl.NumberFormat("en-GB");
+import { formatCount, formatPercentage } from "./numberFormat.js";
 
 const STATUS_LINES = {
   active: "🟢 Pi-hole is active",
@@ -9,14 +9,6 @@ const STATUS_LINES = {
 const MINUTE_MS = 60 * 1000;
 const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
-
-export function formatCount(value) {
-  return countFormatter.format(value);
-}
-
-export function formatPercentage(value) {
-  return `${value.toFixed(1)}%`;
-}
 
 function plural(value, unit) {
   return `${value} ${unit}${value === 1 ? "" : "s"} ago`;

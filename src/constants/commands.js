@@ -3,12 +3,18 @@ import * as cliController from "../controllers/cliController.js";
 import * as botController from "../controllers/botController.js";
 import * as summaryController from "../controllers/summaryController.js";
 import * as pauseController from "../controllers/pauseController.js";
+import * as topController from "../controllers/topController.js";
 
 export const COMMANDS = [
   {
     trigger: ["summary", "stats"],
     description: "Show Pi-hole health and activity summary",
     handler: summaryController.summaryController,
+  },
+  {
+    trigger: ["top", "t"],
+    description: "Show top blocked domains and clients",
+    handler: topController.topController,
   },
   {
     trigger: ["status", "s"],
