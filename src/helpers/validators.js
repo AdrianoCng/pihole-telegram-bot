@@ -33,3 +33,8 @@ export function requireArray(value) {
   if (!Array.isArray(value)) throw invalidResponse();
   return value;
 }
+
+export function requireTimestamp(value) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) throw invalidResponse();
+  return value;
+}

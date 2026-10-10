@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from "../constants/api.js";
 import { CLI_COMMANDS } from "../constants/cli.js";
+import { RECENT_BLOCKED_COUNT } from "../constants/recent.js";
 import { TOP_BLOCKED_DOMAINS_COUNT, TOP_CLIENTS_COUNT } from "../constants/top.js";
 import { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
 import { logSafeError } from "../helpers/logSafeError.js";
@@ -9,6 +10,7 @@ import {
   parseMessageCount,
   parseSummaryResponse,
 } from "../helpers/summaryParsers.js";
+import { parseRecentBlocked } from "../helpers/recentParsers.js";
 import { parseTopClients, parseTopDomains } from "../helpers/topParsers.js";
 import { authenticatedGet, endSession, refreshSession } from "./piholeSession.js";
 
@@ -111,6 +113,14 @@ export async function getTop() {
   return { topDomains, topClients };
 }
 
+/** Read the most recent blocked queries, newest first. */
+export async function getRecentBlocked() {
+  const response = await authenticatedGet(
+    `${API_ENDPOINTS.QUERIES}?upstream=blocklist&length=${RECENT_BLOCKED_COUNT}`
+  );
+  return parseRecentBlocked(response);
+}
+
 export function getStatus(onOutput) {
   return spawnPiholeCommand([CLI_COMMANDS.STATUS], onOutput);
 }
@@ -145,6 +155,7 @@ export default {
   getMessages,
   getSummary,
   getTop,
+  getRecentBlocked,
   getStatus,
   enable,
   disable,
