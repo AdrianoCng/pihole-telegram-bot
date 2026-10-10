@@ -15,7 +15,10 @@ it("parses top domains and caps them at the configured count", () => {
 });
 
 it("parses top clients with optional names and caps them at the configured count", () => {
-  const clients = Array.from({ length: 7 }, (_, i) => ({ ip: `10.0.0.${i}`, count: i }));
+  const clients = Array.from({ length: TOP_CLIENTS_COUNT + 1 }, (_, i) => ({
+    ip: `10.0.0.${i}`,
+    count: i,
+  }));
   clients[1].name = "phone";
 
   const parsed = parseTopClients({ clients });
