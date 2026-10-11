@@ -8,9 +8,11 @@ describe("logSafeError", () => {
 
   beforeEach(() => {
     log = vi.spyOn(console, "error").mockImplementation(() => {});
+    delete process.env.DEBUG;
   });
 
   afterEach(() => {
+    delete process.env.DEBUG;
     log.mockRestore();
   });
 
@@ -99,5 +101,23 @@ describe("logSafeError", () => {
       exitCode: 4,
       afterRetry: false,
     });
+  });
+
+  it("also logs the full error when DEBUG is true", () => {
+    process.env.DEBUG = "true";
+    const error = new Error("boom", { cause: new Error("root") });
+
+    logSafeError({ operation: "summary", path: "/stats/summary", error });
+
+    expect(log).toHaveBeenCalledTimes(2);
+    expect(log).toHaveBeenNthCalledWith(2, "[debug]", { operation: "summary" }, error);
+  });
+
+  it("does not log the full error when DEBUG is false", () => {
+    process.env.DEBUG = "false";
+
+    logSafeError({ operation: "summary", path: "/stats/summary", error: new Error("boom") });
+
+    expect(log).toHaveBeenCalledTimes(1);
   });
 });

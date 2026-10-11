@@ -6,3 +6,9 @@ export function getEnv(key) {
   }
   return value;
 }
+
+/** Read an optional boolean flag. Only "true" or "1" enable it. */
+export function getBooleanEnv(key) {
+  const value = process.env[key]?.trim().toLowerCase();
+  return value === "true" || value === "1";
+}

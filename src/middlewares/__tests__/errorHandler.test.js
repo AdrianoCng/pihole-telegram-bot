@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { DEFAULT_ERROR_MESSAGES } from "../../constants/errorMessages.js";
 import CommandError from "../../errors/CommandError.js";
 import PiholeError, { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
@@ -15,6 +15,11 @@ const piholeError = (code, status) =>
 describe("errorHandler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.DEBUG;
+  });
+
+  afterEach(() => {
+    delete process.env.DEBUG;
   });
 
   it.each([
@@ -79,5 +84,40 @@ describe("errorHandler", () => {
       path: "telegram",
       error: replyError,
     });
+  });
+
+  it("appends error details to the reply when DEBUG is true", async () => {
+    process.env.DEBUG = "true";
+    sendMessage.mockResolvedValue();
+
+    await handleBotError(piholeError(PIHOLE_ERROR_CODES.HTTP, 500), {});
+
+    const reply = sendMessage.mock.calls[0][1];
+    expect(reply.startsWith(DEFAULT_ERROR_MESSAGES.REQUEST_FAILED)).toBe(true);
+    expect(reply).toContain("Static failure");
+    expect(reply).toContain("status: 500");
+    expect(reply).toContain("path: /test");
+  });
+
+  it("sends the original error message to the chat when DEBUG is true", async () => {
+    process.env.DEBUG = "true";
+    sendMessage.mockResolvedValue();
+    const ctx = {};
+
+    await handleBotError(new Error("secret detail"), ctx);
+
+    expect(sendMessage).toHaveBeenCalledWith(
+      ctx,
+      `${DEFAULT_ERROR_MESSAGES.UNEXPECTED}\n\n[i] Debug: Error: secret detail`
+    );
+  });
+
+  it("sends only the fixed message when DEBUG is false", async () => {
+    process.env.DEBUG = "false";
+    sendMessage.mockResolvedValue();
+
+    await handleBotError(new Error("secret detail"), {});
+
+    expect(sendMessage).toHaveBeenCalledWith({}, DEFAULT_ERROR_MESSAGES.UNEXPECTED);
   });
 });
