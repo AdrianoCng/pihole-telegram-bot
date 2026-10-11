@@ -68,7 +68,10 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
    PIHOLE_PASSWORD=your_pihole_admin_password_here
    PIHOLE_IP=your_pihole_ip_address_here
    ALLOWED_USER=your_telegram_user_id_here
+   DEBUG=false
    ```
+
+   `DEBUG` is optional. When set to `true`, error replies in Telegram also include the underlying error details, and the full error (message, stack, cause) is written to the console log. Keep it off in normal use, as details may reveal internal URLs or paths.
 
    Example:
 

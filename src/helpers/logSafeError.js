@@ -1,6 +1,9 @@
+import { getBooleanEnv } from "./config.js";
+
 /**
  * Log a Pi-hole failure using only allowlisted fields. Never pass headers,
- * session IDs, passwords, payloads, or raw error objects to the console.
+ * session IDs, passwords, or payloads. When DEBUG is enabled, the full error
+ * (message, stack, cause) is also logged to help diagnose failures locally.
  */
 export function logSafeError({
   operation,
@@ -17,6 +20,10 @@ export function logSafeError({
   details.afterRetry = afterRetry;
 
   console.error(JSON.stringify(details));
+
+  if (error !== undefined && getBooleanEnv("DEBUG")) {
+    console.error("[debug]", { operation }, error);
+  }
 }
 
 export default logSafeError;
