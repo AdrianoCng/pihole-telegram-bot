@@ -5,7 +5,6 @@ export function parseSummaryResponse(payload) {
   const { queries, clients, gravity } = payload ?? {};
 
   console.log("payload", payload);
-  console.log("queries", queries);
 
   return {
     queries: {
