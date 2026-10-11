@@ -18,7 +18,7 @@ export function classifyError(error) {
 
   if (NETWORK_ERROR_NAMES.has(error?.name)) return ERROR_KINDS.NOT_RESPONDING;
 
-  return ERROR_KINDS.UNEXPECTED;
+  return error?.message || ERROR_KINDS.UNEXPECTED;
 }
 
 export default classifyError;
