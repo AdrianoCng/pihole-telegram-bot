@@ -8,6 +8,13 @@ export function invalidResponse() {
   });
 }
 
+export function invalidPayload() {
+  return new PiholeError({
+    code: PIHOLE_ERROR_CODES.INVALID_PAYLOAD,
+    message: "Pi-hole returned an invalid payload",
+  });
+}
+
 export function isCount(value) {
   return Number.isInteger(value) && value >= 0;
 }
