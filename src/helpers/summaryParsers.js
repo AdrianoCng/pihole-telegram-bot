@@ -4,8 +4,6 @@ import { requireCount, requirePercentage } from "./validators.js";
 export function parseSummaryResponse(payload) {
   const { queries, clients, gravity } = payload ?? {};
 
-  console.log("payload", payload);
-
   return {
     queries: {
       total: requireCount(queries?.total),
