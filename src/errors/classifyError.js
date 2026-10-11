@@ -11,6 +11,9 @@ export function classifyError(error) {
     if (error.code === PIHOLE_ERROR_CODES.INVALID_RESPONSE) {
       return ERROR_KINDS.INVALID_RESPONSE;
     }
+    if (error.code === PIHOLE_ERROR_CODES.INVALID_PAYLOAD) {
+      return ERROR_KINDS.INVALID_PAYLOAD;
+    }
     return ERROR_KINDS.REQUEST_FAILED;
   }
 

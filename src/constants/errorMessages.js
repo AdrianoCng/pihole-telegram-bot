@@ -5,6 +5,7 @@ export const ERROR_KINDS = {
   REQUEST_FAILED: "REQUEST_FAILED",
   COMMAND_FAILED: "COMMAND_FAILED",
   UNEXPECTED: "UNEXPECTED",
+  INVALID_PAYLOAD: "INVALID_PAYLOAD",
 };
 
 export const NETWORK_ERROR_NAMES = new Set(["TypeError", "TimeoutError", "AbortError"]);
@@ -17,4 +18,5 @@ export const DEFAULT_ERROR_MESSAGES = {
   [ERROR_KINDS.REQUEST_FAILED]: "❌ Pi-hole request failed.",
   [ERROR_KINDS.COMMAND_FAILED]: (error) => `❌ Command failed with exit code ${error.exitCode}`,
   [ERROR_KINDS.UNEXPECTED]: "❌ Something went wrong. Check the bot logs.",
+  [ERROR_KINDS.INVALID_PAYLOAD]: "❌ Pi-hole returned an invalid payload.",
 };
