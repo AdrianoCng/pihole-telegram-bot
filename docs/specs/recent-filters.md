@@ -1,6 +1,6 @@
 # Spec: filtered recent blocks
 
-Status: proposed.
+Status: implemented.
 
 ## Problem
 
@@ -16,7 +16,7 @@ Status: proposed.
 
 - Allowed (non-blocked) queries. Filtered results stay blocked-only, consistent with `/recent`. Showing every status is a candidate follow-up.
 - Pagination, custom result counts, or time ranges. The count stays at `RECENT_BLOCKED_COUNT` (10).
-- Wildcard or regex domain matching.
+- Regex matching. `*` is the only documented wildcard (see the `_` caveat under the wildcard rules).
 - Allow/deny actions from the results. Planned separately.
 - A new command. The filters are arguments of `/recent` and its alias `/rc`.
 
@@ -45,7 +45,8 @@ Parsing rules:
 - Otherwise, a single token that is a valid IP address is a client IP filter, and any other single token that is a valid hostname is a client name filter.
 - The keyword `domain` (case-insensitive) followed by exactly one token is a domain filter. A client literally named `domain` therefore cannot be filtered by name. Use its IP instead.
 - Domains are lowercased, and a single trailing dot is stripped (`example.com.` becomes `example.com`). Hostnames are passed through as typed.
-- Valid names match `[A-Za-z0-9_][A-Za-z0-9_.-]{0,252}`. Anything else is rejected before it reaches the API.
+- Valid names match `[A-Za-z0-9_*][A-Za-z0-9_.*-]{0,252}`. Anything else is rejected before it reaches the API.
+- `*` is a wildcard in client IPs, hostnames and domains, passed to Pi-hole unchanged (e.g. `/recent 192.168.1.*`, `/recent *phone*`, `/recent domain *.example.com`). A value containing `*` is a client IP filter when it only has IP characters (`0-9 . *` for IPv4, or hex digits, `:`, `.` and `*` with at least one `:` for IPv6), and a client name filter otherwise. A pattern without any letter or digit (`*`, `*.*`) is rejected. Known limitation: when a value contains `*`, Pi-hole implements the filter with SQL `LIKE`, so `_` also matches any single character (e.g. `/recent my_phone*` can match `myXphone-1`). The bot does not reject or escape `_`; this is intentionally left as is.
 - IPv6 zone IDs (`fe80::1%eth0`) are rejected, even though `isIP` accepts them.
 
 Reply format reuses the existing layout. When a filter is active, the title names it:
@@ -66,7 +67,7 @@ Empty result: `No blocked queries for client 192.168.1.5` (or `domain ...`). Pla
 Invalid input:
 
 ```
-❌ Invalid filter. Send /recent, /recent <client IP or hostname>, or /recent domain <domain>, e.g. /recent 192.168.1.5 or /recent domain ads.example.com.
+❌ Invalid filter. Send /recent, /recent <client IP or hostname>, or /recent domain <domain>, e.g. /recent 192.168.1.5 or /recent domain ads.example.com. Use * as a wildcard, e.g. /recent 192.168.1.* or /recent domain *.example.com.
 ```
 
 The filter value is user input, so it is HTML-escaped and truncated like other labels. This applies everywhere it appears: inside the bold title and in the filtered empty message, both of which are sent with `parse_mode: "HTML"`.
@@ -86,10 +87,12 @@ Follows the layering in `docs/agent-guides/architecture.md`.
 
 Record the findings in this spec before coding.
 
-- [ ] `client_ip`, `client_name` and `domain` each combine with `upstream=blocklist`.
-- [ ] `length` is applied after filtering, not before. Otherwise filtered results would be mostly empty.
-- [ ] `client_name` is an exact match and matches the hostname Pi-hole displays.
-- [ ] What `upstream=blocklist` covers: only list (gravity) blocks, or also regex and exact-deny blocks. If it misses some, `/recent domain x` can report no blocks for a domain that is blocked, and the empty message and risks below need updating.
+Verified by the owner on Pi-hole v6 before implementation.
+
+- [x] `client_ip`, `client_name` and `domain` each combine with `upstream=blocklist`.
+- [x] `length` is applied after filtering, not before. Otherwise filtered results would be mostly empty.
+- [x] `client_name` is an exact match and matches the hostname Pi-hole displays.
+- [x] What `upstream=blocklist` covers: only list (gravity) blocks, or also regex and exact-deny blocks. If it misses some, `/recent domain x` can report no blocks for a domain that is blocked, and the empty message and risks below need updating.
 - **Parsing of responses:** `parseRecentBlocked` is unchanged.
 
 No new constants or error types are needed. The usage message lives in the controller, as in `pauseController`.
@@ -105,7 +108,7 @@ No new constants or error types are needed. The usage message lives in the contr
 - The `recent` description in `src/constants/commands.js` mentions the filters.
 - Whitespace-only payloads behave as plain `/recent`.
 - Tests, matching the existing suites:
-  - `recentFilter` parser: all, whitespace-only, IP, IPv6, IPv6 zone ID rejected, hostname, domain, bare `domain` rejected, case handling, trailing dot, rejections.
+  - `recentFilter` parser: all, whitespace-only, IP, IPv6, IPv6 zone ID rejected, hostname, domain, wildcards, bare `domain` rejected, case handling, trailing dot, rejections.
   - `recentFormat`: filtered title, escaping in title and empty message, filtered empty state, unfiltered output unchanged.
   - `piholeService`: each filter's request path, unfiltered path unchanged (parameter order pinned).
   - `commandFlows`: filtered call through `/recent` and `/rc`, invalid filter makes no service call.

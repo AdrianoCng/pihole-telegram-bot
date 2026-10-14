@@ -113,11 +113,18 @@ export async function getTop() {
   return { topDomains, topClients };
 }
 
-/** Read the most recent blocked queries, newest first. */
-export async function getRecentBlocked() {
-  const response = await authenticatedGet(
-    `${API_ENDPOINTS.QUERIES}?upstream=blocklist&length=${RECENT_BLOCKED_COUNT}`
-  );
+/**
+ * Read the most recent blocked queries, newest first. An optional
+ * `{ param, value }` filter adds one URL-encoded query parameter.
+ */
+export async function getRecentBlocked(filter) {
+  const query = new URLSearchParams({
+    upstream: "blocklist",
+    length: String(RECENT_BLOCKED_COUNT),
+  });
+  if (filter) query.set(filter.param, filter.value);
+
+  const response = await authenticatedGet(`${API_ENDPOINTS.QUERIES}?${query}`);
   return parseRecentBlocked(response);
 }
 
