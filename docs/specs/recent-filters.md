@@ -1,6 +1,6 @@
 # Spec: filtered recent blocks
 
-Status: proposed. Roadmap feature 1 (see [`../ROADMAP.md`](../ROADMAP.md)).
+Status: proposed.
 
 ## Problem
 
@@ -17,7 +17,7 @@ Status: proposed. Roadmap feature 1 (see [`../ROADMAP.md`](../ROADMAP.md)).
 - Allowed (non-blocked) queries. Filtered results stay blocked-only, consistent with `/recent`. Showing every status is a candidate follow-up.
 - Pagination, custom result counts, or time ranges. The count stays at `RECENT_BLOCKED_COUNT` (10).
 - Wildcard or regex domain matching.
-- Allow/deny actions from the results. That is roadmap feature 2.
+- Allow/deny actions from the results. Planned separately.
 - A new command. The filters are arguments of `/recent` and its alias `/rc`.
 
 ## User stories
