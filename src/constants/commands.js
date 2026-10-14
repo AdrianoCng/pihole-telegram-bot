@@ -19,7 +19,7 @@ export const COMMANDS = [
   },
   {
     trigger: ["recent", "rc"],
-    description: "Show the most recently blocked domains",
+    description: "Show recently blocked domains, optionally for one client or domain",
     handler: recentController.recentController,
   },
   {

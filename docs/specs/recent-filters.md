@@ -1,6 +1,6 @@
 # Spec: filtered recent blocks
 
-Status: proposed.
+Status: implemented.
 
 ## Problem
 
@@ -86,10 +86,12 @@ Follows the layering in `docs/agent-guides/architecture.md`.
 
 Record the findings in this spec before coding.
 
-- [ ] `client_ip`, `client_name` and `domain` each combine with `upstream=blocklist`.
-- [ ] `length` is applied after filtering, not before. Otherwise filtered results would be mostly empty.
-- [ ] `client_name` is an exact match and matches the hostname Pi-hole displays.
-- [ ] What `upstream=blocklist` covers: only list (gravity) blocks, or also regex and exact-deny blocks. If it misses some, `/recent domain x` can report no blocks for a domain that is blocked, and the empty message and risks below need updating.
+Verified by the owner on Pi-hole v6 before implementation.
+
+- [x] `client_ip`, `client_name` and `domain` each combine with `upstream=blocklist`.
+- [x] `length` is applied after filtering, not before. Otherwise filtered results would be mostly empty.
+- [x] `client_name` is an exact match and matches the hostname Pi-hole displays.
+- [x] What `upstream=blocklist` covers: only list (gravity) blocks, or also regex and exact-deny blocks. If it misses some, `/recent domain x` can report no blocks for a domain that is blocked, and the empty message and risks below need updating.
 - **Parsing of responses:** `parseRecentBlocked` is unchanged.
 
 No new constants or error types are needed. The usage message lives in the controller, as in `pauseController`.
