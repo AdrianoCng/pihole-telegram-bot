@@ -149,7 +149,7 @@ it("rejects an invalid recent filter without reading Pi-hole", async () => {
   expect(piholeService.getRecentBlocked).not.toHaveBeenCalled();
   expect(ctx.reply).toHaveBeenCalledTimes(1);
   expect(ctx.reply.mock.calls[0][0]).toBe(
-    "❌ Invalid filter. Send /recent, /recent <client IP or hostname>, or /recent domain <domain>, e.g. /recent 192.168.1.5 or /recent domain ads.example.com."
+    "❌ Invalid filter. Send /recent, /recent <client IP or hostname>, or /recent domain <domain>, e.g. /recent 192.168.1.5 or /recent domain ads.example.com. Use * as a wildcard, e.g. /recent 192.168.1.* or /recent domain *.example.com."
   );
 });
 

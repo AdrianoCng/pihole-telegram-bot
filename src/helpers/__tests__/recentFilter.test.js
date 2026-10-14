@@ -28,6 +28,22 @@ it("filters by client name as typed", () => {
   expect(parseRecentFilter("_host")).toEqual(client("client_name", "_host"));
 });
 
+it("filters by client IP with wildcards", () => {
+  expect(parseRecentFilter("192.168.1.*")).toEqual(client("client_ip", "192.168.1.*"));
+  expect(parseRecentFilter("10.*")).toEqual(client("client_ip", "10.*"));
+  expect(parseRecentFilter("fd00::*")).toEqual(client("client_ip", "fd00::*"));
+});
+
+it("filters by client name with wildcards", () => {
+  expect(parseRecentFilter("*phone*")).toEqual(client("client_name", "*phone*"));
+  expect(parseRecentFilter("Laptop-*")).toEqual(client("client_name", "Laptop-*"));
+});
+
+it("filters by domain with wildcards", () => {
+  expect(parseRecentFilter("domain *.Example.com.")).toEqual(domain("*.example.com"));
+  expect(parseRecentFilter("domain *doubleclick*")).toEqual(domain("*doubleclick*"));
+});
+
 it("filters by domain, lowercased without a trailing dot", () => {
   expect(parseRecentFilter("domain ads.example.com")).toEqual(domain("ads.example.com"));
   expect(parseRecentFilter("DOMAIN  Ads.Example.COM.")).toEqual(domain("ads.example.com"));
@@ -54,6 +70,13 @@ it.each([
   ["domain a&b=c"],
   ["domain -ads.example.com"],
   ["192.168.1.5:53"],
+  ["*"],
+  ["**"],
+  ["*.*"],
+  ["domain *"],
+  ["domain *.*"],
+  ["fe80::*%eth0"],
+  ["*?"],
 ])("rejects %j", (payload) => {
   expect(parseRecentFilter(payload)).toBeNull();
 });

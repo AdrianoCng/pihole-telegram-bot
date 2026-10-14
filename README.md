@@ -130,7 +130,7 @@ npm start
 2. Use the available commands to control your Pi-hole:
    - `/summary` or `/stats` - Show Pi-hole health and activity summary
    - `/top` or `/t` - Show the top 10 blocked domains and top 5 clients
-   - `/recent` or `/rc` - Show the 10 most recently blocked domains, with when and which client asked for them. Add a client IP or hostname to filter by client, e.g. `/recent 192.168.1.5` or `/recent my-phone`, or `domain <domain>` to filter by exact domain, e.g. `/recent domain ads.example.com`
+   - `/recent` or `/rc` - Show the 10 most recently blocked domains, with when and which client asked for them. Add a client IP or hostname to filter by client, e.g. `/recent 192.168.1.5` or `/recent my-phone`, or `domain <domain>` to filter by exact domain, e.g. `/recent domain ads.example.com`. Use `*` as a wildcard, e.g. `/recent 192.168.1.*`, `/recent *phone*` or `/recent domain *.example.com`
    - `/status` or `/s` - Display the running status of Pi-hole subsystems
    - `/messages` or `/m` - Show messages from Pi-hole
    - `/authorize` or `/a` - Authorize the bot

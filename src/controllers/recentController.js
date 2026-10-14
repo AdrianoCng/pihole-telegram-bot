@@ -4,7 +4,7 @@ import { parseRecentFilter } from "../helpers/recentFilter.js";
 import { renderRecent } from "../helpers/recentFormat.js";
 
 const USAGE_MESSAGE =
-  "Send /recent, /recent <client IP or hostname>, or /recent domain <domain>, e.g. /recent 192.168.1.5 or /recent domain ads.example.com.";
+  "Send /recent, /recent <client IP or hostname>, or /recent domain <domain>, e.g. /recent 192.168.1.5 or /recent domain ads.example.com. Use * as a wildcard, e.g. /recent 192.168.1.* or /recent domain *.example.com.";
 
 export async function recentController(ctx) {
   const filter = parseRecentFilter(ctx.payload);
