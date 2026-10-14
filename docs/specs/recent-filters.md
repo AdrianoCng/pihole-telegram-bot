@@ -16,7 +16,7 @@ Status: implemented.
 
 - Allowed (non-blocked) queries. Filtered results stay blocked-only, consistent with `/recent`. Showing every status is a candidate follow-up.
 - Pagination, custom result counts, or time ranges. The count stays at `RECENT_BLOCKED_COUNT` (10).
-- Regex matching. Only the `*` wildcard is supported.
+- Regex matching. `*` is the only documented wildcard (see the `_` caveat under the wildcard rules).
 - Allow/deny actions from the results. Planned separately.
 - A new command. The filters are arguments of `/recent` and its alias `/rc`.
 
@@ -46,7 +46,7 @@ Parsing rules:
 - The keyword `domain` (case-insensitive) followed by exactly one token is a domain filter. A client literally named `domain` therefore cannot be filtered by name. Use its IP instead.
 - Domains are lowercased, and a single trailing dot is stripped (`example.com.` becomes `example.com`). Hostnames are passed through as typed.
 - Valid names match `[A-Za-z0-9_*][A-Za-z0-9_.*-]{0,252}`. Anything else is rejected before it reaches the API.
-- `*` is a wildcard in client IPs, hostnames and domains, passed to Pi-hole unchanged (e.g. `/recent 192.168.1.*`, `/recent *phone*`, `/recent domain *.example.com`). A value containing `*` is a client IP filter when it only has IP characters (`0-9 . *` for IPv4, or hex digits, `:`, `.` and `*` with at least one `:` for IPv6), and a client name filter otherwise. A pattern without any letter or digit (`*`, `*.*`) is rejected.
+- `*` is a wildcard in client IPs, hostnames and domains, passed to Pi-hole unchanged (e.g. `/recent 192.168.1.*`, `/recent *phone*`, `/recent domain *.example.com`). A value containing `*` is a client IP filter when it only has IP characters (`0-9 . *` for IPv4, or hex digits, `:`, `.` and `*` with at least one `:` for IPv6), and a client name filter otherwise. A pattern without any letter or digit (`*`, `*.*`) is rejected. Known limitation: when a value contains `*`, Pi-hole implements the filter with SQL `LIKE`, so `_` also matches any single character (e.g. `/recent my_phone*` can match `myXphone-1`). The bot does not reject or escape `_`; this is intentionally left as is.
 - IPv6 zone IDs (`fe80::1%eth0`) are rejected, even though `isIP` accepts them.
 
 Reply format reuses the existing layout. When a filter is active, the title names it:
