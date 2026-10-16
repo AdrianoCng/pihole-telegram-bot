@@ -5,7 +5,7 @@ import { toTelegramCommands } from "./src/app/registry.js";
 import { validateConfig } from "./src/config.js";
 import api from "./src/pihole/client.js";
 import { API_ENDPOINTS } from "./src/pihole/endpoints.js";
-import piholeService from "./src/services/piholeService.js";
+import { endSession } from "./src/pihole/session.js";
 import { logSafeError } from "./src/shared/logSafeError.js";
 import { SHUTDOWN_LOGOUT_TIMEOUT_MS } from "./src/shared/timers.js";
 
@@ -27,7 +27,7 @@ bot.launch();
 async function shutdown(signal) {
   if (api.hasSession()) {
     try {
-      await piholeService.logout({
+      await endSession({
         signal: AbortSignal.timeout(SHUTDOWN_LOGOUT_TIMEOUT_MS),
       });
     } catch (error) {

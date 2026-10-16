@@ -6,8 +6,7 @@ import typing from "../middleware/typing.js";
 import handleBotError from "../middleware/errorHandler.js";
 import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../../shared/timers.js";
 import { createMockContext } from "../../__tests__/helpers/testUtils.js";
-import { PAUSE_ACTION_PATTERN } from "../../constants/pause.js";
-import { pauseActionController } from "../../controllers/pauseController.js";
+import { pauseAction } from "../../features/pause/command.js";
 
 vi.mock("telegraf", async (importOriginal) => ({
   ...(await importOriginal()),
@@ -77,5 +76,5 @@ it("registers the central error boundary", () => {
 });
 
 it("routes pause buttons to the pause action handler", () => {
-  expect(registrations.actions).toEqual([[PAUSE_ACTION_PATTERN, pauseActionController]]);
+  expect(registrations.actions).toEqual([[pauseAction.trigger, pauseAction.handler]]);
 });

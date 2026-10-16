@@ -11,3 +11,8 @@ export default function sendMessage(ctx, message, extra) {
 
   return ctx.reply(message, extra);
 }
+
+/** Stream command output to the chat, one reply per chunk. */
+export function sendOutputTo(ctx) {
+  return (output) => sendMessage(ctx, output);
+}
