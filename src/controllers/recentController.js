@@ -1,5 +1,5 @@
 import piholeService from "../services/piholeService.js";
-import sendMessage from "../helpers/sendMessage.js";
+import sendMessage from "../shared/telegram/sendMessage.js";
 import { parseRecentFilter } from "../helpers/recentFilter.js";
 import { renderRecent } from "../helpers/recentFormat.js";
 

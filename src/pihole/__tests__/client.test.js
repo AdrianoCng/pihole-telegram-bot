@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
-import { mockApiResponse } from "./helpers/testUtils.js";
+import { mockApiResponse } from "../../__tests__/helpers/testUtils.js";
 
 describe("Pi-hole HTTP client", () => {
   let api;
   const originalFetch = global.fetch;
 
   beforeAll(async () => {
-    api = (await import("../api.js")).default;
+    api = (await import("../client.js")).default;
   });
 
   beforeEach(() => {

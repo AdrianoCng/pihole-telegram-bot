@@ -1,5 +1,5 @@
-import { formatCount, formatPercentage } from "./numberFormat.js";
-import { formatAge } from "./timeFormat.js";
+import { formatCount, formatPercentage } from "../shared/format/number.js";
+import { formatAge } from "../shared/format/time.js";
 
 const STATUS_LINES = {
   active: "🟢 Pi-hole is active",

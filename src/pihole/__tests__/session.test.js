@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import api from "../../api.js";
-import { API_ENDPOINTS } from "../../constants/api.js";
-import { REQUEST_TIMEOUT_MS } from "../../constants/timers.js";
-import { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
+import api from "../client.js";
+import { API_ENDPOINTS } from "../endpoints.js";
+import { REQUEST_TIMEOUT_MS } from "../../shared/timers.js";
+import { PIHOLE_ERROR_CODES } from "../../shared/errors/PiholeError.js";
 import { mockApiResponse } from "../../__tests__/helpers/testUtils.js";
-import { authenticatedGet, endSession, ensureSession, refreshSession } from "../piholeSession.js";
+import { authenticatedGet, endSession, ensureSession, refreshSession } from "../session.js";
 
 const PASSWORD = "test-password";
 const AUTH_URL = `${api.BASE_URL}${API_ENDPOINTS.AUTH}`;

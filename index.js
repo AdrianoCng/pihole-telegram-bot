@@ -1,11 +1,11 @@
 import "dotenv/config";
 import bot from "./src/bot.js";
-import api from "./src/api.js";
-import { API_ENDPOINTS } from "./src/constants/api.js";
+import api from "./src/pihole/client.js";
+import { API_ENDPOINTS } from "./src/pihole/endpoints.js";
 import { COMMANDS } from "./src/constants/commands.js";
-import { logSafeError } from "./src/helpers/logSafeError.js";
+import { logSafeError } from "./src/shared/logSafeError.js";
 import piholeService from "./src/services/piholeService.js";
-import { SHUTDOWN_LOGOUT_TIMEOUT_MS } from "./src/constants/timers.js";
+import { SHUTDOWN_LOGOUT_TIMEOUT_MS } from "./src/shared/timers.js";
 
 const telegramCommands = COMMANDS.map(({ trigger, description }) => ({
   command: Array.isArray(trigger) ? trigger[0] : trigger,

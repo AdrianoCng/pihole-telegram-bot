@@ -1,6 +1,10 @@
-import { TELEGRAM_MESSAGE_MAX_LENGTH } from "../constants/top.js";
-import { clientLabel, code, truncate } from "./htmlFormat.js";
-import { formatCount } from "./numberFormat.js";
+import {
+  TELEGRAM_MESSAGE_MAX_LENGTH,
+  clientLabel,
+  code,
+  truncate,
+} from "../shared/telegram/html.js";
+import { formatCount } from "../shared/format/number.js";
 
 function renderSection(title, entries, { unavailable, empty, label }) {
   if (entries === null) return [`⚠️ ${unavailable}`];

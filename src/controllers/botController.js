@@ -1,4 +1,4 @@
-import sendMessage from "../helpers/sendMessage.js";
+import sendMessage from "../shared/telegram/sendMessage.js";
 import { getMainMenu } from "../helpers/keyboard.js";
 import botService from "../services/botService.js";
 

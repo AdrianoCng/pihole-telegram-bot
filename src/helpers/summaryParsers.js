@@ -1,4 +1,4 @@
-import { requireCount, requirePercentage } from "./validators.js";
+import { requireCount, requirePercentage } from "../shared/validators.js";
 
 /** Validate the required /stats/summary payload. Never coerces or defaults. */
 export function parseSummaryResponse(payload) {

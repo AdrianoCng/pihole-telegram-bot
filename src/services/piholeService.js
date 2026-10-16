@@ -1,10 +1,9 @@
-import { API_ENDPOINTS } from "../constants/api.js";
-import { CLI_COMMANDS } from "../constants/cli.js";
+import { API_ENDPOINTS } from "../pihole/endpoints.js";
 import { RECENT_BLOCKED_COUNT } from "../constants/recent.js";
 import { TOP_BLOCKED_DOMAINS_COUNT, TOP_CLIENTS_COUNT } from "../constants/top.js";
-import { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
-import { logSafeError } from "../helpers/logSafeError.js";
-import spawnPiholeCommand from "../helpers/spawnPiholeCommand.js";
+import { PIHOLE_ERROR_CODES } from "../shared/errors/PiholeError.js";
+import { logSafeError } from "../shared/logSafeError.js";
+import spawnPiholeCommand, { CLI_COMMANDS } from "../pihole/cli.js";
 import {
   parseBlockingState,
   parseMessageCount,
@@ -12,7 +11,7 @@ import {
 } from "../helpers/summaryParsers.js";
 import { parseRecentBlocked } from "../helpers/recentParsers.js";
 import { parseTopClients, parseTopDomains } from "../helpers/topParsers.js";
-import { authenticatedGet, endSession, refreshSession } from "./piholeSession.js";
+import { authenticatedGet, endSession, refreshSession } from "../pihole/session.js";
 
 export async function authorize() {
   try {

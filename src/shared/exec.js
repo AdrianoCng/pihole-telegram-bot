@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
-import { COMMAND_TIMEOUT_MS } from "../constants/timers.js";
-import CommandError from "../errors/CommandError.js";
+import { COMMAND_TIMEOUT_MS } from "./timers.js";
+import CommandError from "./errors/CommandError.js";
 
 /**
  * Run a command with sudo and report each output chunk through a transport-neutral callback.

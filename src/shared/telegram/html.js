@@ -1,6 +1,7 @@
-import { TOP_LABEL_MAX_LENGTH } from "../constants/top.js";
+export const LABEL_MAX_LENGTH = 60;
+export const TELEGRAM_MESSAGE_MAX_LENGTH = 4096;
 
-export function truncate(value, maxLength = TOP_LABEL_MAX_LENGTH) {
+export function truncate(value, maxLength = LABEL_MAX_LENGTH) {
   return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
 }
 

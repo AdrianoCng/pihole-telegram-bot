@@ -1,5 +1,5 @@
 import { it, expect } from "vitest";
-import { formatAge } from "../timeFormat.js";
+import { formatAge } from "../time.js";
 
 const now = Date.UTC(2026, 8, 25, 12);
 const ago = (seconds) => now / 1000 - seconds;

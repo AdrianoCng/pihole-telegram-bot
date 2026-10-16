@@ -1,5 +1,5 @@
 import piholeService from "../services/piholeService.js";
-import sendMessage from "../helpers/sendMessage.js";
+import sendMessage from "../shared/telegram/sendMessage.js";
 
 export async function authorizeController(ctx) {
   const authorized = await piholeService.authorize();

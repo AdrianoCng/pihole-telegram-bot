@@ -1,4 +1,4 @@
-import { ERROR_KINDS, NETWORK_ERROR_NAMES } from "../constants/errorMessages.js";
+import { ERROR_KINDS, NETWORK_ERROR_NAMES } from "./messages.js";
 import CommandError from "./CommandError.js";
 import PiholeError, { PIHOLE_ERROR_CODES } from "./PiholeError.js";
 

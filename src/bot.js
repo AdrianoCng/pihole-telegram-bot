@@ -1,13 +1,13 @@
-import { getEnv } from "./helpers/config.js";
+import { getEnv } from "./config.js";
 import { Telegraf } from "telegraf";
-import sendMessage from "./helpers/sendMessage.js";
+import sendMessage from "./shared/telegram/sendMessage.js";
 import { registerCommands, registerActions } from "./helpers/botCommands.js";
 import { getMainMenu } from "./helpers/keyboard.js";
 import { COMMANDS } from "./constants/commands.js";
 import typing from "./middlewares/typing.js";
 import authenticate from "./middlewares/authenticate.js";
 import handleBotError from "./middlewares/errorHandler.js";
-import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "./constants/timers.js";
+import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "./shared/timers.js";
 
 const bot = new Telegraf(getEnv("BOT_TOKEN"), {
   handlerTimeout: TELEGRAM_MESSAGE_TIMEOUT_MS,

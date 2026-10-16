@@ -1,5 +1,5 @@
 import { it, expect } from "vitest";
-import { formatCount, formatPercentage } from "../numberFormat.js";
+import { formatCount, formatPercentage } from "../number.js";
 
 it("formats counts with thousands separators", () => {
   expect(formatCount(0)).toBe("0");

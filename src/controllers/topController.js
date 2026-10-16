@@ -1,5 +1,5 @@
 import piholeService from "../services/piholeService.js";
-import sendMessage from "../helpers/sendMessage.js";
+import sendMessage from "../shared/telegram/sendMessage.js";
 import { renderTop } from "../helpers/topFormat.js";
 
 export async function topController(ctx) {

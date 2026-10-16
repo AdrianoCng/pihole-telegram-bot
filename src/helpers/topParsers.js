@@ -1,5 +1,5 @@
 import { TOP_BLOCKED_DOMAINS_COUNT, TOP_CLIENTS_COUNT } from "../constants/top.js";
-import { requireArray, requireCount, requireString } from "./validators.js";
+import { requireArray, requireCount, requireString } from "../shared/validators.js";
 
 /** Validate the /stats/top_domains payload, capped at the requested count. */
 export function parseTopDomains(payload) {

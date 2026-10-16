@@ -1,4 +1,4 @@
-import { getBooleanEnv } from "./config.js";
+import { getBooleanEnv } from "../config.js";
 
 /**
  * Log a Pi-hole failure using only allowlisted fields. Never pass headers,

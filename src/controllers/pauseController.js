@@ -1,6 +1,6 @@
 import { Markup } from "telegraf";
 import piholeService from "../services/piholeService.js";
-import sendMessage from "../helpers/sendMessage.js";
+import sendMessage from "../shared/telegram/sendMessage.js";
 import { parseDuration } from "../helpers/duration.js";
 import { PAUSE_ACTION_PREFIX, PAUSE_CUSTOM_ACTION, PAUSE_PRESETS } from "../constants/pause.js";
 

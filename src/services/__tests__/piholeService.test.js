@@ -1,16 +1,16 @@
 import { it, expect, beforeEach, vi } from "vitest";
-import { API_ENDPOINTS } from "../../constants/api.js";
-import PiholeError, { PIHOLE_ERROR_CODES } from "../../errors/PiholeError.js";
-import { logSafeError } from "../../helpers/logSafeError.js";
-import { authenticatedGet, refreshSession } from "../piholeSession.js";
+import { API_ENDPOINTS } from "../../pihole/endpoints.js";
+import PiholeError, { PIHOLE_ERROR_CODES } from "../../shared/errors/PiholeError.js";
+import { logSafeError } from "../../shared/logSafeError.js";
+import { authenticatedGet, refreshSession } from "../../pihole/session.js";
 import piholeService from "../piholeService.js";
-import spawnPiholeCommand from "../../helpers/spawnPiholeCommand.js";
+import spawnPiholeCommand from "../../pihole/cli.js";
 import { TOP_BLOCKED_DOMAINS_COUNT, TOP_CLIENTS_COUNT } from "../../constants/top.js";
 import { RECENT_BLOCKED_COUNT } from "../../constants/recent.js";
 
-vi.mock("../piholeSession.js");
-vi.mock("../../helpers/logSafeError.js");
-vi.mock("../../helpers/spawnPiholeCommand.js");
+vi.mock("../../pihole/session.js");
+vi.mock("../../shared/logSafeError.js");
+vi.mock("../../pihole/cli.js");
 
 const summary = {
   queries: { total: 10, blocked: 2, percent_blocked: 20, cached: 3, forwarded: 5 },

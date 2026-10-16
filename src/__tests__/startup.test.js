@@ -1,16 +1,16 @@
 import { it, expect, afterEach, vi } from "vitest";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
-import { API_ENDPOINTS } from "../constants/api.js";
+import { API_ENDPOINTS } from "../pihole/endpoints.js";
 import { COMMANDS } from "../constants/commands.js";
 
 afterEach(() => {
   vi.restoreAllMocks();
   vi.doUnmock("dotenv/config");
   vi.doUnmock("../bot.js");
-  vi.doUnmock("../api.js");
+  vi.doUnmock("../pihole/client.js");
   vi.doUnmock("../services/piholeService.js");
-  vi.doUnmock("../helpers/logSafeError.js");
+  vi.doUnmock("../shared/logSafeError.js");
   vi.resetModules();
 });
 
@@ -52,9 +52,9 @@ async function loadEntrypoint({
   vi.resetModules();
   vi.doMock("dotenv/config", () => ({}));
   vi.doMock("../bot.js", () => ({ default: bot }));
-  vi.doMock("../api.js", () => ({ default: api }));
+  vi.doMock("../pihole/client.js", () => ({ default: api }));
   vi.doMock("../services/piholeService.js", () => ({ default: piholeService }));
-  vi.doMock("../helpers/logSafeError.js", () => ({ logSafeError }));
+  vi.doMock("../shared/logSafeError.js", () => ({ logSafeError }));
   await import("../../index.js");
 
   const handler = async (signal) => {

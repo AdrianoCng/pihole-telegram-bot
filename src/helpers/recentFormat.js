@@ -1,6 +1,11 @@
-import { TELEGRAM_MESSAGE_MAX_LENGTH } from "../constants/top.js";
-import { clientLabel, code, escapeHtml, truncate } from "./htmlFormat.js";
-import { formatAge } from "./timeFormat.js";
+import {
+  TELEGRAM_MESSAGE_MAX_LENGTH,
+  clientLabel,
+  code,
+  escapeHtml,
+  truncate,
+} from "../shared/telegram/html.js";
+import { formatAge } from "../shared/format/time.js";
 
 const TITLE = "🚫 Recently blocked";
 

@@ -1,6 +1,6 @@
 import piholeService from "../services/piholeService.js";
 import systemService from "../services/systemService.js";
-import sendMessage from "../helpers/sendMessage.js";
+import sendMessage from "../shared/telegram/sendMessage.js";
 
 const sendOutputTo = (ctx) => (output) => sendMessage(ctx, output);
 

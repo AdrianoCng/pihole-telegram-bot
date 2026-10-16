@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import execCommandWithOutput from "../../helpers/execCommandWithOutput.js";
+import execCommandWithOutput from "../../shared/exec.js";
 import systemService from "../systemService.js";
 
-vi.mock("../../helpers/execCommandWithOutput.js");
+vi.mock("../../shared/exec.js");
 
 describe("systemService", () => {
   beforeEach(() => {

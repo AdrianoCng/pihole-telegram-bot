@@ -4,7 +4,7 @@ import bot from "../bot.js";
 import authenticate from "../middlewares/authenticate.js";
 import typing from "../middlewares/typing.js";
 import handleBotError from "../middlewares/errorHandler.js";
-import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../constants/timers.js";
+import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../shared/timers.js";
 import { createMockContext } from "./helpers/testUtils.js";
 import { PAUSE_ACTION_PATTERN } from "../constants/pause.js";
 import { pauseActionController } from "../controllers/pauseController.js";

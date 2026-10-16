@@ -1,4 +1,13 @@
-import execCommandWithOutput from "./execCommandWithOutput.js";
+import execCommandWithOutput from "../shared/exec.js";
+
+export const CLI_COMMANDS = {
+  STATUS: "status",
+  ENABLE: "enable",
+  DISABLE: "disable",
+  VERSION: "-v",
+  UPDATE: "-up",
+  UPGRAVITY: "-g",
+};
 
 /**
  * Run a Pi-hole command and report output through a transport-neutral callback.

@@ -1,5 +1,5 @@
 import { RECENT_BLOCKED_COUNT } from "../constants/recent.js";
-import { requireArray, requireString, requireTimestamp } from "./validators.js";
+import { requireArray, requireString, requireTimestamp } from "../shared/validators.js";
 
 /** Validate the blocked /queries payload, capped at the requested count. */
 export function parseRecentBlocked(payload) {
