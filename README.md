@@ -71,6 +71,8 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
    DEBUG=false
    ```
 
+   All variables except `DEBUG` are required. If any are missing, the bot exits at startup and names them.
+
    `DEBUG` is optional. When set to `true`, error replies in Telegram also include the underlying error details, and the full error (message, stack, cause) is written to the console log. Keep it off in normal use, as details may reveal internal URLs or paths.
 
    Example:
@@ -158,10 +160,10 @@ Development and testing use Vitest and require Node 22.12+ on the 22.x line or N
 
 ```bash
 npm ci --include=dev
-npm test                                  # Run the full suite once
-npm run test:watch                        # Rerun tests on changes
-npm test -- src/__tests__/api.test.js      # Run one suite
-npm run test:coverage                     # Generate V8 coverage reports
+npm test                                         # Run the full suite once
+npm run test:watch                               # Rerun tests on changes
+npm test -- src/pihole/__tests__/client.test.js  # Run one suite
+npm run test:coverage                            # Generate V8 coverage reports
 ```
 
 Tests mock Telegram, HTTP, and system command effects. They use fixed initialization fixtures and do not require a local `.env` file. Import test APIs and `vi` explicitly from `vitest`.
