@@ -5,7 +5,11 @@ import * as summaryController from "../controllers/summaryController.js";
 import * as pauseController from "../controllers/pauseController.js";
 import * as topController from "../controllers/topController.js";
 import * as recentController from "../controllers/recentController.js";
+import { PAUSE_ACTION_PATTERN } from "../constants/pause.js";
+import sendMessage from "../shared/telegram/sendMessage.js";
+import { mainMenu } from "./registry.js";
 
+/** Every command in menu and /help order. Adding a command is one entry here. */
 export const COMMANDS = [
   {
     trigger: ["summary", "stats"],
@@ -90,7 +94,15 @@ export const COMMANDS = [
   {
     trigger: ["menu"],
     description: "Show the menu",
-    handler: botController.menuController,
+    handler: (ctx) => sendMessage(ctx, "Here are the available commands:", mainMenu(COMMANDS)),
     showInKeyboard: false,
+  },
+];
+
+/** Inline keyboard callbacks, matched by pattern. */
+export const ACTIONS = [
+  {
+    trigger: PAUSE_ACTION_PATTERN,
+    handler: pauseController.pauseActionController,
   },
 ];

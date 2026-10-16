@@ -2,12 +2,13 @@ import { it, expect, afterEach, vi } from "vitest";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { API_ENDPOINTS } from "../pihole/endpoints.js";
-import { COMMANDS } from "../constants/commands.js";
+import { COMMANDS } from "../app/commands.js";
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
   vi.doUnmock("dotenv/config");
-  vi.doUnmock("../bot.js");
+  vi.doUnmock("../app/createBot.js");
   vi.doUnmock("../pihole/client.js");
   vi.doUnmock("../services/piholeService.js");
   vi.doUnmock("../shared/logSafeError.js");
@@ -49,9 +50,11 @@ async function loadEntrypoint({
   });
   const consoleMock = { error: vi.spyOn(console, "error").mockImplementation(() => {}) };
 
+  vi.stubEnv("PIHOLE_PASSWORD", "test-password");
+  vi.stubEnv("ALLOWED_USER", "123");
   vi.resetModules();
   vi.doMock("dotenv/config", () => ({}));
-  vi.doMock("../bot.js", () => ({ default: bot }));
+  vi.doMock("../app/createBot.js", () => ({ createBot: () => bot }));
   vi.doMock("../pihole/client.js", () => ({ default: api }));
   vi.doMock("../services/piholeService.js", () => ({ default: piholeService }));
   vi.doMock("../shared/logSafeError.js", () => ({ logSafeError }));
@@ -128,14 +131,15 @@ it("bounds shutdown logout with a one-second timeout", async () => {
 });
 
 it("loads the bot as native ESM and reads the version outside the repository", () => {
-  const first = new URL("../bot.js", import.meta.url).href;
+  const createBotUrl = new URL("../app/createBot.js", import.meta.url).href;
   const controller = new URL("../controllers/botController.js", import.meta.url).href;
   const packageUrl = new URL("../../package.json", import.meta.url).href;
   const script = `
       import assert from "node:assert/strict";
       import { readFile } from "node:fs/promises";
       globalThis.fetch = () => { throw new Error("Unexpected network call"); };
-      await import(${JSON.stringify(first)});
+      const { createBot } = await import(${JSON.stringify(createBotUrl)});
+      createBot();
       const { default: controller } = await import(${JSON.stringify(controller)});
       const pkg = JSON.parse(await readFile(new URL(${JSON.stringify(packageUrl)}), "utf8"));
       let reply;
@@ -150,4 +154,24 @@ it("loads the bot as native ESM and reads the version outside the repository", (
       stdio: "pipe",
     })
   ).not.toThrow();
+});
+
+it("exits before building the bot when required configuration is missing", async () => {
+  vi.stubEnv("PIHOLE_PASSWORD", undefined);
+  vi.stubEnv("ALLOWED_USER", "123");
+  const createBot = vi.fn();
+  const exit = vi.spyOn(process, "exit").mockImplementation((code) => {
+    throw new Error(`exit ${code}`);
+  });
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.resetModules();
+  vi.doMock("dotenv/config", () => ({}));
+  vi.doMock("../app/createBot.js", () => ({ createBot }));
+
+  await expect(import("../../index.js")).rejects.toThrow("exit 1");
+  expect(exit).toHaveBeenCalledWith(1);
+  expect(createBot).not.toHaveBeenCalled();
+  expect(consoleError).toHaveBeenCalledWith(
+    "[error] Missing required environment variables: PIHOLE_PASSWORD. See .env.example."
+  );
 });

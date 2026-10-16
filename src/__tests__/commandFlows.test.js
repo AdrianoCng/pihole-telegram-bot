@@ -1,5 +1,6 @@
 import { it, expect, beforeEach, vi } from "vitest";
-import { registerCommands } from "../helpers/botCommands.js";
+import { COMMANDS } from "../app/commands.js";
+import { registerCommands } from "../app/registry.js";
 import piholeService from "../services/piholeService.js";
 import systemService from "../services/systemService.js";
 import { pauseActionController } from "../controllers/pauseController.js";
@@ -26,13 +27,16 @@ vi.mock("../services/systemService.js", () => ({
 }));
 
 const handlers = new Map();
-registerCommands({
-  command(triggers, handler) {
-    for (const trigger of Array.isArray(triggers) ? triggers : [triggers]) {
-      handlers.set(trigger, handler);
-    }
+registerCommands(
+  {
+    command(triggers, handler) {
+      for (const trigger of Array.isArray(triggers) ? triggers : [triggers]) {
+        handlers.set(trigger, handler);
+      }
+    },
   },
-});
+  COMMANDS
+);
 
 const context = () => ({ reply: vi.fn().mockResolvedValue(undefined) });
 const run = (trigger, ctx = context()) => handlers.get(trigger)(ctx);

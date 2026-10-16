@@ -1,5 +1,4 @@
 import sendMessage from "../shared/telegram/sendMessage.js";
-import { getMainMenu } from "../helpers/keyboard.js";
 import botService from "../services/botService.js";
 
 export async function botVersionController(ctx) {
@@ -8,11 +7,6 @@ export async function botVersionController(ctx) {
   await sendMessage(ctx, `The bot version is v${version}`);
 }
 
-export async function menuController(ctx) {
-  await sendMessage(ctx, "Here are the available commands:", getMainMenu());
-}
-
 export default {
   botVersionController,
-  menuController,
 };

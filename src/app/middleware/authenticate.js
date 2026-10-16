@@ -1,5 +1,5 @@
-import { getEnv } from "../config.js";
-import sendMessage from "../shared/telegram/sendMessage.js";
+import { getEnv } from "../../config.js";
+import sendMessage from "../../shared/telegram/sendMessage.js";
 
 export default async (ctx, next) => {
   if (getEnv("ALLOWED_USER") !== ctx.from.id.toString()) {

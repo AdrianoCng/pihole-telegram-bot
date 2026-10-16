@@ -1,8 +1,8 @@
-import { DEFAULT_ERROR_MESSAGES } from "../shared/errors/messages.js";
-import { classifyError } from "../shared/errors/classifyError.js";
-import sendMessage from "../shared/telegram/sendMessage.js";
-import { getBooleanEnv } from "../config.js";
-import { logSafeError } from "../shared/logSafeError.js";
+import { DEFAULT_ERROR_MESSAGES } from "../../shared/errors/messages.js";
+import { classifyError } from "../../shared/errors/classifyError.js";
+import sendMessage from "../../shared/telegram/sendMessage.js";
+import { getBooleanEnv } from "../../config.js";
+import { logSafeError } from "../../shared/logSafeError.js";
 
 const MAX_DEBUG_MESSAGE_LENGTH = 500;
 

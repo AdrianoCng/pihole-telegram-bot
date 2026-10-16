@@ -1,18 +1,24 @@
 import "dotenv/config";
-import bot from "./src/bot.js";
+import { createBot } from "./src/app/createBot.js";
+import { COMMANDS } from "./src/app/commands.js";
+import { toTelegramCommands } from "./src/app/registry.js";
+import { validateConfig } from "./src/config.js";
 import api from "./src/pihole/client.js";
 import { API_ENDPOINTS } from "./src/pihole/endpoints.js";
-import { COMMANDS } from "./src/constants/commands.js";
-import { logSafeError } from "./src/shared/logSafeError.js";
 import piholeService from "./src/services/piholeService.js";
+import { logSafeError } from "./src/shared/logSafeError.js";
 import { SHUTDOWN_LOGOUT_TIMEOUT_MS } from "./src/shared/timers.js";
 
-const telegramCommands = COMMANDS.map(({ trigger, description }) => ({
-  command: Array.isArray(trigger) ? trigger[0] : trigger,
-  description,
-}));
+try {
+  validateConfig();
+} catch (error) {
+  console.error(`[error] ${error.message}. See .env.example.`);
+  process.exit(1);
+}
 
-await bot.telegram.setMyCommands(telegramCommands).catch((err) => {
+const bot = createBot();
+
+await bot.telegram.setMyCommands(toTelegramCommands(COMMANDS)).catch((err) => {
   console.error("[warn] Failed to register commands with Telegram:", err.message);
 });
 bot.launch();

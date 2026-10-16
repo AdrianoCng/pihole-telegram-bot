@@ -1,13 +1,13 @@
 import { it, expect, vi } from "vitest";
 import { Telegraf } from "telegraf";
-import bot from "../bot.js";
-import authenticate from "../middlewares/authenticate.js";
-import typing from "../middlewares/typing.js";
-import handleBotError from "../middlewares/errorHandler.js";
-import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../shared/timers.js";
-import { createMockContext } from "./helpers/testUtils.js";
-import { PAUSE_ACTION_PATTERN } from "../constants/pause.js";
-import { pauseActionController } from "../controllers/pauseController.js";
+import { createBot } from "../createBot.js";
+import authenticate from "../middleware/authenticate.js";
+import typing from "../middleware/typing.js";
+import handleBotError from "../middleware/errorHandler.js";
+import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../../shared/timers.js";
+import { createMockContext } from "../../__tests__/helpers/testUtils.js";
+import { PAUSE_ACTION_PATTERN } from "../../constants/pause.js";
+import { pauseActionController } from "../../controllers/pauseController.js";
 
 vi.mock("telegraf", async (importOriginal) => ({
   ...(await importOriginal()),
@@ -23,6 +23,8 @@ vi.mock("telegraf", async (importOriginal) => ({
     };
   }),
 }));
+
+const bot = createBot();
 
 // Capture registration before Vitest clears mocks for each test.
 const registrations = {
