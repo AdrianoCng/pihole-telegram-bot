@@ -1,4 +1,4 @@
-import sendMessage from "../../shared/telegram/sendMessage.js";
+import { sendMessage } from "../../shared/telegram/sendMessage.js";
 import { parseRecentFilter } from "./filter.js";
 import { renderRecent } from "./format.js";
 import { getRecentBlocked } from "./service.js";

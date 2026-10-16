@@ -1,4 +1,4 @@
-import spawnPiholeCommand, { CLI_COMMANDS } from "../../pihole/cli.js";
+import { spawnPiholeCommand, CLI_COMMANDS } from "../../pihole/cli.js";
 
 export function getStatus(onOutput) {
   return spawnPiholeCommand([CLI_COMMANDS.STATUS], onOutput);

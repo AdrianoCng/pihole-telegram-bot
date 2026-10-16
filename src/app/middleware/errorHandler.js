@@ -1,6 +1,6 @@
 import { DEFAULT_ERROR_MESSAGES } from "../../shared/errors/messages.js";
 import { classifyError } from "../../shared/errors/classifyError.js";
-import sendMessage from "../../shared/telegram/sendMessage.js";
+import { sendMessage } from "../../shared/telegram/sendMessage.js";
 import { getBooleanEnv } from "../../config.js";
 import { logSafeError } from "../../shared/logSafeError.js";
 
@@ -38,5 +38,3 @@ export async function handleBotError(error, ctx) {
     logSafeError({ operation: "error-reply", path: "telegram", error: replyError });
   }
 }
-
-export default handleBotError;

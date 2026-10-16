@@ -1,5 +1,5 @@
 import { it, expect, vi } from "vitest";
-import spawnPiholeCommand from "../../../pihole/cli.js";
+import { spawnPiholeCommand } from "../../../pihole/cli.js";
 import { pause } from "../service.js";
 
 vi.mock("../../../pihole/cli.js");

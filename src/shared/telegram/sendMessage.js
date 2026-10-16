@@ -1,4 +1,4 @@
-export default function sendMessage(ctx, message, extra) {
+export function sendMessage(ctx, message, extra) {
   const emojiMap = new Map([
     ["[✓]", "✅"],
     ["[✗]", "❌"],

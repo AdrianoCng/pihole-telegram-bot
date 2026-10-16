@@ -1,4 +1,4 @@
-import sendMessage from "../../shared/telegram/sendMessage.js";
+import { sendMessage } from "../../shared/telegram/sendMessage.js";
 import { renderSummary } from "./format.js";
 import { getSummary } from "./service.js";
 

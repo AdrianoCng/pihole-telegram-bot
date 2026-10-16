@@ -9,7 +9,7 @@ export const PIHOLE_ERROR_CODES = {
  * Messages must be static strings because errors are logged in full.
  * `path` is the static endpoint that failed, when known.
  */
-class PiholeError extends Error {
+export class PiholeError extends Error {
   constructor({ code, message, status, path }) {
     super(message);
     this.name = "PiholeError";
@@ -18,5 +18,3 @@ class PiholeError extends Error {
     this.path = path;
   }
 }
-
-export default PiholeError;

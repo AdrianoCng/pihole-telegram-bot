@@ -55,7 +55,7 @@ async function loadEntrypoint({
   vi.resetModules();
   vi.doMock("dotenv/config", () => ({}));
   vi.doMock("../app/createBot.js", () => ({ createBot: () => bot }));
-  vi.doMock("../pihole/client.js", () => ({ default: api }));
+  vi.doMock("../pihole/client.js", () => ({ api }));
   vi.doMock("../pihole/session.js", () => session);
   vi.doMock("../shared/logSafeError.js", () => ({ logSafeError }));
   await import("../../index.js");

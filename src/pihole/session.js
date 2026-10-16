@@ -1,7 +1,7 @@
-import api from "./client.js";
+import { api } from "./client.js";
 import { API_ENDPOINTS } from "./endpoints.js";
 import { REQUEST_TIMEOUT_MS } from "../shared/timers.js";
-import PiholeError, { PIHOLE_ERROR_CODES } from "../shared/errors/PiholeError.js";
+import { PiholeError, PIHOLE_ERROR_CODES } from "../shared/errors/PiholeError.js";
 import { getEnv } from "../config.js";
 
 let refreshInFlight = null;

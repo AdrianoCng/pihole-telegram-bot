@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import PiholeError, { PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
-import CommandError from "../errors/CommandError.js";
+import { PiholeError, PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
+import { CommandError } from "../errors/CommandError.js";
 import { logSafeError } from "../logSafeError.js";
 
 describe("logSafeError", () => {

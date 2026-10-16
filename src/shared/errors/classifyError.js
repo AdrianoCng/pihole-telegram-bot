@@ -1,6 +1,6 @@
 import { ERROR_KINDS, NETWORK_ERROR_NAMES } from "./messages.js";
-import CommandError from "./CommandError.js";
-import PiholeError, { PIHOLE_ERROR_CODES } from "./PiholeError.js";
+import { CommandError } from "./CommandError.js";
+import { PiholeError, PIHOLE_ERROR_CODES } from "./PiholeError.js";
 
 /** Map any thrown value to the kind of failure it represents. */
 export function classifyError(error) {
@@ -20,5 +20,3 @@ export function classifyError(error) {
 
   return ERROR_KINDS.UNEXPECTED;
 }
-
-export default classifyError;

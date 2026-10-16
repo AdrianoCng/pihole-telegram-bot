@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import authenticate from "../authenticate";
-import sendMessage from "../../../shared/telegram/sendMessage.js";
+import { authenticate } from "../authenticate.js";
+import { sendMessage } from "../../../shared/telegram/sendMessage.js";
 
 vi.mock("../../../shared/telegram/sendMessage.js");
 

@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { DEFAULT_ERROR_MESSAGES } from "../../../shared/errors/messages.js";
-import CommandError from "../../../shared/errors/CommandError.js";
-import PiholeError, { PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
-import sendMessage from "../../../shared/telegram/sendMessage.js";
+import { CommandError } from "../../../shared/errors/CommandError.js";
+import { PiholeError, PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
+import { sendMessage } from "../../../shared/telegram/sendMessage.js";
 import { logSafeError } from "../../../shared/logSafeError.js";
-import handleBotError, { userMessage } from "../errorHandler.js";
+import { handleBotError, userMessage } from "../errorHandler.js";
 
-vi.mock("../../../shared/telegram/sendMessage.js", () => ({ default: vi.fn() }));
+vi.mock("../../../shared/telegram/sendMessage.js", () => ({ sendMessage: vi.fn() }));
 vi.mock("../../../shared/logSafeError.js", () => ({ logSafeError: vi.fn() }));
 
 const piholeError = (code, status) =>

@@ -3,7 +3,7 @@ import { createBot } from "./src/app/createBot.js";
 import { COMMANDS } from "./src/app/commands.js";
 import { toTelegramCommands } from "./src/app/registry.js";
 import { validateConfig } from "./src/config.js";
-import api from "./src/pihole/client.js";
+import { api } from "./src/pihole/client.js";
 import { API_ENDPOINTS } from "./src/pihole/endpoints.js";
 import { endSession } from "./src/pihole/session.js";
 import { logSafeError } from "./src/shared/logSafeError.js";

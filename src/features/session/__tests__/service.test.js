@@ -1,6 +1,6 @@
 import { it, expect, beforeEach, vi } from "vitest";
 import { refreshSession } from "../../../pihole/session.js";
-import PiholeError, { PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
+import { PiholeError, PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
 import { authorize } from "../service.js";
 
 vi.mock("../../../pihole/session.js");

@@ -1,4 +1,4 @@
-import sendMessage from "../../shared/telegram/sendMessage.js";
+import { sendMessage } from "../../shared/telegram/sendMessage.js";
 import { getMessages } from "./service.js";
 
 export const messagesCommand = {

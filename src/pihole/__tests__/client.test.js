@@ -6,7 +6,7 @@ describe("Pi-hole HTTP client", () => {
   const originalFetch = global.fetch;
 
   beforeAll(async () => {
-    api = (await import("../client.js")).default;
+    ({ api } = await import("../client.js"));
   });
 
   beforeEach(() => {

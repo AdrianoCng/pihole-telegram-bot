@@ -1,4 +1,4 @@
-import PiholeError, { PIHOLE_ERROR_CODES } from "./errors/PiholeError.js";
+import { PiholeError, PIHOLE_ERROR_CODES } from "./errors/PiholeError.js";
 
 /** Shared Pi-hole payload validators. They never coerce or default. */
 export function invalidResponse() {

@@ -1,9 +1,9 @@
 import { it, expect, vi } from "vitest";
 import { Telegraf } from "telegraf";
 import { createBot } from "../createBot.js";
-import authenticate from "../middleware/authenticate.js";
-import typing from "../middleware/typing.js";
-import handleBotError from "../middleware/errorHandler.js";
+import { authenticate } from "../middleware/authenticate.js";
+import { typing } from "../middleware/typing.js";
+import { handleBotError } from "../middleware/errorHandler.js";
 import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../../shared/timers.js";
 import { createMockContext } from "../../__tests__/helpers/testUtils.js";
 import { pauseAction } from "../../features/pause/command.js";

@@ -4,7 +4,7 @@ export const COMMAND_ERROR_CODE = "COMMAND_FAILED";
  * A host command that exited with a nonzero status.
  * The message is static because errors are logged in full.
  */
-class CommandError extends Error {
+export class CommandError extends Error {
   constructor(exitCode) {
     super("Command failed");
     this.name = "CommandError";
@@ -12,5 +12,3 @@ class CommandError extends Error {
     this.exitCode = exitCode;
   }
 }
-
-export default CommandError;

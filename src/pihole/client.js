@@ -1,7 +1,7 @@
 import { getEnv } from "../config.js";
-import PiholeError, { PIHOLE_ERROR_CODES } from "../shared/errors/PiholeError.js";
+import { PiholeError, PIHOLE_ERROR_CODES } from "../shared/errors/PiholeError.js";
 
-const api = {
+export const api = {
   get BASE_URL() {
     return `${getEnv("PIHOLE_IP")}/api`;
   },
@@ -66,5 +66,3 @@ const api = {
     return this.request("DELETE", path, { signal });
   },
 };
-
-export default api;

@@ -12,7 +12,7 @@ import { authorizeCommand, logoutCommand } from "../features/session/command.js"
 import { summaryCommand } from "../features/summary/command.js";
 import { rebootCommand, upgradeCommand } from "../features/system/command.js";
 import { topCommand } from "../features/top/command.js";
-import sendMessage from "../shared/telegram/sendMessage.js";
+import { sendMessage } from "../shared/telegram/sendMessage.js";
 import { mainMenu } from "./registry.js";
 
 const menuCommand = {

@@ -1,4 +1,4 @@
-import spawnPiholeCommand, { CLI_COMMANDS } from "../../pihole/cli.js";
+import { spawnPiholeCommand, CLI_COMMANDS } from "../../pihole/cli.js";
 
 export function getVersion(onOutput) {
   return spawnPiholeCommand([CLI_COMMANDS.VERSION], onOutput);

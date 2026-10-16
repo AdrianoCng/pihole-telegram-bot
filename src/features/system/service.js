@@ -1,4 +1,4 @@
-import execCommandWithOutput from "../../shared/exec.js";
+import { execCommandWithOutput } from "../../shared/exec.js";
 
 export function reboot(onOutput) {
   return execCommandWithOutput("reboot", [], onOutput);

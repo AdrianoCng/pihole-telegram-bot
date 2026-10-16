@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import api from "../client.js";
+import { api } from "../client.js";
 import { API_ENDPOINTS } from "../endpoints.js";
 import { REQUEST_TIMEOUT_MS } from "../../shared/timers.js";
 import { PIHOLE_ERROR_CODES } from "../../shared/errors/PiholeError.js";

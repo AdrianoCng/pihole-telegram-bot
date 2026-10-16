@@ -1,4 +1,4 @@
-import execCommandWithOutput from "../shared/exec.js";
+import { execCommandWithOutput } from "../shared/exec.js";
 
 export const CLI_COMMANDS = {
   STATUS: "status",
@@ -15,6 +15,6 @@ export const CLI_COMMANDS = {
  * @param {(output: string) => void} onOutput
  * @returns {Promise<void>}
  */
-export default function spawnPiholeCommand(args, onOutput) {
+export function spawnPiholeCommand(args, onOutput) {
   return execCommandWithOutput("pihole", args, onOutput);
 }

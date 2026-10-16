@@ -1,5 +1,5 @@
 import { Markup } from "telegraf";
-import sendMessage, { sendOutputTo } from "../../shared/telegram/sendMessage.js";
+import { sendMessage, sendOutputTo } from "../../shared/telegram/sendMessage.js";
 import {
   PAUSE_ACTION_PATTERN,
   PAUSE_ACTION_PREFIX,

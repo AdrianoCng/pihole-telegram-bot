@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import execCommandWithOutput from "../../../shared/exec.js";
+import { execCommandWithOutput } from "../../../shared/exec.js";
 import * as systemService from "../service.js";
 
 vi.mock("../../../shared/exec.js");

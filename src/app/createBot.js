@@ -1,12 +1,12 @@
 import { Telegraf } from "telegraf";
 import { getEnv } from "../config.js";
-import sendMessage from "../shared/telegram/sendMessage.js";
+import { sendMessage } from "../shared/telegram/sendMessage.js";
 import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../shared/timers.js";
 import { ACTIONS, COMMANDS } from "./commands.js";
 import { helpText, mainMenu, registerActions, registerCommands } from "./registry.js";
-import authenticate from "./middleware/authenticate.js";
-import typing from "./middleware/typing.js";
-import handleBotError from "./middleware/errorHandler.js";
+import { authenticate } from "./middleware/authenticate.js";
+import { typing } from "./middleware/typing.js";
+import { handleBotError } from "./middleware/errorHandler.js";
 
 /** Build the bot: middleware first, then commands, actions and fallbacks. */
 export function createBot() {
@@ -30,5 +30,3 @@ export function createBot() {
 
   return bot;
 }
-
-export default createBot;

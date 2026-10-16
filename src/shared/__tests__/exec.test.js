@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { spawn } from "child_process";
-import execCommandWithOutput from "../exec.js";
+import { execCommandWithOutput } from "../exec.js";
 import { createMockProcess } from "../../__tests__/helpers/testUtils.js";
 import { COMMAND_TIMEOUT_MS } from "../timers.js";
 

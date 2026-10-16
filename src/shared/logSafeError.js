@@ -25,5 +25,3 @@ export function logSafeError({
     console.error("[debug]", { operation }, error);
   }
 }
-
-export default logSafeError;
