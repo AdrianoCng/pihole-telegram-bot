@@ -281,7 +281,7 @@ it("rejects an invalid domain without changing Pi-hole", async () => {
 
   expect(domains.addDomain).not.toHaveBeenCalled();
   expect(ctx.reply.mock.calls[0][0]).toBe(
-    "❌ Invalid domain. Send /deny <domain>, e.g. /deny example.com or /deny *.example.com."
+    "❌ Invalid domain. Send /deny <domain>, e.g. /deny example.com or /deny *.example.com"
   );
 });
 
