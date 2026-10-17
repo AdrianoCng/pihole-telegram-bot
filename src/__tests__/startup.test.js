@@ -149,7 +149,7 @@ it("loads the bot as native ESM and reads the version outside the repository", (
   expect(() =>
     execFileSync(process.execPath, ["--input-type=module", "-e", script], {
       cwd: tmpdir(),
-      env: { ...process.env, PIHOLE_IP: "http://pihole.test", BOT_TOKEN: "123:test-token" },
+      env: { ...process.env, PIHOLE_URL: "http://pihole.test", BOT_TOKEN: "123:test-token" },
       timeout: 10000,
       stdio: "pipe",
     })
