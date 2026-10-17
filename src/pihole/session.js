@@ -2,7 +2,7 @@ import { api } from "./client.js";
 import { API_ENDPOINTS } from "./endpoints.js";
 import { REQUEST_TIMEOUT_MS } from "../shared/timers.js";
 import { PiholeError, PIHOLE_ERROR_CODES } from "../shared/errors/PiholeError.js";
-import { getEnv } from "../config.js";
+import { env } from "../config.js";
 
 let refreshInFlight = null;
 let generation = 0;
@@ -17,10 +17,9 @@ function isUnauthorized(error) {
 }
 
 async function authenticate(signal) {
-  const password = getEnv("PIHOLE_PASSWORD");
   const response = await api.post(
     API_ENDPOINTS.AUTH,
-    { password },
+    { password: env.PIHOLE_PASSWORD },
     { signal: requestSignal(signal) }
   );
   const session = response?.session;

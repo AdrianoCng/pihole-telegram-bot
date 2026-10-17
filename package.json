@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "dotenv": "^18.0.1",
+    "envalid": "^8.2.0",
     "telegraf": "^4.12.2"
   },
   "devDependencies": {

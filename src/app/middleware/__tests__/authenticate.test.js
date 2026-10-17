@@ -1,23 +1,19 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { authenticate } from "../authenticate.js";
 import { sendMessage } from "../../../shared/telegram/sendMessage.js";
 
 vi.mock("../../../shared/telegram/sendMessage.js");
 
-describe("Authenticate Middleware", () => {
-  const originalEnv = process.env;
+const env = vi.hoisted(() => ({ ALLOWED_USER: "" }));
+vi.mock("../../../config.js", () => ({ env }));
 
+describe("Authenticate Middleware", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env = { ...originalEnv };
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
   });
 
   it("Should block unauthorized access", async () => {
-    process.env.ALLOWED_USER = "456";
+    env.ALLOWED_USER = "456";
     const ctx = {
       from: {
         id: "123",
@@ -35,7 +31,7 @@ describe("Authenticate Middleware", () => {
   });
 
   it("awaits and propagates an unauthorized reply failure", async () => {
-    process.env.ALLOWED_USER = "456";
+    env.ALLOWED_USER = "456";
     const error = new Error("Telegram unavailable");
     sendMessage.mockRejectedValue(error);
 
@@ -43,7 +39,7 @@ describe("Authenticate Middleware", () => {
   });
 
   it("Should allow authorized access", async () => {
-    process.env.ALLOWED_USER = "123";
+    env.ALLOWED_USER = "123";
     const ctx = {
       from: {
         id: "123",

@@ -1,4 +1,4 @@
-import { getBooleanEnv } from "../config.js";
+import { env } from "../config.js";
 
 /**
  * Log a Pi-hole failure using only allowlisted fields. Never pass headers,
@@ -21,7 +21,7 @@ export function logSafeError({
 
   console.error(JSON.stringify(details));
 
-  if (error !== undefined && getBooleanEnv("DEBUG")) {
+  if (error !== undefined && env.DEBUG) {
     console.error("[debug]", { operation }, error);
   }
 }

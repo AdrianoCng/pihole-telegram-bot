@@ -66,14 +66,14 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
    ```
    BOT_TOKEN=your_telegram_bot_token_here
    PIHOLE_PASSWORD=your_pihole_admin_password_here
-   PIHOLE_IP=your_pihole_ip_address_here
+   PIHOLE_IP=your_pihole_url_here
    ALLOWED_USER=your_telegram_user_id_here
    DEBUG=false
    ```
 
-   All variables except `DEBUG` are required. If any are missing, the bot exits at startup and names them.
+   All variables except `DEBUG` are required. If any are missing or invalid, the bot exits at startup and lists them.
 
-   `DEBUG` is optional. When set to `true`, error replies in Telegram also include the underlying error details, and the full error (message, stack, cause) is written to the console log. Keep it off in normal use, as details may reveal internal URLs or paths.
+   `DEBUG` is optional and defaults to `false`. It accepts `true`/`false`, `1`/`0`, `yes`/`no` and `on`/`off`. When enabled, error replies in Telegram also include the underlying error details, and the full error (message, stack, cause) is written to the console log. Keep it off in normal use, as details may reveal internal URLs or paths.
 
    Example:
 

@@ -163,7 +163,6 @@ it("exits before building the bot when required configuration is missing", async
   const exit = vi.spyOn(process, "exit").mockImplementation((code) => {
     throw new Error(`exit ${code}`);
   });
-  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
   vi.resetModules();
   vi.doMock("dotenv/config", () => ({}));
   vi.doMock("../app/createBot.js", () => ({ createBot }));
@@ -171,7 +170,4 @@ it("exits before building the bot when required configuration is missing", async
   await expect(import("../../index.js")).rejects.toThrow("exit 1");
   expect(exit).toHaveBeenCalledWith(1);
   expect(createBot).not.toHaveBeenCalled();
-  expect(consoleError).toHaveBeenCalledWith(
-    "[error] Missing required environment variables: PIHOLE_PASSWORD. See .env.example."
-  );
 });

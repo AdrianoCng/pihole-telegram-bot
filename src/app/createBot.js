@@ -1,5 +1,5 @@
 import { Telegraf } from "telegraf";
-import { getEnv } from "../config.js";
+import { env } from "../config.js";
 import { sendMessage } from "../shared/telegram/sendMessage.js";
 import { TELEGRAM_MESSAGE_TIMEOUT_MS } from "../shared/timers.js";
 import { ACTIONS, COMMANDS } from "./commands.js";
@@ -10,7 +10,7 @@ import { handleBotError } from "./middleware/errorHandler.js";
 
 /** Build the bot: middleware first, then commands, actions and fallbacks. */
 export function createBot() {
-  const bot = new Telegraf(getEnv("BOT_TOKEN"), {
+  const bot = new Telegraf(env.BOT_TOKEN, {
     handlerTimeout: TELEGRAM_MESSAGE_TIMEOUT_MS,
   });
 

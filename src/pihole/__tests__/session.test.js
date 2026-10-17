@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { env } from "../../config.js";
 import { api } from "../client.js";
 import { API_ENDPOINTS } from "../endpoints.js";
 import { REQUEST_TIMEOUT_MS } from "../../shared/timers.js";
@@ -6,7 +7,7 @@ import { PIHOLE_ERROR_CODES } from "../../shared/errors/PiholeError.js";
 import { mockApiResponse } from "../../__tests__/helpers/testUtils.js";
 import { authenticatedGet, endSession, ensureSession, refreshSession } from "../session.js";
 
-const PASSWORD = "test-password";
+const PASSWORD = env.PIHOLE_PASSWORD;
 const AUTH_URL = `${api.BASE_URL}${API_ENDPOINTS.AUTH}`;
 const READ_PATH = "/stats/summary";
 const READ_URL = `${api.BASE_URL}${READ_PATH}`;
@@ -30,17 +31,14 @@ const authCalls = () =>
 const readCalls = () => global.fetch.mock.calls.filter(([url]) => url === READ_URL);
 
 describe("piholeSession", () => {
-  const originalEnv = process.env;
   const originalFetch = global.fetch;
 
   beforeEach(() => {
-    process.env = { ...originalEnv, PIHOLE_PASSWORD: PASSWORD };
     global.fetch = vi.fn();
     api.headers = {};
   });
 
   afterEach(() => {
-    process.env = originalEnv;
     global.fetch = originalFetch;
     api.headers = {};
   });
@@ -79,19 +77,6 @@ describe("piholeSession", () => {
       await Promise.all([refreshSession(), ensureSession(), ensureSession()]);
 
       expect(authCalls()).toHaveLength(1);
-    });
-
-    it("reads the password only when authentication runs", async () => {
-      delete process.env.PIHOLE_PASSWORD;
-      api.setSession("existing-sid");
-
-      await expect(ensureSession()).resolves.toBeUndefined();
-
-      api.clearSession();
-      await expect(ensureSession()).rejects.toThrow(
-        "Missing required environment variable: PIHOLE_PASSWORD"
-      );
-      expect(global.fetch).not.toHaveBeenCalled();
     });
   });
 

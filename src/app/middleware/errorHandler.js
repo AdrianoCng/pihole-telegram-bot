@@ -1,7 +1,7 @@
 import { DEFAULT_ERROR_MESSAGES } from "../../shared/errors/messages.js";
 import { classifyError } from "../../shared/errors/classifyError.js";
 import { sendMessage } from "../../shared/telegram/sendMessage.js";
-import { getBooleanEnv } from "../../config.js";
+import { env } from "../../config.js";
 import { logSafeError } from "../../shared/logSafeError.js";
 
 const MAX_DEBUG_MESSAGE_LENGTH = 500;
@@ -32,7 +32,7 @@ export async function handleBotError(error, ctx) {
   logSafeError({ operation: ctx?.command ?? "update", error });
 
   try {
-    const debug = getBooleanEnv("DEBUG") ? debugDetails(error) : "";
+    const debug = env.DEBUG ? debugDetails(error) : "";
     await sendMessage(ctx, userMessage(error) + debug);
   } catch (replyError) {
     logSafeError({ operation: "error-reply", path: "telegram", error: replyError });
