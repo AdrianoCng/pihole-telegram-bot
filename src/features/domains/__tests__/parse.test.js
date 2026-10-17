@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
-import { parseAddResult, parseDomainTarget } from "../parse.js";
+import { PiholeError, PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
+import { isDuplicateError, parseAddResult, parseDomainTarget } from "../parse.js";
 
 const exact = (domain) => ({ kind: "exact", domain, display: domain });
 
@@ -73,6 +73,12 @@ describe("parseAddResult", () => {
     );
 
     expect(parseAddResult(payload, "example.com")).toBe("exists");
+    expect(
+      parseAddResult(
+        processed([], [{ item: "example.com", error: "The item is already present" }]),
+        "example.com"
+      )
+    ).toBe("exists");
   });
 
   it("throws a static rejection for other errors", () => {
@@ -94,5 +100,25 @@ describe("parseAddResult", () => {
     expect(() => parseAddResult(processed([{ item: "other.com" }]), "example.com")).toThrow(
       invalid
     );
+  });
+});
+
+describe("isDuplicateError", () => {
+  const httpError = (status, apiError) =>
+    new PiholeError({ code: PIHOLE_ERROR_CODES.HTTP, message: "Bad Request", status, apiError });
+  const duplicate = { key: "database_error", hint: "The item is already present" };
+
+  it("recognizes Pi-hole's duplicate entry error", () => {
+    expect(isDuplicateError(httpError(400, duplicate))).toBe(true);
+  });
+
+  it("ignores other failures", () => {
+    expect(isDuplicateError(httpError(400, { ...duplicate, hint: "Invalid regex" }))).toBe(false);
+    expect(isDuplicateError(httpError(400, { ...duplicate, key: "bad_request" }))).toBe(false);
+    expect(isDuplicateError(httpError(500, duplicate))).toBe(false);
+    expect(isDuplicateError(httpError(400))).toBe(false);
+    expect(
+      isDuplicateError(Object.assign(new Error("x"), { status: 400, apiError: duplicate }))
+    ).toBe(false);
   });
 });

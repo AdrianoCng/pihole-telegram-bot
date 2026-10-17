@@ -341,6 +341,27 @@ describe("piholeSession", () => {
 
       expect(writeCalls()).toHaveLength(2);
     });
+
+    it("propagates a 400 with Pi-hole's error details without retrying", async () => {
+      routeFetch({
+        [`POST ${AUTH_URL}`]: [mockApiResponse(validSession())],
+        [`POST ${READ_URL}`]: [
+          mockApiResponse(
+            { error: { key: "database_error", hint: "The item is already present" } },
+            400,
+            false
+          ),
+        ],
+      });
+
+      await expect(authenticatedPost(READ_PATH, { domain: "example.com" })).rejects.toMatchObject({
+        status: 400,
+        apiError: { key: "database_error", hint: "The item is already present" },
+      });
+
+      expect(authCalls()).toHaveLength(1);
+      expect(writeCalls()).toHaveLength(1);
+    });
   });
 
   describe("endSession", () => {

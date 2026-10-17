@@ -5,7 +5,7 @@ import { DOMAIN_KINDS } from "./constants.js";
 const WILDCARD_PREFIX = "*.";
 const DOMAIN_MAX_LENGTH = 253;
 const LABEL_PATTERN = /^[a-z0-9_](?:[a-z0-9_-]{0,61}[a-z0-9_])?$/;
-const DUPLICATE_ERROR = /UNIQUE constraint/i;
+const DUPLICATE_ERROR = /already present|UNIQUE constraint/i;
 
 function isHostname(value) {
   const labels = value.split(".");
@@ -56,4 +56,14 @@ export function parseAddResult(payload, domain) {
     code: PIHOLE_ERROR_CODES.REJECTED,
     message: "Pi-hole rejected the domain",
   });
+}
+
+/** Pi-hole answers HTTP 400 when the entry is already on the list. */
+export function isDuplicateError(error) {
+  return (
+    error instanceof PiholeError &&
+    error.status === 400 &&
+    error.apiError?.key === "database_error" &&
+    DUPLICATE_ERROR.test(error.apiError.hint ?? "")
+  );
 }
