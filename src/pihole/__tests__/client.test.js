@@ -59,4 +59,46 @@ describe("Pi-hole HTTP client", () => {
       path: "/stats/summary",
     });
   });
+
+  it("keeps the key and hint from Pi-hole's error body", async () => {
+    global.fetch.mockResolvedValue(
+      mockApiResponse(
+        {
+          error: {
+            key: "database_error",
+            message: "Could not add to gravity database",
+            hint: "The item is already present",
+          },
+          took: 0.003,
+        },
+        400,
+        false
+      )
+    );
+
+    await expect(api.post("/domains/allow/exact", { domain: "example.com" })).rejects.toMatchObject(
+      {
+        message: "Bad Request",
+        status: 400,
+        apiError: { key: "database_error", hint: "The item is already present" },
+      }
+    );
+  });
+
+  it("omits the API error when the error body is empty or not JSON", async () => {
+    global.fetch.mockResolvedValueOnce(mockApiResponse(null, 400, false));
+    global.fetch.mockResolvedValueOnce({
+      ...mockApiResponse(null, 500, false),
+      json: () => Promise.reject(new SyntaxError("Unexpected token")),
+    });
+
+    await expect(api.get("/stats/summary")).rejects.toMatchObject({
+      status: 400,
+      apiError: undefined,
+    });
+    await expect(api.get("/stats/summary")).rejects.toMatchObject({
+      status: 500,
+      apiError: undefined,
+    });
+  });
 });
