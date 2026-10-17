@@ -3,7 +3,7 @@ import { PiholeError, PIHOLE_ERROR_CODES } from "../shared/errors/PiholeError.js
 
 export const api = {
   get BASE_URL() {
-    return `${env.PIHOLE_IP}/api`;
+    return `${env.PIHOLE_URL}/api`;
   },
   headers: {},
   hasSession() {

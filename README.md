@@ -66,7 +66,7 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
    ```
    BOT_TOKEN=your_telegram_bot_token_here
    PIHOLE_PASSWORD=your_pihole_admin_password_here
-   PIHOLE_IP=your_pihole_url_here
+   PIHOLE_URL=your_pihole_url_here
    ALLOWED_USER=your_telegram_user_id_here
    DEBUG=false
    ```
@@ -80,7 +80,7 @@ A Telegram bot to remotely control and monitor your Pi-hole setup from anywhere.
    ```
    BOT_TOKEN="1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789"
    PIHOLE_PASSWORD="YourPiholePasswordHere"
-   PIHOLE_IP="http://192.168.1.100"
+   PIHOLE_URL="http://192.168.1.100"
    ALLOWED_USER="123456789"
    ```
 
