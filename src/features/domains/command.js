@@ -26,7 +26,6 @@ function domainCommand(list, description) {
           : `✅ Added ${code(target.display)} to the ${list.label}`;
       await sendMessage(ctx, message, { parse_mode: "HTML" });
     },
-    showInKeyboard: false,
   };
 }
 
