@@ -2,6 +2,7 @@ import { it, expect, beforeEach, vi } from "vitest";
 import { COMMANDS } from "../app/commands.js";
 import { registerCommands } from "../app/registry.js";
 import * as blocking from "../features/blocking/service.js";
+import * as domains from "../features/domains/service.js";
 import * as messages from "../features/messages/service.js";
 import * as pause from "../features/pause/service.js";
 import * as recent from "../features/recent/service.js";
@@ -12,6 +13,7 @@ import * as top from "../features/top/service.js";
 import { pauseAction } from "../features/pause/command.js";
 
 vi.mock("../features/blocking/service.js");
+vi.mock("../features/domains/service.js");
 vi.mock("../features/messages/service.js");
 vi.mock("../features/pause/service.js");
 vi.mock("../features/recent/service.js");
@@ -239,6 +241,56 @@ it("does not confirm a pause that failed", async () => {
   pause.pause.mockRejectedValue(error);
 
   await expect(run("pause", ctx)).rejects.toBe(error);
+  expect(ctx.reply).not.toHaveBeenCalled();
+});
+
+it("allows a domain and confirms it in one reply", async () => {
+  domains.addDomain.mockResolvedValue("added");
+  const ctx = { ...context(), payload: "Example.com" };
+
+  await run("allow", ctx);
+
+  expect(domains.addDomain).toHaveBeenCalledWith(
+    { type: "allow", label: "allowlist" },
+    { kind: "exact", domain: "example.com", display: "example.com" }
+  );
+  expect(ctx.reply.mock.calls).toEqual([
+    ["✅ Added <code>example.com</code> to the allowlist", { parse_mode: "HTML" }],
+  ]);
+});
+
+it("reports a wildcard that is already denied", async () => {
+  domains.addDomain.mockResolvedValue("exists");
+  const ctx = { ...context(), payload: "*.ads.example" };
+
+  await run("deny", ctx);
+
+  expect(domains.addDomain).toHaveBeenCalledWith(
+    { type: "deny", label: "denylist" },
+    { kind: "regex", domain: "(\\.|^)ads\\.example$", display: "*.ads.example" }
+  );
+  expect(ctx.reply.mock.calls[0][0]).toBe(
+    "ℹ️ <code>*.ads.example</code> is already on the denylist"
+  );
+});
+
+it("rejects an invalid domain without changing Pi-hole", async () => {
+  const ctx = { ...context(), payload: "" };
+
+  await run("deny", ctx);
+
+  expect(domains.addDomain).not.toHaveBeenCalled();
+  expect(ctx.reply.mock.calls[0][0]).toBe(
+    "❌ Invalid domain. Send /deny <domain>, e.g. /deny example.com or /deny *.example.com."
+  );
+});
+
+it("does not confirm a domain that failed to be added", async () => {
+  const ctx = { ...context(), payload: "example.com" };
+  const error = new Error("add failed");
+  domains.addDomain.mockRejectedValue(error);
+
+  await expect(run("allow", ctx)).rejects.toBe(error);
   expect(ctx.reply).not.toHaveBeenCalled();
 });
 

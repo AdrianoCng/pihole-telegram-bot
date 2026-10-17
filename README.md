@@ -140,6 +140,8 @@ npm start
    - `/enable` or `/e` - Enable Pi-hole subsystems
    - `/disable` or `/d` - Disable Pi-hole subsystems
    - `/pause` or `/p` - Temporarily disable blocking. Pick a preset (10 sec, 30 sec, 5 min) or send a custom time, e.g. `/pause 90s`, `/pause 15m`, `/pause 1h` (max 24h)
+   - `/allow <domain>` - Add a domain to the allowlist. Use `*.domain` to also allow every subdomain, e.g. `/allow *.example.com` (stored as a regex entry, like the web interface's wildcard option)
+   - `/deny <domain>` - Add a domain to the denylist. Use `*.domain` to also block every subdomain, e.g. `/deny *.ads.example`
    - `/version` or `/v` - Show installed version of Pi-hole, Web Interface & FTL
    - `/update` or `/up` - Update Pi-hole subsystems
    - `/upgravity` or `/g` - Update the list of ad-serving domains
@@ -152,7 +154,7 @@ The reply keyboard lists read-only monitoring commands first (`/summary`, `/top`
 
 ### API authentication
 
-`/summary`, `/top`, `/recent` and `/messages` sign in to the Pi-hole API automatically using `PIHOLE_PASSWORD`, and sign in again once if the session has expired. You no longer need to run `/authorize` after restarting the bot. `/authorize` and `/logout` remain available for manual troubleshooting. On a graceful shutdown (`SIGINT`/`SIGTERM`, including PM2 restarts) the bot ends its Pi-hole API session so that restarts do not use up Pi-hole's session limit.
+`/summary`, `/top`, `/recent`, `/messages`, `/allow` and `/deny` sign in to the Pi-hole API automatically using `PIHOLE_PASSWORD`, and sign in again once if the session has expired. You no longer need to run `/authorize` after restarting the bot. `/authorize` and `/logout` remain available for manual troubleshooting. On a graceful shutdown (`SIGINT`/`SIGTERM`, including PM2 restarts) the bot ends its Pi-hole API session so that restarts do not use up Pi-hole's session limit.
 
 ## 🧪 Testing
 

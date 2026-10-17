@@ -1,0 +1,41 @@
+import { code } from "../../shared/telegram/html.js";
+import { sendMessage } from "../../shared/telegram/sendMessage.js";
+import { DOMAIN_LISTS } from "./constants.js";
+import { parseDomainTarget } from "./parse.js";
+import { addDomain } from "./service.js";
+
+function domainCommand(list, description) {
+  const name = list.type;
+  const usage = `Send /${name} <domain>, e.g. /${name} example.com or /${name} *.example.com`;
+
+  return {
+    trigger: [name],
+    description,
+    async handler(ctx) {
+      const target = parseDomainTarget(ctx.payload);
+
+      if (target === null) {
+        await sendMessage(ctx, `❌ Invalid domain. ${usage}`);
+        return;
+      }
+
+      const result = await addDomain(list, target);
+      const message =
+        result === "exists"
+          ? `ℹ️ ${code(target.display)} is already on the ${list.label}`
+          : `✅ Added ${code(target.display)} to the ${list.label}`;
+      await sendMessage(ctx, message, { parse_mode: "HTML" });
+    },
+    showInKeyboard: false,
+  };
+}
+
+export const allowCommand = domainCommand(
+  DOMAIN_LISTS.allow,
+  "Allow a domain, or *.domain for its subdomains too"
+);
+
+export const denyCommand = domainCommand(
+  DOMAIN_LISTS.deny,
+  "Block a domain, or *.domain for its subdomains too"
+);

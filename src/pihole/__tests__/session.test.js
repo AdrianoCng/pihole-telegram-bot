@@ -5,7 +5,13 @@ import { API_ENDPOINTS } from "../endpoints.js";
 import { REQUEST_TIMEOUT_MS } from "../../shared/timers.js";
 import { PIHOLE_ERROR_CODES } from "../../shared/errors/PiholeError.js";
 import { mockApiResponse } from "../../__tests__/helpers/testUtils.js";
-import { authenticatedGet, endSession, ensureSession, refreshSession } from "../session.js";
+import {
+  authenticatedGet,
+  authenticatedPost,
+  endSession,
+  ensureSession,
+  refreshSession,
+} from "../session.js";
 
 const PASSWORD = env.PIHOLE_PASSWORD;
 const AUTH_URL = `${api.BASE_URL}${API_ENDPOINTS.AUTH}`;
@@ -278,6 +284,62 @@ describe("piholeSession", () => {
       await expect(
         authenticatedGet(READ_PATH, { signal: AbortSignal.timeout(50) })
       ).rejects.toMatchObject({ name: "TimeoutError" });
+    });
+  });
+
+  describe("authenticatedPost", () => {
+    const writeCalls = () =>
+      global.fetch.mock.calls.filter(
+        ([url, options]) => url === READ_URL && options.method === "POST"
+      );
+
+    it("sends a JSON body with the session", async () => {
+      routeFetch({
+        [`POST ${AUTH_URL}`]: [mockApiResponse(validSession())],
+        [`POST ${READ_URL}`]: [mockApiResponse({ ok: true })],
+      });
+
+      await expect(authenticatedPost(READ_PATH, { domain: "example.com" })).resolves.toEqual({
+        ok: true,
+      });
+
+      expect(writeCalls()[0][1].headers).toEqual({
+        sid: "test-sid",
+        "Content-Type": "application/json",
+      });
+      expect(JSON.parse(writeCalls()[0][1].body)).toEqual({ domain: "example.com" });
+    });
+
+    it("refreshes once and retries once after a 401", async () => {
+      api.setSession("expired-sid");
+      routeFetch({
+        [`POST ${AUTH_URL}`]: [mockApiResponse(validSession("fresh-sid"))],
+        [`POST ${READ_URL}`]: [mockApiResponse(null, 401, false), mockApiResponse({ ok: true })],
+      });
+
+      await expect(authenticatedPost(READ_PATH, { domain: "example.com" })).resolves.toEqual({
+        ok: true,
+      });
+
+      expect(authCalls()).toHaveLength(1);
+      expect(writeCalls()).toHaveLength(2);
+      expect(writeCalls()[1][1].headers.sid).toBe("fresh-sid");
+      expect(JSON.parse(writeCalls()[1][1].body)).toEqual({ domain: "example.com" });
+    });
+
+    it("propagates a second 401 without another retry", async () => {
+      api.setSession("expired-sid");
+      routeFetch({
+        [`POST ${AUTH_URL}`]: [mockApiResponse(validSession("fresh-sid"))],
+        [`POST ${READ_URL}`]: [mockApiResponse(null, 401, false)],
+      });
+
+      await expect(authenticatedPost(READ_PATH, {})).rejects.toMatchObject({
+        status: 401,
+        afterRetry: true,
+      });
+
+      expect(writeCalls()).toHaveLength(2);
     });
   });
 
