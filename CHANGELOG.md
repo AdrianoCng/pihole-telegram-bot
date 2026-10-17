@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.0](https://github.com/AdrianoCng/pihole-telegram-bot/compare/v1.4.0...v1.5.0) (2026-10-17)
+
+
+### Features
+
+* add DEBUG environment variable for enhanced error logging ([#37](https://github.com/AdrianoCng/pihole-telegram-bot/issues/37)) ([5ed04e6](https://github.com/AdrianoCng/pihole-telegram-bot/commit/5ed04e6d8ec279e6c6f95e826c104ce008f7d22a))
+* deprecate `PIHOLE_IP` in favour of `PIHOLE_URL` ([33eaaa7](https://github.com/AdrianoCng/pihole-telegram-bot/commit/33eaaa734e68bcb8d07dd96295fd3c2a19ff8142))
+* filter /recent by client or domain, with wildcards ([#40](https://github.com/AdrianoCng/pihole-telegram-bot/issues/40)) ([d899e98](https://github.com/AdrianoCng/pihole-telegram-bot/commit/d899e9880366d114e5858e0f9e7555dd295481dd))
+* log a startup warning when the deprecated `PIHOLE_IP` is used ([33eaaa7](https://github.com/AdrianoCng/pihole-telegram-bot/commit/33eaaa734e68bcb8d07dd96295fd3c2a19ff8142))
+
 ## [1.4.0](https://github.com/AdrianoCng/pihole-telegram-bot/compare/v1.3.0...v1.4.0) (2026-10-10)
 
 
