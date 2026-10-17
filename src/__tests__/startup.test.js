@@ -1,16 +1,17 @@
 import { it, expect, afterEach, vi } from "vitest";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
-import { API_ENDPOINTS } from "../constants/api.js";
-import { COMMANDS } from "../constants/commands.js";
+import { API_ENDPOINTS } from "../pihole/endpoints.js";
+import { COMMANDS } from "../app/commands.js";
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
   vi.doUnmock("dotenv/config");
-  vi.doUnmock("../bot.js");
-  vi.doUnmock("../api.js");
-  vi.doUnmock("../services/piholeService.js");
-  vi.doUnmock("../helpers/logSafeError.js");
+  vi.doUnmock("../app/createBot.js");
+  vi.doUnmock("../pihole/client.js");
+  vi.doUnmock("../pihole/session.js");
+  vi.doUnmock("../shared/logSafeError.js");
   vi.resetModules();
 });
 
@@ -31,8 +32,8 @@ async function loadEntrypoint({
     stop: vi.fn((signal) => events.push("stop:" + signal)),
   };
   const api = { hasSession: vi.fn(() => hasSession) };
-  const piholeService = {
-    logout: vi.fn(async (options) => {
+  const session = {
+    endSession: vi.fn(async (options) => {
       events.push("logout");
       return logout(options);
     }),
@@ -49,24 +50,26 @@ async function loadEntrypoint({
   });
   const consoleMock = { error: vi.spyOn(console, "error").mockImplementation(() => {}) };
 
+  vi.stubEnv("PIHOLE_PASSWORD", "test-password");
+  vi.stubEnv("ALLOWED_USER", "123");
   vi.resetModules();
   vi.doMock("dotenv/config", () => ({}));
-  vi.doMock("../bot.js", () => ({ default: bot }));
-  vi.doMock("../api.js", () => ({ default: api }));
-  vi.doMock("../services/piholeService.js", () => ({ default: piholeService }));
-  vi.doMock("../helpers/logSafeError.js", () => ({ logSafeError }));
+  vi.doMock("../app/createBot.js", () => ({ createBot: () => bot }));
+  vi.doMock("../pihole/client.js", () => ({ api }));
+  vi.doMock("../pihole/session.js", () => session);
+  vi.doMock("../shared/logSafeError.js", () => ({ logSafeError }));
   await import("../../index.js");
 
   const handler = async (signal) => {
     await handlers.get(signal)();
   };
-  return { events, bot, piholeService, logSafeError, handlers, consoleMock, handler };
+  return { events, bot, session, logSafeError, handlers, consoleMock, handler };
 }
 
 it.each([false, true])(
   "launches after autocomplete registration (failure: %s)",
   async (failure) => {
-    const { events, bot, handlers, consoleMock, piholeService, handler } = await loadEntrypoint({
+    const { events, bot, handlers, consoleMock, session, handler } = await loadEntrypoint({
       failure,
     });
     expect(events).toEqual(["register", "launch"]);
@@ -81,17 +84,17 @@ it.each([false, true])(
       await handler(signal);
       expect(bot.stop).toHaveBeenLastCalledWith(signal);
     }
-    expect(piholeService.logout).not.toHaveBeenCalled();
+    expect(session.endSession).not.toHaveBeenCalled();
   }
 );
 
 it.each(["SIGINT", "SIGTERM"])("ends the Pi-hole session before stopping on %s", async (signal) => {
-  const { events, piholeService, logSafeError, handler } = await loadEntrypoint({
+  const { events, session, logSafeError, handler } = await loadEntrypoint({
     hasSession: true,
   });
   await handler(signal);
   expect(events.slice(-2)).toEqual(["logout", "stop:" + signal]);
-  const [[{ signal: abortSignal }]] = piholeService.logout.mock.calls;
+  const [[{ signal: abortSignal }]] = session.endSession.mock.calls;
   expect(abortSignal).toBeInstanceOf(AbortSignal);
   expect(logSafeError).not.toHaveBeenCalled();
 });
@@ -128,18 +131,19 @@ it("bounds shutdown logout with a one-second timeout", async () => {
 });
 
 it("loads the bot as native ESM and reads the version outside the repository", () => {
-  const first = new URL("../bot.js", import.meta.url).href;
-  const controller = new URL("../controllers/botController.js", import.meta.url).href;
+  const createBotUrl = new URL("../app/createBot.js", import.meta.url).href;
+  const command = new URL("../features/about/command.js", import.meta.url).href;
   const packageUrl = new URL("../../package.json", import.meta.url).href;
   const script = `
       import assert from "node:assert/strict";
       import { readFile } from "node:fs/promises";
       globalThis.fetch = () => { throw new Error("Unexpected network call"); };
-      await import(${JSON.stringify(first)});
-      const { default: controller } = await import(${JSON.stringify(controller)});
+      const { createBot } = await import(${JSON.stringify(createBotUrl)});
+      createBot();
+      const { botVersionCommand } = await import(${JSON.stringify(command)});
       const pkg = JSON.parse(await readFile(new URL(${JSON.stringify(packageUrl)}), "utf8"));
       let reply;
-      await controller.botVersionController({ reply(message) { reply = message; } });
+      await botVersionCommand.handler({ reply(message) { reply = message; } });
       assert.equal(reply, "The bot version is v" + pkg.version);
     `;
   expect(() =>
@@ -150,4 +154,24 @@ it("loads the bot as native ESM and reads the version outside the repository", (
       stdio: "pipe",
     })
   ).not.toThrow();
+});
+
+it("exits before building the bot when required configuration is missing", async () => {
+  vi.stubEnv("PIHOLE_PASSWORD", undefined);
+  vi.stubEnv("ALLOWED_USER", "123");
+  const createBot = vi.fn();
+  const exit = vi.spyOn(process, "exit").mockImplementation((code) => {
+    throw new Error(`exit ${code}`);
+  });
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.resetModules();
+  vi.doMock("dotenv/config", () => ({}));
+  vi.doMock("../app/createBot.js", () => ({ createBot }));
+
+  await expect(import("../../index.js")).rejects.toThrow("exit 1");
+  expect(exit).toHaveBeenCalledWith(1);
+  expect(createBot).not.toHaveBeenCalled();
+  expect(consoleError).toHaveBeenCalledWith(
+    "[error] Missing required environment variables: PIHOLE_PASSWORD. See .env.example."
+  );
 });

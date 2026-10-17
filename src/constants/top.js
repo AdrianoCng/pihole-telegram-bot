@@ -1,4 +1,0 @@
-export const TOP_BLOCKED_DOMAINS_COUNT = 10;
-export const TOP_CLIENTS_COUNT = 5;
-export const TOP_LABEL_MAX_LENGTH = 60;
-export const TELEGRAM_MESSAGE_MAX_LENGTH = 4096;

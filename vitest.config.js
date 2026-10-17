@@ -11,7 +11,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.js"],
-      exclude: ["src/**/__tests__/**", "src/bot.js", "src/middlewares/typing.js"],
+      exclude: ["src/**/__tests__/**", "src/app/createBot.js", "src/app/middleware/typing.js"],
       reportsDirectory: "coverage",
       reporter: ["text", "json", "lcov", "clover"],
       // Coverage is informational; behavior tests are the pass/fail gate.
