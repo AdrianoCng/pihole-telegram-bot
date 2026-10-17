@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { DEFAULT_ERROR_MESSAGES } from "../../../shared/errors/messages.js";
 import { CommandError } from "../../../shared/errors/CommandError.js";
 import { PiholeError, PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
@@ -9,17 +9,16 @@ import { handleBotError, userMessage } from "../errorHandler.js";
 vi.mock("../../../shared/telegram/sendMessage.js", () => ({ sendMessage: vi.fn() }));
 vi.mock("../../../shared/logSafeError.js", () => ({ logSafeError: vi.fn() }));
 
+const env = vi.hoisted(() => ({ DEBUG: false }));
+vi.mock("../../../config.js", () => ({ env }));
+
 const piholeError = (code, status) =>
   new PiholeError({ code, message: "Static failure", status, path: "/test" });
 
 describe("errorHandler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete process.env.DEBUG;
-  });
-
-  afterEach(() => {
-    delete process.env.DEBUG;
+    env.DEBUG = false;
   });
 
   it.each([
@@ -87,7 +86,7 @@ describe("errorHandler", () => {
   });
 
   it("appends error details to the reply when DEBUG is true", async () => {
-    process.env.DEBUG = "true";
+    env.DEBUG = true;
     sendMessage.mockResolvedValue();
 
     await handleBotError(piholeError(PIHOLE_ERROR_CODES.HTTP, 500), {});
@@ -100,7 +99,7 @@ describe("errorHandler", () => {
   });
 
   it("sends the original error message to the chat when DEBUG is true", async () => {
-    process.env.DEBUG = "true";
+    env.DEBUG = true;
     sendMessage.mockResolvedValue();
     const ctx = {};
 
@@ -113,7 +112,7 @@ describe("errorHandler", () => {
   });
 
   it("sends only the fixed message when DEBUG is false", async () => {
-    process.env.DEBUG = "false";
+    env.DEBUG = false;
     sendMessage.mockResolvedValue();
 
     await handleBotError(new Error("secret detail"), {});

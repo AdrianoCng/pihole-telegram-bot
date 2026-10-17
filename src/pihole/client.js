@@ -1,9 +1,9 @@
-import { getEnv } from "../config.js";
+import { env } from "../config.js";
 import { PiholeError, PIHOLE_ERROR_CODES } from "../shared/errors/PiholeError.js";
 
 export const api = {
   get BASE_URL() {
-    return `${getEnv("PIHOLE_IP")}/api`;
+    return `${env.PIHOLE_IP}/api`;
   },
   headers: {},
   hasSession() {

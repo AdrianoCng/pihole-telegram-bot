@@ -3,16 +3,18 @@ import { PiholeError, PIHOLE_ERROR_CODES } from "../errors/PiholeError.js";
 import { CommandError } from "../errors/CommandError.js";
 import { logSafeError } from "../logSafeError.js";
 
+const env = vi.hoisted(() => ({ DEBUG: false }));
+vi.mock("../../config.js", () => ({ env }));
+
 describe("logSafeError", () => {
   let log;
 
   beforeEach(() => {
     log = vi.spyOn(console, "error").mockImplementation(() => {});
-    delete process.env.DEBUG;
+    env.DEBUG = false;
   });
 
   afterEach(() => {
-    delete process.env.DEBUG;
     log.mockRestore();
   });
 
@@ -104,7 +106,7 @@ describe("logSafeError", () => {
   });
 
   it("also logs the full error when DEBUG is true", () => {
-    process.env.DEBUG = "true";
+    env.DEBUG = true;
     const error = new Error("boom", { cause: new Error("root") });
 
     logSafeError({ operation: "summary", path: "/stats/summary", error });
@@ -114,7 +116,7 @@ describe("logSafeError", () => {
   });
 
   it("does not log the full error when DEBUG is false", () => {
-    process.env.DEBUG = "false";
+    env.DEBUG = false;
 
     logSafeError({ operation: "summary", path: "/stats/summary", error: new Error("boom") });
 

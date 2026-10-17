@@ -1,24 +1,10 @@
-/** Read required configuration when it is needed. Empty strings remain valid. */
-export function getEnv(key) {
-  const value = process.env[key];
-  if (value === undefined) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
-  return value;
-}
+import { bool, cleanEnv, str, url } from "envalid";
 
-/** Read an optional boolean flag. Only "true" or "1" enable it. */
-export function getBooleanEnv(key) {
-  const value = process.env[key]?.trim().toLowerCase();
-  return value === "true" || value === "1";
-}
-
-export const REQUIRED_ENV = ["BOT_TOKEN", "PIHOLE_IP", "PIHOLE_PASSWORD", "ALLOWED_USER"];
-
-/** Fail fast at startup instead of on the first command that needs a value. */
-export function validateConfig(env = process.env) {
-  const missing = REQUIRED_ENV.filter((key) => env[key] === undefined);
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
-  }
-}
+/** Validated, immutable configuration. Missing or invalid values exit at import. */
+export const env = cleanEnv(process.env, {
+  BOT_TOKEN: str({ desc: "Telegram bot token from @BotFather", example: "123456:ABC-DEF" }),
+  PIHOLE_IP: url({ desc: "Pi-hole base URL including protocol", example: "http://192.168.1.100" }),
+  PIHOLE_PASSWORD: str({ desc: "Pi-hole web password; may be empty" }),
+  ALLOWED_USER: str({ desc: "Telegram user ID allowed to use the bot", example: "123456789" }),
+  DEBUG: bool({ default: false, desc: "Include error details in replies and logs" }),
+});

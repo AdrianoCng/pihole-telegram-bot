@@ -20,3 +20,4 @@
 - `npm run test:coverage` generates an informational V8 coverage report; it has no threshold.
 - Place tests in `__tests__/` directories next to the code they cover. Cross-cutting tests (startup, command routing) and shared test utilities live in `src/__tests__/`.
 - Never run real reboot, upgrade, or pihole operations in tests
+- Mock `config.js` with a mutable `env` object to vary a value.
