@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { PiholeError, PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
-import { isDuplicateError, parseAddResult, parseDomainTarget } from "../parse.js";
+import {
+  displayDomain,
+  isDuplicateError,
+  parseAddResult,
+  parseDomainTarget,
+  parseDomains,
+} from "../parse.js";
 
 const exact = (domain) => ({ kind: "exact", domain, display: domain });
 
@@ -132,5 +138,55 @@ describe("isDuplicateError", () => {
     expect(
       isDuplicateError(Object.assign(new Error("x"), { status: 400, apiError: duplicate }))
     ).toBe(false);
+  });
+});
+
+describe("parseDomains", () => {
+  const entry = (overrides) => ({
+    domain: "example.com",
+    type: "allow",
+    kind: "exact",
+    enabled: true,
+    comment: null,
+    id: 1,
+    ...overrides,
+  });
+
+  it("keeps the fields the list needs", () => {
+    expect(
+      parseDomains({ domains: [entry(), entry({ type: "deny", kind: "regex", enabled: false })] })
+    ).toEqual([
+      { domain: "example.com", type: "allow", kind: "exact", enabled: true },
+      { domain: "example.com", type: "deny", kind: "regex", enabled: false },
+    ]);
+  });
+
+  it("accepts an empty list", () => {
+    expect(parseDomains({ domains: [] })).toEqual([]);
+  });
+
+  it.each([
+    ["a missing list", {}],
+    ["an unknown type", { domains: [entry({ type: "block" })] }],
+    ["an unknown kind", { domains: [entry({ kind: "wildcard" })] }],
+    ["an empty domain", { domains: [entry({ domain: "" })] }],
+    ["a missing enabled flag", { domains: [entry({ enabled: undefined })] }],
+  ])("rejects %s", (_, payload) => {
+    expect(() => parseDomains(payload)).toThrow(
+      expect.objectContaining({ code: PIHOLE_ERROR_CODES.INVALID_RESPONSE })
+    );
+  });
+});
+
+describe("displayDomain", () => {
+  it("shows the wildcard regex /allow stores as *.domain", () => {
+    const { domain, kind } = parseDomainTarget("*.ads.example.com");
+    expect(displayDomain({ kind, domain })).toBe("*.ads.example.com");
+  });
+
+  it("shows other regexes and exact domains as stored", () => {
+    expect(displayDomain({ kind: "regex", domain: "^ads[0-9]+\\." })).toBe("^ads[0-9]+\\.");
+    expect(displayDomain({ kind: "regex", domain: "(\\.|^)a.b\\.com$" })).toBe("(\\.|^)a.b\\.com$");
+    expect(displayDomain({ kind: "exact", domain: "example.com" })).toBe("example.com");
   });
 });
