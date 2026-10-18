@@ -54,13 +54,11 @@ function fitLines(lines, maxLength) {
   return message;
 }
 
+/** One message per list, so a long allowlist never pushes the denylist out. */
 export function renderDomains(entries) {
-  if (entries.length === 0) return "No allow or deny domains yet";
+  if (entries.length === 0) return ["No allow or deny domains yet"];
 
-  const lines = SECTIONS.flatMap((section, index) => [
-    ...(index > 0 ? [""] : []),
-    ...renderSection(section, entries),
-  ]);
-
-  return fitLines(lines, TELEGRAM_MESSAGE_MAX_LENGTH);
+  return SECTIONS.map((section) =>
+    fitLines(renderSection(section, entries), TELEGRAM_MESSAGE_MAX_LENGTH)
+  );
 }

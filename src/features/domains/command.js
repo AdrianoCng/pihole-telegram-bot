@@ -45,6 +45,8 @@ export const domainsCommand = {
   description: "List allowed and denied domains",
   async handler(ctx) {
     const entries = await listDomains();
-    await sendMessage(ctx, renderDomains(entries), { parse_mode: "HTML" });
+    for (const message of renderDomains(entries)) {
+      await sendMessage(ctx, message, { parse_mode: "HTML" });
+    }
   },
 };
