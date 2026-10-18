@@ -2,6 +2,7 @@ import { it, expect } from "vitest";
 import {
   requireArray,
   requireCount,
+  requireOneOf,
   requirePercentage,
   requireString,
   requireTimestamp,
@@ -15,6 +16,7 @@ it("returns valid values unchanged", () => {
   expect(requireString("a.com")).toBe("a.com");
   expect(requireArray([])).toEqual([]);
   expect(requireTimestamp(1758801600.5)).toBe(1758801600.5);
+  expect(requireOneOf(new Set(["a", "b"]), "b")).toBe("b");
 });
 
 it("rejects invalid values without coercing", () => {
@@ -26,4 +28,5 @@ it("rejects invalid values without coercing", () => {
   expect(() => requireTimestamp(0)).toThrow(invalid);
   expect(() => requireTimestamp("1")).toThrow(invalid);
   expect(() => requireTimestamp(Number.POSITIVE_INFINITY)).toThrow(invalid);
+  expect(() => requireOneOf(new Set(["a"]), "c")).toThrow(invalid);
 });

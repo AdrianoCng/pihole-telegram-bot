@@ -34,6 +34,11 @@ export function requireArray(value) {
   return value;
 }
 
+export function requireOneOf(values, value) {
+  if (!values.has(value)) throw invalidResponse();
+  return value;
+}
+
 export function requireTimestamp(value) {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) throw invalidResponse();
   return value;

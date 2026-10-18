@@ -1,5 +1,10 @@
 import { PiholeError, PIHOLE_ERROR_CODES } from "../../shared/errors/PiholeError.js";
-import { invalidResponse, requireArray, requireString } from "../../shared/validators.js";
+import {
+  invalidResponse,
+  requireArray,
+  requireOneOf,
+  requireString,
+} from "../../shared/validators.js";
 import { DOMAIN_KINDS, DOMAIN_LISTS } from "./constants.js";
 
 const WILDCARD_PREFIX = "*.";
@@ -18,11 +23,6 @@ function isHostname(value) {
 /** The regex Pi-hole's web interface stores for a wildcard entry. */
 function wildcardRegex(domain) {
   return `(\\.|^)${domain.replaceAll(".", "\\.")}$`;
-}
-
-function requireOneOf(values, value) {
-  if (!values.has(value)) throw invalidResponse();
-  return value;
 }
 
 /**
