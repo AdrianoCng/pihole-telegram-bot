@@ -1,8 +1,8 @@
 import { it, expect, beforeEach, vi } from "vitest";
-import { authenticatedPost } from "../../../pihole/session.js";
+import { authenticatedGet, authenticatedPost } from "../../../pihole/session.js";
 import { PiholeError, PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
 import { DOMAIN_LISTS } from "../constants.js";
-import { addDomain } from "../service.js";
+import { addDomain, listDomains } from "../service.js";
 
 vi.mock("../../../pihole/session.js");
 
@@ -63,4 +63,22 @@ it("propagates a failed request", async () => {
   await expect(
     addDomain(DOMAIN_LISTS.allow, { kind: "exact", domain: "example.com" })
   ).rejects.toBe(error);
+});
+
+it("lists every domain entry", async () => {
+  authenticatedGet.mockResolvedValue({
+    domains: [{ domain: "example.com", type: "deny", kind: "exact", enabled: true }],
+  });
+
+  await expect(listDomains()).resolves.toEqual([
+    { domain: "example.com", type: "deny", kind: "exact", enabled: true },
+  ]);
+  expect(authenticatedGet).toHaveBeenCalledWith("/domains");
+});
+
+it("propagates a failed list request", async () => {
+  const error = new TypeError("fetch failed");
+  authenticatedGet.mockRejectedValue(error);
+
+  await expect(listDomains()).rejects.toBe(error);
 });

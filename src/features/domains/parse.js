@@ -1,11 +1,19 @@
 import { PiholeError, PIHOLE_ERROR_CODES } from "../../shared/errors/PiholeError.js";
-import { invalidResponse, requireArray } from "../../shared/validators.js";
-import { DOMAIN_KINDS } from "./constants.js";
+import {
+  invalidResponse,
+  requireArray,
+  requireOneOf,
+  requireString,
+} from "../../shared/validators.js";
+import { DOMAIN_KINDS, DOMAIN_LISTS } from "./constants.js";
 
 const WILDCARD_PREFIX = "*.";
 const DOMAIN_MAX_LENGTH = 253;
 const LABEL_PATTERN = /^[a-z0-9_](?:[a-z0-9_-]{0,61}[a-z0-9_])?$/;
 const DUPLICATE_ERROR = /already present|UNIQUE constraint/i;
+const WILDCARD_REGEX = /^\(\\\.\|\^\)(.+)\$$/;
+const LIST_TYPES = new Set(Object.values(DOMAIN_LISTS).map((list) => list.type));
+const KINDS = new Set(Object.values(DOMAIN_KINDS));
 
 function isHostname(value) {
   const labels = value.split(".");
@@ -62,4 +70,28 @@ export function isDuplicateError(error) {
     error.apiError?.key === "database_error" &&
     DUPLICATE_ERROR.test(error.apiError.hint ?? "")
   );
+}
+
+/** Validate the /domains payload. */
+export function parseDomains(payload) {
+  return requireArray(payload?.domains).map((entry) => {
+    if (typeof entry?.enabled !== "boolean") throw invalidResponse();
+    return {
+      domain: requireString(entry.domain),
+      type: requireOneOf(LIST_TYPES, entry.type),
+      kind: requireOneOf(KINDS, entry.kind),
+      enabled: entry.enabled,
+    };
+  });
+}
+
+/** Show a wildcard regex as the `*.domain` it was added from, otherwise the raw entry. */
+export function displayDomain({ kind, domain }) {
+  if (kind !== DOMAIN_KINDS.REGEX) return domain;
+
+  const match = WILDCARD_REGEX.exec(domain);
+  if (!match) return domain;
+
+  const host = match[1].replaceAll("\\.", ".");
+  return isHostname(host) && wildcardRegex(host) === domain ? `${WILDCARD_PREFIX}${host}` : domain;
 }

@@ -294,6 +294,20 @@ it("does not confirm a domain that failed to be added", async () => {
   expect(ctx.reply).not.toHaveBeenCalled();
 });
 
+it("lists each domain list in its own HTML reply", async () => {
+  domains.listDomains.mockResolvedValue([
+    { domain: "example.com", type: "allow", kind: "exact", enabled: true },
+  ]);
+  const ctx = context();
+
+  await run("domains", ctx);
+
+  expect(ctx.reply.mock.calls).toEqual([
+    ["<b>✅ Allowlist</b>\n<i>Exact</i>\n• <code>example.com</code>", { parse_mode: "HTML" }],
+    ["<b>🚫 Denylist</b>\nNo entries", { parse_mode: "HTML" }],
+  ]);
+});
+
 const actionContext = (choice) => ({
   ...context(),
   match: [`pause:${choice}`, choice],

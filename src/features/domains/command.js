@@ -1,8 +1,9 @@
 import { code } from "../../shared/telegram/html.js";
 import { sendMessage } from "../../shared/telegram/sendMessage.js";
 import { DOMAIN_LISTS } from "./constants.js";
+import { renderDomains } from "./format.js";
 import { parseDomainTarget } from "./parse.js";
-import { addDomain } from "./service.js";
+import { addDomain, listDomains } from "./service.js";
 
 function domainCommand(list, description) {
   const name = list.type;
@@ -38,3 +39,14 @@ export const denyCommand = domainCommand(
   DOMAIN_LISTS.deny,
   "Block a domain, or *.domain for its subdomains too"
 );
+
+export const domainsCommand = {
+  trigger: ["domains"],
+  description: "List allowed and denied domains",
+  async handler(ctx) {
+    const entries = await listDomains();
+    for (const message of renderDomains(entries)) {
+      await sendMessage(ctx, message, { parse_mode: "HTML" });
+    }
+  },
+};
