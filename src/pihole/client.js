@@ -1,5 +1,10 @@
 import { env } from "../config.js";
-import { PiholeError, PIHOLE_ERROR_CODES } from "../shared/errors/PiholeError.js";
+import {
+  ApiAuthError,
+  ApiError,
+  ApiResponseError,
+  ApiUnreachableError,
+} from "../shared/errors/ApiError.js";
 
 export const api = {
   get BASE_URL() {
@@ -15,7 +20,7 @@ export const api = {
   clearSession() {
     delete this.headers.sid;
   },
-  async handleErrors(response, path) {
+  async handleErrors(response, { method, path } = {}) {
     if (response.ok) return;
 
     const errorMessage = {
@@ -26,9 +31,10 @@ export const api = {
       404: "Not Found",
     };
 
-    throw new PiholeError({
-      code: PIHOLE_ERROR_CODES.HTTP,
+    const ErrorClass = response.status === 401 ? ApiAuthError : ApiError;
+    throw new ErrorClass({
       message: errorMessage[response.status] || "Internal Server Error",
+      method,
       status: response.status,
       path,
       apiError: await this.parseApiError(response),
@@ -49,14 +55,18 @@ export const api = {
     if (typeof hint === "string") apiError.hint = hint;
     return Object.keys(apiError).length > 0 ? apiError : undefined;
   },
-  parseResponse(response) {
+  async parseResponse(response, { method, path } = {}) {
     const contentLength = response.headers.get("Content-Length");
 
     if (contentLength !== null && parseInt(contentLength, 10) === 0) {
-      return Promise.resolve(null);
+      return null;
     }
 
-    return response.json();
+    try {
+      return await response.json();
+    } catch (error) {
+      throw new ApiResponseError({ method, path, cause: error });
+    }
   },
   async request(method, path, { body, signal } = {}) {
     const options = { method, headers: { ...this.headers }, signal };
@@ -66,11 +76,16 @@ export const api = {
       options.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${this.BASE_URL}${path}`, options);
+    let response;
+    try {
+      response = await fetch(`${this.BASE_URL}${path}`, options);
+    } catch (error) {
+      throw new ApiUnreachableError({ method, path, cause: error });
+    }
 
-    await this.handleErrors(response, path);
+    await this.handleErrors(response, { method, path });
 
-    return this.parseResponse(response);
+    return this.parseResponse(response, { method, path });
   },
   post(path, data, { signal } = {}) {
     return this.request("POST", path, { body: data, signal });

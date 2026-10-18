@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PiholeError, PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
+import { ApiError } from "../../../shared/errors/ApiError.js";
 import {
   displayDomain,
   isDuplicateError,
@@ -104,14 +104,15 @@ describe("parseAddResult", () => {
 
     expect(() => parseAddResult(payload, "example.com")).toThrow(
       expect.objectContaining({
-        code: PIHOLE_ERROR_CODES.REJECTED,
+        name: "ApiRejectedError",
+        code: "API_REJECTED",
         message: "Pi-hole rejected the domain",
       })
     );
   });
 
   it("throws an invalid response for a malformed payload", () => {
-    const invalid = expect.objectContaining({ code: PIHOLE_ERROR_CODES.INVALID_RESPONSE });
+    const invalid = expect.objectContaining({ code: "API_INVALID_RESPONSE" });
 
     expect(() => parseAddResult(null, "example.com")).toThrow(invalid);
     expect(() => parseAddResult({ processed: { success: [] } }, "example.com")).toThrow(invalid);
@@ -123,7 +124,7 @@ describe("parseAddResult", () => {
 
 describe("isDuplicateError", () => {
   const httpError = (status, apiError) =>
-    new PiholeError({ code: PIHOLE_ERROR_CODES.HTTP, message: "Bad Request", status, apiError });
+    new ApiError({ message: "Bad Request", status, apiError });
   const duplicate = { key: "database_error", hint: "The item is already present" };
 
   it("recognizes Pi-hole's duplicate entry error", () => {
@@ -173,7 +174,7 @@ describe("parseDomains", () => {
     ["a missing enabled flag", { domains: [entry({ enabled: undefined })] }],
   ])("rejects %s", (_, payload) => {
     expect(() => parseDomains(payload)).toThrow(
-      expect.objectContaining({ code: PIHOLE_ERROR_CODES.INVALID_RESPONSE })
+      expect.objectContaining({ code: "API_INVALID_RESPONSE" })
     );
   });
 });

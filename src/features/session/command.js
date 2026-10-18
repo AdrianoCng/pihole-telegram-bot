@@ -5,13 +5,7 @@ export const authorizeCommand = {
   trigger: ["authorize", "a"],
   description: "Authorize the bot",
   async handler(ctx) {
-    const authorized = await authorize();
-
-    if (!authorized) {
-      await sendMessage(ctx, "❌ Authorization failed: Invalid response from server");
-      return;
-    }
-
+    await authorize();
     await sendMessage(ctx, "✅ Authorized successfully");
   },
 };

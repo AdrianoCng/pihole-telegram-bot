@@ -1,9 +1,10 @@
 import { env } from "../config.js";
+import { AppError } from "./errors/AppError.js";
 
 /**
- * Log a Pi-hole failure using only allowlisted fields. Never pass headers,
- * session IDs, passwords, or payloads. When DEBUG is enabled, the full error
- * (message, stack, cause) is also logged to help diagnose failures locally.
+ * Log a failure using only allowlisted fields. Never pass headers, session IDs,
+ * passwords, or payloads. When DEBUG is enabled, the error's own debug fields
+ * and the full error (message, stack, cause) are also logged.
  */
 export function logSafeError({
   operation,
@@ -18,6 +19,7 @@ export function logSafeError({
   if (error?.code !== undefined) details.code = error.code;
   if (error?.exitCode !== undefined) details.exitCode = error.exitCode;
   details.afterRetry = afterRetry;
+  if (env.DEBUG && error instanceof AppError) details.debug = error.debugFields();
 
   console.error(JSON.stringify(details));
 

@@ -3,7 +3,6 @@ import { env } from "../../config.js";
 import { api } from "../client.js";
 import { API_ENDPOINTS } from "../endpoints.js";
 import { REQUEST_TIMEOUT_MS } from "../../shared/timers.js";
-import { PIHOLE_ERROR_CODES } from "../../shared/errors/PiholeError.js";
 import { mockApiResponse } from "../../__tests__/helpers/testUtils.js";
 import {
   authenticatedGet,
@@ -98,8 +97,9 @@ describe("piholeSession", () => {
       routeFetch({ [`POST ${AUTH_URL}`]: [mockApiResponse(body)] });
 
       await expect(refreshSession()).rejects.toMatchObject({
-        name: "PiholeError",
-        code: PIHOLE_ERROR_CODES.INVALID_SESSION,
+        name: "ApiAuthError",
+        code: "API_AUTH",
+        message: "Pi-hole returned an invalid session",
         path: API_ENDPOINTS.AUTH,
       });
       expect(api.hasSession()).toBe(false);
@@ -117,7 +117,10 @@ describe("piholeSession", () => {
         [`POST ${AUTH_URL}`]: [new TypeError("fetch failed"), mockApiResponse(validSession())],
       });
 
-      await expect(refreshSession()).rejects.toThrow("fetch failed");
+      await expect(refreshSession()).rejects.toMatchObject({
+        name: "ApiUnreachableError",
+        cause: expect.objectContaining({ message: "fetch failed" }),
+      });
       await expect(refreshSession()).resolves.toBeUndefined();
 
       expect(authCalls()).toHaveLength(2);
@@ -283,7 +286,10 @@ describe("piholeSession", () => {
 
       await expect(
         authenticatedGet(READ_PATH, { signal: AbortSignal.timeout(50) })
-      ).rejects.toMatchObject({ name: "TimeoutError" });
+      ).rejects.toMatchObject({
+        name: "ApiUnreachableError",
+        cause: expect.objectContaining({ name: "TimeoutError" }),
+      });
     });
   });
 
@@ -382,7 +388,11 @@ describe("piholeSession", () => {
       api.setSession("test-sid");
       routeFetch({ [`DELETE ${AUTH_URL}`]: [new TypeError("fetch failed")] });
 
-      await expect(endSession()).rejects.toThrow("fetch failed");
+      await expect(endSession()).rejects.toMatchObject({
+        name: "ApiUnreachableError",
+        method: "DELETE",
+        cause: expect.objectContaining({ message: "fetch failed" }),
+      });
       expect(api.hasSession()).toBe(false);
     });
 
