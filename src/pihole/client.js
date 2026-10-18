@@ -15,7 +15,7 @@ export const api = {
   clearSession() {
     delete this.headers.sid;
   },
-  handleErrors(response, path) {
+  async handleErrors(response, path) {
     if (response.ok) return;
 
     const errorMessage = {
@@ -31,7 +31,23 @@ export const api = {
       message: errorMessage[response.status] || "Internal Server Error",
       status: response.status,
       path,
+      apiError: await this.parseApiError(response),
     });
+  },
+  /** Pi-hole's `error.key` and `error.hint`, or undefined when the body has neither. */
+  async parseApiError(response) {
+    let body;
+    try {
+      body = await response.json();
+    } catch {
+      return undefined;
+    }
+
+    const { key, hint } = body?.error ?? {};
+    const apiError = {};
+    if (typeof key === "string") apiError.key = key;
+    if (typeof hint === "string") apiError.hint = hint;
+    return Object.keys(apiError).length > 0 ? apiError : undefined;
   },
   parseResponse(response) {
     const contentLength = response.headers.get("Content-Length");
@@ -52,7 +68,7 @@ export const api = {
 
     const response = await fetch(`${this.BASE_URL}${path}`, options);
 
-    this.handleErrors(response, path);
+    await this.handleErrors(response, path);
 
     return this.parseResponse(response);
   },

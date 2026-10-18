@@ -58,13 +58,13 @@ export async function ensureSession({ signal } = {}) {
   await refreshSession({ signal });
 }
 
-/** GET with a session, re-authenticating and retrying once after a 401. */
-export async function authenticatedGet(path, { signal } = {}) {
+/** Request with a session, re-authenticating and retrying once after a 401. */
+async function authenticatedRequest(method, path, { body, signal } = {}) {
   await ensureSession({ signal });
   const startGeneration = generation;
 
   try {
-    return await api.get(path, { signal: requestSignal(signal) });
+    return await api.request(method, path, { body, signal: requestSignal(signal) });
   } catch (error) {
     if (!isUnauthorized(error)) throw error;
   }
@@ -76,11 +76,20 @@ export async function authenticatedGet(path, { signal } = {}) {
   }
 
   try {
-    return await api.get(path, { signal: requestSignal(signal) });
+    return await api.request(method, path, { body, signal: requestSignal(signal) });
   } catch (error) {
     error.afterRetry = true;
     throw error;
   }
+}
+
+export function authenticatedGet(path, { signal } = {}) {
+  return authenticatedRequest("GET", path, { signal });
+}
+
+/** A 401 means Pi-hole rejected the write before processing it, so the retry is safe. */
+export function authenticatedPost(path, body, { signal } = {}) {
+  return authenticatedRequest("POST", path, { body, signal });
 }
 
 export async function endSession({ signal } = {}) {
