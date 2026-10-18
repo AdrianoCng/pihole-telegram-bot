@@ -13,6 +13,12 @@ describe("parseDomainTarget", () => {
     expect(parseDomainTarget("_dmarc.example.com")).toEqual(exact("_dmarc.example.com"));
   });
 
+  it("accepts a single-label domain", () => {
+    expect(parseDomainTarget("nas")).toEqual(exact("nas"));
+    expect(parseDomainTarget("localhost")).toEqual(exact("localhost"));
+    expect(parseDomainTarget("Printer.")).toEqual(exact("printer"));
+  });
+
   it("lowercases and strips a trailing dot", () => {
     expect(parseDomainTarget("Ads.Example.COM.")).toEqual(exact("ads.example.com"));
   });
@@ -25,6 +31,14 @@ describe("parseDomainTarget", () => {
     });
   });
 
+  it("accepts a wildcard on a single-label base", () => {
+    expect(parseDomainTarget("*.lan")).toEqual({
+      kind: "regex",
+      domain: "(\\.|^)lan$",
+      display: "*.lan",
+    });
+  });
+
   it("rejects missing or extra arguments", () => {
     expect(parseDomainTarget(undefined)).toBeNull();
     expect(parseDomainTarget("   ")).toBeNull();
@@ -34,7 +48,6 @@ describe("parseDomainTarget", () => {
   it("rejects wildcards other than a leading *.", () => {
     expect(parseDomainTarget("*")).toBeNull();
     expect(parseDomainTarget("*.")).toBeNull();
-    expect(parseDomainTarget("*.com")).toBeNull();
     expect(parseDomainTarget("ads.*.com")).toBeNull();
     expect(parseDomainTarget("a*.example.com")).toBeNull();
     expect(parseDomainTarget("*example.com")).toBeNull();
@@ -42,7 +55,6 @@ describe("parseDomainTarget", () => {
   });
 
   it("rejects invalid hostnames", () => {
-    expect(parseDomainTarget("localhost")).toBeNull();
     expect(parseDomainTarget("exa mple.com")).toBeNull();
     expect(parseDomainTarget("example..com")).toBeNull();
     expect(parseDomainTarget("-example.com")).toBeNull();

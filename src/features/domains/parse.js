@@ -9,11 +9,7 @@ const DUPLICATE_ERROR = /already present|UNIQUE constraint/i;
 
 function isHostname(value) {
   const labels = value.split(".");
-  return (
-    value.length <= DOMAIN_MAX_LENGTH &&
-    labels.length >= 2 &&
-    labels.every((label) => LABEL_PATTERN.test(label))
-  );
+  return value.length <= DOMAIN_MAX_LENGTH && labels.every((label) => LABEL_PATTERN.test(label));
 }
 
 /** The regex Pi-hole's web interface stores for a wildcard entry. */
