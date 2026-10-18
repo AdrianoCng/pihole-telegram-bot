@@ -1,11 +1,8 @@
-import { PiholeError, PIHOLE_ERROR_CODES } from "./errors/PiholeError.js";
+import { ApiResponseError } from "./errors/ApiError.js";
 
 /** Shared Pi-hole payload validators. They never coerce or default. */
 export function invalidResponse() {
-  return new PiholeError({
-    code: PIHOLE_ERROR_CODES.INVALID_RESPONSE,
-    message: "Pi-hole returned an invalid response",
-  });
+  return new ApiResponseError();
 }
 
 export function isCount(value) {

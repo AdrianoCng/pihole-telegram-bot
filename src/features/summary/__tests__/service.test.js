@@ -57,5 +57,5 @@ it("rejects failed or malformed main summary reads", async () => {
   await expect(getSummary()).rejects.toBe(failure);
 
   reads({ stats: { ...summary, queries: { ...summary.queries, total: "10" } } });
-  await expect(getSummary()).rejects.toMatchObject({ code: "INVALID_RESPONSE" });
+  await expect(getSummary()).rejects.toMatchObject({ code: "API_INVALID_RESPONSE" });
 });

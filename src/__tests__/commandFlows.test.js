@@ -155,7 +155,7 @@ it("rejects an invalid recent filter without reading Pi-hole", async () => {
 
 it("reports authorization and logout outcomes", async () => {
   const ctx = context();
-  session.authorize.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+  session.authorize.mockResolvedValue();
 
   await run("authorize", ctx);
   await run("a", ctx);
@@ -163,7 +163,7 @@ it("reports authorization and logout outcomes", async () => {
 
   expect(ctx.reply.mock.calls.map(([message]) => message)).toEqual([
     "✅ Authorized successfully",
-    "❌ Authorization failed: Invalid response from server",
+    "✅ Authorized successfully",
     "✅ Logged out successfully",
   ]);
 });

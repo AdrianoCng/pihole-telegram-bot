@@ -24,4 +24,8 @@
 ## Error handling
 
 - Handlers await their replies and let failures propagate. `src/app/middleware/errorHandler.js` is the single error boundary: it logs safely, replies with a fixed message for the error's kind, and never rethrows.
-- Throw `PiholeError` for Pi-hole HTTP and payload failures and `CommandError` for nonzero host command exits. Keep error messages static because errors are logged in full.
+- Every error thrown on purpose extends the abstract `AppError` (`src/shared/errors/AppError.js`). Anything else reaching the boundary is treated as a bug and gets a generic reply.
+- Throw the narrowest subclass. Pi-hole HTTP API (`src/shared/errors/ApiError.js`): `ApiAuthError` (401 or invalid session), `ApiUnreachableError` (no answer), `ApiResponseError` (invalid payload, also from `invalidResponse()` in `src/shared/validators.js`), `ApiRejectedError` (a refused change), or `ApiError` for other HTTP failures. Host commands (`src/shared/errors/CommandError.js`): `CommandError` or `CommandTimeoutError`.
+- Each class owns its Telegram reply through the `userMessage` getter and its DEBUG output through `debugFields()`. Add a field to `debugFields()` only if it can never hold a secret, header, session ID, or payload.
+- Wrap a lower-level failure with `cause` instead of rethrowing it. With `DEBUG=true`, the reply lists the cause chain.
+- Keep error messages static because errors are logged in full.

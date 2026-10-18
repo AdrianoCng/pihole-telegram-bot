@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { spawn } from "child_process";
 import { execCommandWithOutput } from "../exec.js";
 import { createMockProcess } from "../../__tests__/helpers/testUtils.js";
@@ -32,6 +32,7 @@ describe("execCommandWithOutput", () => {
     await expect(execCommandWithOutput("restricted", [], onOutput)).rejects.toMatchObject({
       name: "CommandError",
       code: "COMMAND_FAILED",
+      command: "restricted",
       exitCode: 1,
       message: "Command failed",
     });
@@ -64,10 +65,61 @@ describe("execCommandWithOutput", () => {
     const error = new Error("spawn failed");
     spawn.mockReturnValue(createMockProcess({ spawnError: error }));
 
-    await expect(execCommandWithOutput("status")).rejects.toMatchObject({
+    const failure = execCommandWithOutput("status");
+
+    await expect(failure).rejects.toMatchObject({
       name: "CommandError",
       code: "COMMAND_FAILED",
       message: "Command failed",
+      command: "status",
+      cause: error,
+    });
+    await expect(failure).rejects.toHaveProperty("userMessage", "❌ Command failed.");
+  });
+
+  it("reports a process killed by a signal without an exit code", async () => {
+    spawn.mockReturnValue(createMockProcess({ exitCode: null, exitSignal: "SIGKILL" }));
+
+    await expect(execCommandWithOutput("pihole", ["-up"])).rejects.toMatchObject({
+      name: "CommandError",
+      command: "pihole -up",
+      exitCode: undefined,
+      signal: "SIGKILL",
+    });
+  });
+
+  describe("after the command timeout", () => {
+    let timeout;
+
+    beforeEach(() => {
+      timeout = vi
+        .spyOn(AbortSignal, "timeout")
+        .mockReturnValue(AbortSignal.abort(new DOMException("timed out", "TimeoutError")));
+    });
+
+    afterEach(() => {
+      timeout.mockRestore();
+    });
+
+    it("reports the abort error as a timeout", async () => {
+      const error = new DOMException("The operation was aborted", "AbortError");
+      spawn.mockReturnValue(createMockProcess({ spawnError: error }));
+
+      await expect(execCommandWithOutput("apt-get", ["update"])).rejects.toMatchObject({
+        name: "CommandTimeoutError",
+        code: "COMMAND_TIMEOUT",
+        command: "apt-get update",
+        cause: error,
+      });
+    });
+
+    it("reports the killed process as a timeout", async () => {
+      spawn.mockReturnValue(createMockProcess({ exitCode: null, exitSignal: "SIGTERM" }));
+
+      await expect(execCommandWithOutput("apt-get", ["update"])).rejects.toMatchObject({
+        name: "CommandTimeoutError",
+        signal: "SIGTERM",
+      });
     });
   });
 });

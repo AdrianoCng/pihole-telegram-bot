@@ -1,7 +1,7 @@
 import { api } from "./client.js";
 import { API_ENDPOINTS } from "./endpoints.js";
 import { REQUEST_TIMEOUT_MS } from "../shared/timers.js";
-import { PiholeError, PIHOLE_ERROR_CODES } from "../shared/errors/PiholeError.js";
+import { ApiAuthError } from "../shared/errors/ApiError.js";
 import { env } from "../config.js";
 
 let refreshInFlight = null;
@@ -13,7 +13,7 @@ function requestSignal(signal) {
 }
 
 function isUnauthorized(error) {
-  return error instanceof PiholeError && error.status === 401;
+  return error instanceof ApiAuthError && error.status === 401;
 }
 
 async function authenticate(signal) {
@@ -25,9 +25,9 @@ async function authenticate(signal) {
   const session = response?.session;
 
   if (session?.valid !== true || typeof session.sid !== "string" || session.sid === "") {
-    throw new PiholeError({
-      code: PIHOLE_ERROR_CODES.INVALID_SESSION,
+    throw new ApiAuthError({
       message: "Pi-hole returned an invalid session",
+      method: "POST",
       path: API_ENDPOINTS.AUTH,
     });
   }

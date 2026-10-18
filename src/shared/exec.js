@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { COMMAND_TIMEOUT_MS } from "./timers.js";
-import { CommandError } from "./errors/CommandError.js";
+import { CommandError, CommandTimeoutError } from "./errors/CommandError.js";
 
 /**
  * Run a command with sudo and report each output chunk through a transport-neutral callback.
@@ -13,6 +13,11 @@ export function execCommandWithOutput(command, args = [], onOutput = () => {}) {
   return new Promise((resolve, reject) => {
     const signal = AbortSignal.timeout(COMMAND_TIMEOUT_MS);
     const process = spawn("sudo", ["-n", command, ...args], { signal });
+    const commandLine = [command, ...args].join(" ");
+    const fail = (details) => {
+      const ErrorClass = signal.aborted ? CommandTimeoutError : CommandError;
+      reject(new ErrorClass({ command: commandLine, ...details }));
+    };
 
     process.stdout.on("data", (chunk) => {
       onOutput(chunk.toString());
@@ -22,16 +27,16 @@ export function execCommandWithOutput(command, args = [], onOutput = () => {}) {
       onOutput(chunk.toString());
     });
 
-    process.once("close", (code) => {
+    process.once("close", (code, exitSignal) => {
       if (code === 0) {
         resolve();
       } else {
-        reject(new CommandError(code));
+        fail({ exitCode: code ?? undefined, signal: exitSignal ?? undefined });
       }
     });
 
-    process.once("error", () => {
-      reject(new CommandError());
+    process.once("error", (error) => {
+      fail({ cause: error });
     });
   });
 }

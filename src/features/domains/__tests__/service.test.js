@@ -1,6 +1,6 @@
 import { it, expect, beforeEach, vi } from "vitest";
 import { authenticatedGet, authenticatedPost } from "../../../pihole/session.js";
-import { PiholeError, PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
+import { ApiError } from "../../../shared/errors/ApiError.js";
 import { DOMAIN_LISTS } from "../constants.js";
 import { addDomain, listDomains } from "../service.js";
 
@@ -34,8 +34,7 @@ it("adds a wildcard regex to the denylist", async () => {
 });
 
 const badRequest = (hint) =>
-  new PiholeError({
-    code: PIHOLE_ERROR_CODES.HTTP,
+  new ApiError({
     message: "Bad Request",
     status: 400,
     apiError: { key: "database_error", hint },

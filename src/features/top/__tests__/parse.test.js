@@ -29,7 +29,9 @@ it("parses top clients with optional names and caps them at the configured count
 });
 
 it("rejects malformed payloads", () => {
-  expect(() => parseTopDomains({})).toThrow(expect.objectContaining({ code: "INVALID_RESPONSE" }));
+  expect(() => parseTopDomains({})).toThrow(
+    expect.objectContaining({ code: "API_INVALID_RESPONSE" })
+  );
   expect(() => parseTopDomains({ domains: [{ domain: "", count: 1 }] })).toThrow(
     "Pi-hole returned an invalid response"
   );

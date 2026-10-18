@@ -1,4 +1,4 @@
-import { PiholeError, PIHOLE_ERROR_CODES } from "../../shared/errors/PiholeError.js";
+import { ApiError, ApiRejectedError } from "../../shared/errors/ApiError.js";
 import {
   invalidResponse,
   requireArray,
@@ -56,16 +56,13 @@ export function parseAddResult(payload, domain) {
   if (!failure) throw invalidResponse();
   if (DUPLICATE_ERROR.test(failure.error ?? "")) return "exists";
 
-  throw new PiholeError({
-    code: PIHOLE_ERROR_CODES.REJECTED,
-    message: "Pi-hole rejected the domain",
-  });
+  throw new ApiRejectedError({ message: "Pi-hole rejected the domain" });
 }
 
 /** Pi-hole answers HTTP 400 when the entry is already on the list. */
 export function isDuplicateError(error) {
   return (
-    error instanceof PiholeError &&
+    error instanceof ApiError &&
     error.status === 400 &&
     error.apiError?.key === "database_error" &&
     DUPLICATE_ERROR.test(error.apiError.hint ?? "")
