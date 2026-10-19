@@ -5,6 +5,7 @@ import { API_ENDPOINTS } from "../endpoints.js";
 import { REQUEST_TIMEOUT_MS } from "../../shared/timers.js";
 import { mockApiResponse } from "../../__tests__/helpers/testUtils.js";
 import {
+  authenticatedDelete,
   authenticatedGet,
   authenticatedPost,
   endSession,
@@ -367,6 +368,53 @@ describe("piholeSession", () => {
 
       expect(authCalls()).toHaveLength(1);
       expect(writeCalls()).toHaveLength(1);
+    });
+  });
+
+  describe("authenticatedDelete", () => {
+    const deleteCalls = () =>
+      global.fetch.mock.calls.filter(
+        ([url, options]) => url === READ_URL && options.method === "DELETE"
+      );
+
+    it("deletes with the session and no body", async () => {
+      routeFetch({
+        [`POST ${AUTH_URL}`]: [mockApiResponse(validSession())],
+        [`DELETE ${READ_URL}`]: [mockApiResponse(null, 204)],
+      });
+
+      await expect(authenticatedDelete(READ_PATH)).resolves.toBeNull();
+
+      expect(deleteCalls()[0][1].headers).toEqual({ sid: "test-sid" });
+      expect(deleteCalls()[0][1].body).toBeUndefined();
+    });
+
+    it("refreshes once and retries once after a 401", async () => {
+      api.setSession("expired-sid");
+      routeFetch({
+        [`POST ${AUTH_URL}`]: [mockApiResponse(validSession("fresh-sid"))],
+        [`DELETE ${READ_URL}`]: [mockApiResponse(null, 401, false), mockApiResponse(null, 204)],
+      });
+
+      await expect(authenticatedDelete(READ_PATH)).resolves.toBeNull();
+
+      expect(authCalls()).toHaveLength(1);
+      expect(deleteCalls()).toHaveLength(2);
+      expect(deleteCalls()[1][1].headers.sid).toBe("fresh-sid");
+    });
+
+    it("propagates a 404 without retrying", async () => {
+      routeFetch({
+        [`POST ${AUTH_URL}`]: [mockApiResponse(validSession())],
+        [`DELETE ${READ_URL}`]: [mockApiResponse({ error: { key: "not_found" } }, 404, false)],
+      });
+
+      await expect(authenticatedDelete(READ_PATH)).rejects.toMatchObject({
+        status: 404,
+        apiError: { key: "not_found" },
+      });
+
+      expect(deleteCalls()).toHaveLength(1);
     });
   });
 

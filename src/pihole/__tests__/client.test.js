@@ -41,6 +41,19 @@ describe("Pi-hole HTTP client", () => {
     expect(api.hasSession()).toBe(false);
   });
 
+  it("returns null for 204 No Content without reading the body", async () => {
+    const json = vi.fn().mockRejectedValue(new SyntaxError("Unexpected end of JSON input"));
+    global.fetch.mockResolvedValue({
+      ok: true,
+      status: 204,
+      json,
+      headers: { get: () => null },
+    });
+
+    await expect(api.delete("/domains/allow/exact/example.com")).resolves.toBeNull();
+    expect(json).not.toHaveBeenCalled();
+  });
+
   it("passes an abort signal through to fetch", async () => {
     const signal = new AbortController().signal;
     global.fetch.mockResolvedValue(mockApiResponse({}));

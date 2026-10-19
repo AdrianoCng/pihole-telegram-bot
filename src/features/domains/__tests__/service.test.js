@@ -1,8 +1,12 @@
 import { it, expect, beforeEach, vi } from "vitest";
-import { authenticatedGet, authenticatedPost } from "../../../pihole/session.js";
+import {
+  authenticatedDelete,
+  authenticatedGet,
+  authenticatedPost,
+} from "../../../pihole/session.js";
 import { ApiError } from "../../../shared/errors/ApiError.js";
 import { DOMAIN_LISTS } from "../constants.js";
-import { addDomain, listDomains } from "../service.js";
+import { addDomain, listDomains, removeDomain } from "../service.js";
 
 vi.mock("../../../pihole/session.js");
 
@@ -61,6 +65,43 @@ it("propagates a failed request", async () => {
 
   await expect(
     addDomain(DOMAIN_LISTS.allow, { kind: "exact", domain: "example.com" })
+  ).rejects.toBe(error);
+});
+
+it("removes an exact domain from the allowlist", async () => {
+  authenticatedDelete.mockResolvedValue(null);
+
+  await expect(
+    removeDomain(DOMAIN_LISTS.allow, { kind: "exact", domain: "example.com" })
+  ).resolves.toBe("removed");
+  expect(authenticatedDelete).toHaveBeenCalledWith("/domains/allow/exact/example.com");
+});
+
+it("encodes a wildcard regex in the delete path", async () => {
+  authenticatedDelete.mockResolvedValue(null);
+
+  await expect(
+    removeDomain(DOMAIN_LISTS.deny, { kind: "regex", domain: "(\\.|^)example\\.com$" })
+  ).resolves.toBe("removed");
+  expect(authenticatedDelete).toHaveBeenCalledWith(
+    "/domains/deny/regex/(%5C.%7C%5E)example%5C.com%24"
+  );
+});
+
+it("reports an entry that is not on the list", async () => {
+  authenticatedDelete.mockRejectedValue(new ApiError({ message: "Not Found", status: 404 }));
+
+  await expect(
+    removeDomain(DOMAIN_LISTS.allow, { kind: "exact", domain: "example.com" })
+  ).resolves.toBe("missing");
+});
+
+it("propagates a failed delete", async () => {
+  const error = new ApiError({ message: "Internal Server Error", status: 500 });
+  authenticatedDelete.mockRejectedValue(error);
+
+  await expect(
+    removeDomain(DOMAIN_LISTS.deny, { kind: "exact", domain: "example.com" })
   ).rejects.toBe(error);
 });
 

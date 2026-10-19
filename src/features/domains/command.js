@@ -3,42 +3,111 @@ import { sendMessage } from "../../shared/telegram/sendMessage.js";
 import { DOMAIN_LISTS } from "./constants.js";
 import { renderDomains } from "./format.js";
 import { parseDomainTarget } from "./parse.js";
-import { addDomain, listDomains } from "./service.js";
+import { addDomain, listDomains, removeDomain } from "./service.js";
 
-function domainCommand(list, description) {
-  const name = list.type;
-  const usage = `Send /${name} <domain>, e.g. /${name} example.com or /${name} *.example.com`;
+export const allowCommand = {
+  trigger: ["allow"],
+  description: "Allow a domain, or *.domain for its subdomains too",
+  async handler(ctx) {
+    const target = parseDomainTarget(ctx.payload);
 
-  return {
-    trigger: [name],
-    description,
-    async handler(ctx) {
-      const target = parseDomainTarget(ctx.payload);
+    if (target === null) {
+      await sendMessage(
+        ctx,
+        "❌ Invalid domain. Send /allow <domain>, e.g. /allow example.com or /allow *.example.com"
+      );
+      return;
+    }
 
-      if (target === null) {
-        await sendMessage(ctx, `❌ Invalid domain. ${usage}`);
-        return;
-      }
+    const list = DOMAIN_LISTS.allow;
+    const domain = code(target.display);
+    const result = await addDomain(list, target);
+    const message =
+      result === "added"
+        ? `✅ Added ${domain} to the ${list.label}`
+        : `ℹ️ ${domain} is already on the ${list.label}`;
 
-      const result = await addDomain(list, target);
-      const message =
-        result === "exists"
-          ? `ℹ️ ${code(target.display)} is already on the ${list.label}`
-          : `✅ Added ${code(target.display)} to the ${list.label}`;
-      await sendMessage(ctx, message, { parse_mode: "HTML" });
-    },
-  };
-}
+    await sendMessage(ctx, message, { parse_mode: "HTML" });
+  },
+};
 
-export const allowCommand = domainCommand(
-  DOMAIN_LISTS.allow,
-  "Allow a domain, or *.domain for its subdomains too"
-);
+export const denyCommand = {
+  trigger: ["deny"],
+  description: "Block a domain, or *.domain for its subdomains too",
+  async handler(ctx) {
+    const target = parseDomainTarget(ctx.payload);
 
-export const denyCommand = domainCommand(
-  DOMAIN_LISTS.deny,
-  "Block a domain, or *.domain for its subdomains too"
-);
+    if (target === null) {
+      await sendMessage(
+        ctx,
+        "❌ Invalid domain. Send /deny <domain>, e.g. /deny example.com or /deny *.example.com"
+      );
+      return;
+    }
+
+    const list = DOMAIN_LISTS.deny;
+    const domain = code(target.display);
+    const result = await addDomain(list, target);
+    const message =
+      result === "added"
+        ? `✅ Added ${domain} to the ${list.label}`
+        : `ℹ️ ${domain} is already on the ${list.label}`;
+
+    await sendMessage(ctx, message, { parse_mode: "HTML" });
+  },
+};
+
+export const unallowCommand = {
+  trigger: ["unallow"],
+  description: "Remove a domain from the allowlist",
+  async handler(ctx) {
+    const target = parseDomainTarget(ctx.payload);
+
+    if (target === null) {
+      await sendMessage(
+        ctx,
+        "❌ Invalid domain. Send /unallow <domain>, e.g. /unallow example.com or /unallow *.example.com"
+      );
+      return;
+    }
+
+    const list = DOMAIN_LISTS.allow;
+    const domain = code(target.display);
+    const result = await removeDomain(list, target);
+    const message =
+      result === "removed"
+        ? `🗑️ Removed ${domain} from the ${list.label}`
+        : `ℹ️ ${domain} is not on the ${list.label}`;
+
+    await sendMessage(ctx, message, { parse_mode: "HTML" });
+  },
+};
+
+export const undenyCommand = {
+  trigger: ["undeny"],
+  description: "Remove a domain from the denylist",
+  async handler(ctx) {
+    const target = parseDomainTarget(ctx.payload);
+
+    if (target === null) {
+      await sendMessage(
+        ctx,
+        "❌ Invalid domain. Send /undeny <domain>, e.g. /undeny example.com or /undeny *.example.com"
+      );
+      return;
+    }
+
+    const list = DOMAIN_LISTS.deny;
+    const domain = code(target.display);
+    const result = await removeDomain(list, target);
+    const message =
+      result === "removed"
+        ? `🗑️ Removed ${domain} from the ${list.label}`
+        : `ℹ️ ${domain} is not on the ${list.label}`;
+
+    await sendMessage(ctx, message, { parse_mode: "HTML" });
+  },
+};
 
 export const domainsCommand = {
   trigger: ["domains"],

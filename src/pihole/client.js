@@ -58,7 +58,7 @@ export const api = {
   async parseResponse(response, { method, path } = {}) {
     const contentLength = response.headers.get("Content-Length");
 
-    if (contentLength !== null && parseInt(contentLength, 10) === 0) {
+    if (response.status === 204 || (contentLength !== null && parseInt(contentLength, 10) === 0)) {
       return null;
     }
 

@@ -3,6 +3,7 @@ import { ApiError } from "../../../shared/errors/ApiError.js";
 import {
   displayDomain,
   isDuplicateError,
+  isNotFoundError,
   parseAddResult,
   parseDomainTarget,
   parseDomains,
@@ -139,6 +140,17 @@ describe("isDuplicateError", () => {
     expect(
       isDuplicateError(Object.assign(new Error("x"), { status: 400, apiError: duplicate }))
     ).toBe(false);
+  });
+});
+
+describe("isNotFoundError", () => {
+  it("recognizes a 404 from Pi-hole", () => {
+    expect(isNotFoundError(new ApiError({ status: 404 }))).toBe(true);
+  });
+
+  it("ignores other failures", () => {
+    expect(isNotFoundError(new ApiError({ status: 400 }))).toBe(false);
+    expect(isNotFoundError(Object.assign(new Error("x"), { status: 404 }))).toBe(false);
   });
 });
 
