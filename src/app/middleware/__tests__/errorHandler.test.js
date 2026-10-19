@@ -104,7 +104,8 @@ describe("errorHandler", () => {
 
     const reply = sendMessage.mock.calls[0][1];
     expect(reply).toBe(
-      `${REQUEST_FAILED}\n\n[i] Debug: ApiError: Static failure\ncode: API\nmethod: GET\npath: /test\nstatus: 500`
+      `${REQUEST_FAILED}\n\n[i] Debug: ApiError: Static failure\ncode: API\nafterRetry: undefined\nmethod: GET\npath: /test\nstatus: 500` +
+        "\napiErrorKey: undefined\napiErrorHint: undefined"
     );
   });
 
@@ -147,7 +148,8 @@ describe("debugDetails", () => {
 
     expect(debugDetails(error)).toBe(
       "\n\n[i] Debug: ApiUnreachableError: Pi-hole did not respond\ncode: API_UNREACHABLE" +
-        "\nmethod: GET\npath: /stats/summary\ncaused by: TypeError: fetch failed" +
+        "\nafterRetry: undefined\nmethod: GET\npath: /stats/summary\nstatus: undefined" +
+        "\napiErrorKey: undefined\napiErrorHint: undefined\ncaused by: TypeError: fetch failed" +
         "\ncaused by: Error: connect ECONNREFUSED 10.0.0.2:80 (ECONNREFUSED)"
     );
   });
@@ -168,7 +170,7 @@ describe("debugDetails", () => {
 
     expect(debugDetails(error)).toBe(
       "\n\n[i] Debug: CommandTimeoutError: Command timed out\ncode: COMMAND_TIMEOUT" +
-        "\ncommand: pihole -up\nsignal: SIGTERM"
+        "\nafterRetry: undefined\ncommand: pihole -up\nexitCode: undefined\nsignal: SIGTERM"
     );
   });
 

@@ -20,7 +20,7 @@ export class AppError extends Error {
     return UNEXPECTED_ERROR_MESSAGE;
   }
 
-  /** Allowlisted fields shown when DEBUG is enabled. Undefined values are skipped. */
+  /** Allowlisted fields shown when DEBUG is enabled. Unset fields are included as `undefined`. */
   debugFields() {
     return { code: this.code, afterRetry: this.afterRetry === true ? true : undefined };
   }
