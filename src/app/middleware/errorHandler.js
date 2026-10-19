@@ -1,24 +1,44 @@
-import { DEFAULT_ERROR_MESSAGES } from "../../shared/errors/messages.js";
-import { classifyError } from "../../shared/errors/classifyError.js";
+import { AppError, UNEXPECTED_ERROR_MESSAGE } from "../../shared/errors/AppError.js";
 import { sendMessage } from "../../shared/telegram/sendMessage.js";
 import { env } from "../../config.js";
-import { logSafeError } from "../../shared/logSafeError.js";
+import { logError } from "../../shared/logError.js";
 
 const MAX_DEBUG_MESSAGE_LENGTH = 500;
 
 export function userMessage(error) {
-  const message = DEFAULT_ERROR_MESSAGES[classifyError(error)];
-  return typeof message === "function" ? message(error) : message;
+  return error instanceof AppError ? error.userMessage : UNEXPECTED_ERROR_MESSAGE;
 }
 
-/** Allowlisted error details appended to the reply when DEBUG is enabled. */
-export function debugDetails(error) {
+function describe(error) {
   const name = error?.name ?? "Error";
   const message = String(error?.message ?? error ?? "").slice(0, MAX_DEBUG_MESSAGE_LENGTH);
-  const lines = [`[i] Debug: ${name}${message ? `: ${message}` : ""}`];
+  return `${name}${message ? `: ${message}` : ""}`;
+}
 
-  for (const key of ["status", "code", "exitCode", "path"]) {
-    if (error?.[key] !== undefined) lines.push(`${key}: ${error[key]}`);
+/** The first stack frame, e.g. `parse (/app/src/features/top/parse.js:12:9)`. */
+function stackLocation(error) {
+  const frame = error?.stack?.split("\n").find((line) => line.trimStart().startsWith("at "));
+  return frame?.trim().slice("at ".length);
+}
+
+/**
+ * Error details appended to the reply when DEBUG is enabled: the error's own
+ * allowlisted fields and cause chain, or the throwing location for a bug.
+ */
+export function debugDetails(error) {
+  const lines = [`[i] Debug: ${describe(error)}`];
+
+  if (error instanceof AppError) {
+    for (const [key, value] of Object.entries(error.debugFields())) {
+      lines.push(`${key}: ${value}`);
+    }
+    for (const cause of error.debugCauses()) {
+      const code = typeof cause?.code === "string" ? ` (${cause.code})` : "";
+      lines.push(`caused by: ${describe(cause)}${code}`);
+    }
+  } else {
+    const location = stackLocation(error);
+    if (location) lines.push(`at: ${location}`);
   }
 
   return `\n\n${lines.join("\n")}`;
@@ -29,12 +49,12 @@ export function debugDetails(error) {
  * message, and never rethrow so one failed update cannot stop the bot.
  */
 export async function handleBotError(error, ctx) {
-  logSafeError({ operation: ctx?.command ?? "update", error });
+  logError({ operation: ctx?.command ?? "update", error });
 
   try {
     const debug = env.DEBUG ? debugDetails(error) : "";
     await sendMessage(ctx, userMessage(error) + debug);
   } catch (replyError) {
-    logSafeError({ operation: "error-reply", path: "telegram", error: replyError });
+    logError({ operation: "error-reply", path: "telegram", error: replyError });
   }
 }

@@ -1,4 +1,4 @@
-import { logSafeError } from "./logSafeError.js";
+import { logError } from "./logError.js";
 
 /**
  * Parse a settled supplementary read. If the read was rejected or the parse
@@ -6,7 +6,7 @@ import { logSafeError } from "./logSafeError.js";
  */
 export function optional(result, { parse, fallback, operation, path }) {
   const fail = (error) => {
-    logSafeError({ operation, path, error });
+    logError({ operation, path, error });
     return fallback(error);
   };
 

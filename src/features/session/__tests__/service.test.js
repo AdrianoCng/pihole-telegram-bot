@@ -1,6 +1,6 @@
 import { it, expect, beforeEach, vi } from "vitest";
 import { refreshSession } from "../../../pihole/session.js";
-import { PiholeError, PIHOLE_ERROR_CODES } from "../../../shared/errors/PiholeError.js";
+import { ApiAuthError } from "../../../shared/errors/ApiError.js";
 import { authorize } from "../service.js";
 
 vi.mock("../../../pihole/session.js");
@@ -9,21 +9,16 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
-it("treats an invalid session differently from rejected credentials", async () => {
-  refreshSession.mockRejectedValueOnce(
-    new PiholeError({
-      code: PIHOLE_ERROR_CODES.INVALID_SESSION,
-      message: "invalid session",
-    })
-  );
-  await expect(authorize()).resolves.toBe(false);
+it("refreshes the session", async () => {
+  refreshSession.mockResolvedValue();
 
-  refreshSession.mockRejectedValueOnce(
-    new PiholeError({
-      code: PIHOLE_ERROR_CODES.HTTP,
-      message: "unauthorized",
-      status: 401,
-    })
-  );
-  await expect(authorize()).rejects.toMatchObject({ status: 401 });
+  await expect(authorize()).resolves.toBeUndefined();
+  expect(refreshSession).toHaveBeenCalledTimes(1);
+});
+
+it("propagates authentication failures to the error boundary", async () => {
+  const error = new ApiAuthError({ message: "Pi-hole returned an invalid session" });
+  refreshSession.mockRejectedValue(error);
+
+  await expect(authorize()).rejects.toBe(error);
 });

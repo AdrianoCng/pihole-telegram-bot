@@ -53,12 +53,13 @@ export const mockApiResponse = (data, status = 200, ok = true) => {
  * @param {Object} options - Configuration options
  * @param {string} options.stdoutData - Data to emit on stdout
  * @param {string} options.stderrData - Data to emit on stderr
- * @param {number} options.exitCode - Exit code for the process
+ * @param {number|null} options.exitCode - Exit code for the process
+ * @param {string} options.exitSignal - Signal that killed the process
  * @param {Error} options.spawnError - Error emitted instead of a close event
  * @returns {Object} Mock process object
  */
 export const createMockProcess = (options = {}) => {
-  const { stdoutData = "", stderrData = "", exitCode = 0, spawnError } = options;
+  const { stdoutData = "", stderrData = "", exitCode = 0, exitSignal = null, spawnError } = options;
 
   const stdoutOnMock = vi.fn((event, callback) => {
     if (event === "data" && stdoutData) {
@@ -74,7 +75,7 @@ export const createMockProcess = (options = {}) => {
 
   const processOnceMock = vi.fn((event, callback) => {
     if (event === "close" && !spawnError) {
-      callback(exitCode);
+      callback(exitCode, exitSignal);
     }
     if (event === "error" && spawnError) callback(spawnError);
   });

@@ -54,7 +54,9 @@ describe("Pi-hole HTTP client", () => {
     global.fetch.mockResolvedValue(mockApiResponse(null, 401, false));
 
     await expect(api.get("/stats/summary")).rejects.toMatchObject({
-      code: "HTTP",
+      name: "ApiAuthError",
+      code: "API_AUTH",
+      method: "GET",
       status: 401,
       path: "/stats/summary",
     });
@@ -99,6 +101,66 @@ describe("Pi-hole HTTP client", () => {
     await expect(api.get("/stats/summary")).rejects.toMatchObject({
       status: 500,
       apiError: undefined,
+    });
+  });
+
+  it("wraps a failed fetch as unreachable and keeps the cause", async () => {
+    const cause = new TypeError("fetch failed");
+    global.fetch.mockRejectedValue(cause);
+
+    await expect(api.get("/stats/summary")).rejects.toMatchObject({
+      name: "ApiUnreachableError",
+      code: "API_UNREACHABLE",
+      method: "GET",
+      path: "/stats/summary",
+      cause,
+    });
+  });
+
+  it("reports a successful response that is not JSON as invalid", async () => {
+    const cause = new SyntaxError("Unexpected token");
+    global.fetch.mockResolvedValue({
+      ...mockApiResponse({}),
+      json: () => Promise.reject(cause),
+    });
+
+    await expect(api.get("/stats/summary")).rejects.toMatchObject({
+      name: "ApiResponseError",
+      code: "API_INVALID_RESPONSE",
+      method: "GET",
+      path: "/stats/summary",
+      cause,
+    });
+  });
+
+  it.each([
+    ["TimeoutError", new DOMException("The operation timed out", "TimeoutError")],
+    ["AbortError", new DOMException("The operation was aborted", "AbortError")],
+    ["TypeError", new TypeError("terminated")],
+  ])("reports a body read that fails with %s as unreachable", async (_name, cause) => {
+    global.fetch.mockResolvedValue({
+      ...mockApiResponse({}),
+      json: () => Promise.reject(cause),
+    });
+
+    await expect(api.get("/stats/summary")).rejects.toMatchObject({
+      name: "ApiUnreachableError",
+      code: "API_UNREACHABLE",
+      method: "GET",
+      path: "/stats/summary",
+      cause,
+    });
+  });
+
+  it("reports other HTTP failures as a generic API error", async () => {
+    global.fetch.mockResolvedValue(mockApiResponse(null, 500, false));
+
+    await expect(api.post("/action/gravity", {})).rejects.toMatchObject({
+      name: "ApiError",
+      code: "API",
+      method: "POST",
+      status: 500,
+      message: "Internal Server Error",
     });
   });
 });

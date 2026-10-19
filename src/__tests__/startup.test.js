@@ -11,7 +11,7 @@ afterEach(() => {
   vi.doUnmock("../app/createBot.js");
   vi.doUnmock("../pihole/client.js");
   vi.doUnmock("../pihole/session.js");
-  vi.doUnmock("../shared/logSafeError.js");
+  vi.doUnmock("../shared/logError.js");
   vi.resetModules();
 });
 
@@ -38,7 +38,7 @@ async function loadEntrypoint({
       return logout(options);
     }),
   };
-  const logSafeError = vi.fn();
+  const logError = vi.fn();
   const handlers = new Map();
   const originalOnce = process.once;
   vi.spyOn(process, "once").mockImplementation(function (event, callback) {
@@ -57,13 +57,13 @@ async function loadEntrypoint({
   vi.doMock("../app/createBot.js", () => ({ createBot: () => bot }));
   vi.doMock("../pihole/client.js", () => ({ api }));
   vi.doMock("../pihole/session.js", () => session);
-  vi.doMock("../shared/logSafeError.js", () => ({ logSafeError }));
+  vi.doMock("../shared/logError.js", () => ({ logError }));
   await import("../../index.js");
 
   const handler = async (signal) => {
     await handlers.get(signal)();
   };
-  return { events, bot, session, logSafeError, handlers, consoleMock, handler };
+  return { events, bot, session, logError, handlers, consoleMock, handler };
 }
 
 it.each([false, true])(
@@ -89,19 +89,19 @@ it.each([false, true])(
 );
 
 it.each(["SIGINT", "SIGTERM"])("ends the Pi-hole session before stopping on %s", async (signal) => {
-  const { events, session, logSafeError, handler } = await loadEntrypoint({
+  const { events, session, logError, handler } = await loadEntrypoint({
     hasSession: true,
   });
   await handler(signal);
   expect(events.slice(-2)).toEqual(["logout", "stop:" + signal]);
   const [[{ signal: abortSignal }]] = session.endSession.mock.calls;
   expect(abortSignal).toBeInstanceOf(AbortSignal);
-  expect(logSafeError).not.toHaveBeenCalled();
+  expect(logError).not.toHaveBeenCalled();
 });
 
 it("stops the bot and logs safely when shutdown logout fails", async () => {
   const error = new TypeError("fetch failed");
-  const { events, logSafeError, handler } = await loadEntrypoint({
+  const { events, logError, handler } = await loadEntrypoint({
     hasSession: true,
     logout: async () => {
       throw error;
@@ -109,7 +109,7 @@ it("stops the bot and logs safely when shutdown logout fails", async () => {
   });
   await handler("SIGINT");
   expect(events.slice(-2)).toEqual(["logout", "stop:SIGINT"]);
-  expect(logSafeError).toHaveBeenCalledWith({
+  expect(logError).toHaveBeenCalledWith({
     operation: "logout",
     path: API_ENDPOINTS.AUTH,
     error,

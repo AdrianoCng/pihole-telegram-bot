@@ -1,11 +1,11 @@
 import { it, expect, beforeEach, vi } from "vitest";
 import { API_ENDPOINTS } from "../../../pihole/endpoints.js";
 import { authenticatedGet } from "../../../pihole/session.js";
-import { logSafeError } from "../../../shared/logSafeError.js";
+import { logError } from "../../../shared/logError.js";
 import { getSummary } from "../service.js";
 
 vi.mock("../../../pihole/session.js");
-vi.mock("../../../shared/logSafeError.js");
+vi.mock("../../../shared/logError.js");
 
 const summary = {
   queries: { total: 10, blocked: 2, percent_blocked: 20, cached: 3, forwarded: 5 },
@@ -46,7 +46,7 @@ it("keeps the summary when optional reads fail and logs their endpoints", async 
     blockingState: "unavailable",
     messageCount: null,
   });
-  expect(logSafeError.mock.calls.map(([details]) => details.path)).toEqual(
+  expect(logError.mock.calls.map(([details]) => details.path)).toEqual(
     expect.arrayContaining([API_ENDPOINTS.DNS.BLOCKING, API_ENDPOINTS.INFO.MESSAGES_COUNT])
   );
 });
@@ -57,5 +57,5 @@ it("rejects failed or malformed main summary reads", async () => {
   await expect(getSummary()).rejects.toBe(failure);
 
   reads({ stats: { ...summary, queries: { ...summary.queries, total: "10" } } });
-  await expect(getSummary()).rejects.toMatchObject({ code: "INVALID_RESPONSE" });
+  await expect(getSummary()).rejects.toMatchObject({ code: "API_INVALID_RESPONSE" });
 });
