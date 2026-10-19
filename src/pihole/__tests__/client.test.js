@@ -93,7 +93,7 @@ describe("Pi-hole HTTP client", () => {
 
     await expect(api.post("/domains/allow/exact", { domain: "example.com" })).rejects.toMatchObject(
       {
-        message: "Bad Request",
+        name: "ApiBadRequestError",
         status: 400,
         apiError: { key: "database_error", hint: "The item is already present" },
       }
@@ -165,15 +165,35 @@ describe("Pi-hole HTTP client", () => {
     });
   });
 
-  it("reports other HTTP failures as a generic API error", async () => {
-    global.fetch.mockResolvedValue(mockApiResponse(null, 500, false));
+  it.each([
+    [400, "ApiBadRequestError", "API_BAD_REQUEST"],
+    [401, "ApiAuthError", "API_AUTH"],
+    [402, "ApiRequestFailedError", "API_REQUEST_FAILED"],
+    [403, "ApiForbiddenError", "API_FORBIDDEN"],
+    [404, "ApiNotFoundError", "API_NOT_FOUND"],
+    [429, "ApiRateLimitError", "API_RATE_LIMITED"],
+    [500, "ApiServerError", "API_SERVER"],
+    [503, "ApiServerError", "API_SERVER"],
+  ])("maps HTTP %i to %s", async (status, name, code) => {
+    global.fetch.mockResolvedValue(mockApiResponse(null, status, false));
+
+    await expect(api.post("/action/gravity", {})).rejects.toMatchObject({
+      name,
+      code,
+      method: "POST",
+      status,
+      path: "/action/gravity",
+    });
+  });
+
+  it("reports unmapped HTTP failures as a generic API error", async () => {
+    global.fetch.mockResolvedValue(mockApiResponse(null, 418, false));
 
     await expect(api.post("/action/gravity", {})).rejects.toMatchObject({
       name: "ApiError",
       code: "API",
       method: "POST",
-      status: 500,
-      message: "Internal Server Error",
+      status: 418,
     });
   });
 });
