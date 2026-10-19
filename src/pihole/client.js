@@ -65,7 +65,8 @@ export const api = {
     try {
       return await response.json();
     } catch (error) {
-      throw new ApiResponseError({ method, path, cause: error });
+      const ErrorClass = error instanceof SyntaxError ? ApiResponseError : ApiUnreachableError;
+      throw new ErrorClass({ method, path, cause: error });
     }
   },
   async request(method, path, { body, signal } = {}) {

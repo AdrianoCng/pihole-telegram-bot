@@ -133,6 +133,25 @@ describe("Pi-hole HTTP client", () => {
     });
   });
 
+  it.each([
+    ["TimeoutError", new DOMException("The operation timed out", "TimeoutError")],
+    ["AbortError", new DOMException("The operation was aborted", "AbortError")],
+    ["TypeError", new TypeError("terminated")],
+  ])("reports a body read that fails with %s as unreachable", async (_name, cause) => {
+    global.fetch.mockResolvedValue({
+      ...mockApiResponse({}),
+      json: () => Promise.reject(cause),
+    });
+
+    await expect(api.get("/stats/summary")).rejects.toMatchObject({
+      name: "ApiUnreachableError",
+      code: "API_UNREACHABLE",
+      method: "GET",
+      path: "/stats/summary",
+      cause,
+    });
+  });
+
   it("reports other HTTP failures as a generic API error", async () => {
     global.fetch.mockResolvedValue(mockApiResponse(null, 500, false));
 
