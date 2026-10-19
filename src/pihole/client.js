@@ -1,10 +1,30 @@
 import { env } from "../config.js";
 import {
   ApiAuthError,
+  ApiBadRequestError,
   ApiError,
+  ApiForbiddenError,
+  ApiNotFoundError,
+  ApiRateLimitError,
+  ApiRequestFailedError,
   ApiResponseError,
+  ApiServerError,
   ApiUnreachableError,
 } from "../shared/errors/ApiError.js";
+
+const ERROR_CLASSES_BY_STATUS = {
+  400: ApiBadRequestError,
+  401: ApiAuthError,
+  402: ApiRequestFailedError,
+  403: ApiForbiddenError,
+  404: ApiNotFoundError,
+  429: ApiRateLimitError,
+};
+
+function errorClassFor(status) {
+  if (ERROR_CLASSES_BY_STATUS[status]) return ERROR_CLASSES_BY_STATUS[status];
+  return status >= 500 ? ApiServerError : ApiError;
+}
 
 export const api = {
   get BASE_URL() {
@@ -23,17 +43,8 @@ export const api = {
   async handleErrors(response, { method, path } = {}) {
     if (response.ok) return;
 
-    const errorMessage = {
-      400: "Bad Request",
-      401: "Unauthorized",
-      402: "Request failed",
-      403: "Forbidden",
-      404: "Not Found",
-    };
-
-    const ErrorClass = response.status === 401 ? ApiAuthError : ApiError;
+    const ErrorClass = errorClassFor(response.status);
     throw new ErrorClass({
-      message: errorMessage[response.status] || "Internal Server Error",
       method,
       status: response.status,
       path,
@@ -58,7 +69,7 @@ export const api = {
   async parseResponse(response, { method, path } = {}) {
     const contentLength = response.headers.get("Content-Length");
 
-    if (contentLength !== null && parseInt(contentLength, 10) === 0) {
+    if (response.status === 204 || (contentLength !== null && parseInt(contentLength, 10) === 0)) {
       return null;
     }
 

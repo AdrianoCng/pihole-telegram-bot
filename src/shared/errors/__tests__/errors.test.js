@@ -2,9 +2,15 @@ import { describe, it, expect } from "vitest";
 import { AppError } from "../AppError.js";
 import {
   ApiAuthError,
+  ApiBadRequestError,
   ApiError,
+  ApiForbiddenError,
+  ApiNotFoundError,
+  ApiRateLimitError,
   ApiRejectedError,
+  ApiRequestFailedError,
   ApiResponseError,
+  ApiServerError,
   ApiUnreachableError,
 } from "../ApiError.js";
 import { CommandError, CommandTimeoutError } from "../CommandError.js";
@@ -17,6 +23,12 @@ describe("AppError", () => {
   it.each([
     [ApiError, "API"],
     [ApiAuthError, "API_AUTH"],
+    [ApiBadRequestError, "API_BAD_REQUEST"],
+    [ApiRequestFailedError, "API_REQUEST_FAILED"],
+    [ApiForbiddenError, "API_FORBIDDEN"],
+    [ApiNotFoundError, "API_NOT_FOUND"],
+    [ApiRateLimitError, "API_RATE_LIMITED"],
+    [ApiServerError, "API_SERVER"],
     [ApiUnreachableError, "API_UNREACHABLE"],
     [ApiResponseError, "API_INVALID_RESPONSE"],
     [ApiRejectedError, "API_REJECTED"],

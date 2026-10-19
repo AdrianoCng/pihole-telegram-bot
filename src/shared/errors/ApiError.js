@@ -49,6 +49,80 @@ export class ApiAuthError extends ApiError {
   }
 }
 
+/** Pi-hole answered 400: the request was malformed or invalid. */
+export class ApiBadRequestError extends ApiError {
+  constructor(options = {}) {
+    super({ message: "Pi-hole returned 400 Bad Request", code: "API_BAD_REQUEST", ...options });
+  }
+
+  get userMessage() {
+    return "❌ Pi-hole rejected the request.";
+  }
+}
+
+/** Pi-hole answered 402: the request failed. */
+export class ApiRequestFailedError extends ApiError {
+  constructor(options = {}) {
+    super({
+      message: "Pi-hole returned 402 Request Failed",
+      code: "API_REQUEST_FAILED",
+      ...options,
+    });
+  }
+
+  get userMessage() {
+    return "❌ Pi-hole could not complete the request.";
+  }
+}
+
+/** Pi-hole answered 403: the session is not allowed to do this. */
+export class ApiForbiddenError extends ApiError {
+  constructor(options = {}) {
+    super({ message: "Pi-hole returned 403 Forbidden", code: "API_FORBIDDEN", ...options });
+  }
+
+  get userMessage() {
+    return "❌ Pi-hole denied access to this action.";
+  }
+}
+
+/** Pi-hole answered 404: the endpoint or entry does not exist. */
+export class ApiNotFoundError extends ApiError {
+  constructor(options = {}) {
+    super({ message: "Pi-hole returned 404 Not Found", code: "API_NOT_FOUND", ...options });
+  }
+
+  get userMessage() {
+    return "❌ Pi-hole could not find that resource.";
+  }
+}
+
+/** Pi-hole answered 429: too many requests. */
+export class ApiRateLimitError extends ApiError {
+  constructor(options = {}) {
+    super({
+      message: "Pi-hole returned 429 Too Many Requests",
+      code: "API_RATE_LIMITED",
+      ...options,
+    });
+  }
+
+  get userMessage() {
+    return "❌ Pi-hole is rate limiting requests. Try again shortly.";
+  }
+}
+
+/** Pi-hole answered with a 5xx status. */
+export class ApiServerError extends ApiError {
+  constructor(options = {}) {
+    super({ message: "Pi-hole returned a server error", code: "API_SERVER", ...options });
+  }
+
+  get userMessage() {
+    return "❌ Pi-hole hit an internal error.";
+  }
+}
+
 /** The request never got an answer: network failure, timeout, or abort. */
 export class ApiUnreachableError extends ApiError {
   constructor(options = {}) {

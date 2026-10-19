@@ -1,6 +1,12 @@
 import { botVersionCommand } from "../features/about/command.js";
 import { disableCommand, enableCommand, statusCommand } from "../features/blocking/command.js";
-import { allowCommand, denyCommand, domainsCommand } from "../features/domains/command.js";
+import {
+  allowCommand,
+  denyCommand,
+  domainsCommand,
+  unallowCommand,
+  undenyCommand,
+} from "../features/domains/command.js";
 import {
   upgravityCommand,
   updateCommand,
@@ -37,6 +43,8 @@ export const COMMANDS = [
   pauseCommand,
   allowCommand,
   denyCommand,
+  unallowCommand,
+  undenyCommand,
   domainsCommand,
   versionCommand,
   updateCommand,

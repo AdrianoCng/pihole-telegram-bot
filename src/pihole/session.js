@@ -92,6 +92,11 @@ export function authenticatedPost(path, body, { signal } = {}) {
   return authenticatedRequest("POST", path, { body, signal });
 }
 
+/** A 401 means Pi-hole rejected the delete before processing it, so the retry is safe. */
+export function authenticatedDelete(path, { signal } = {}) {
+  return authenticatedRequest("DELETE", path, { signal });
+}
+
 export async function endSession({ signal } = {}) {
   try {
     await api.delete(API_ENDPOINTS.AUTH, { signal: requestSignal(signal) });

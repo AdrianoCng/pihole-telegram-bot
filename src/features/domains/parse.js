@@ -69,6 +69,11 @@ export function isDuplicateError(error) {
   );
 }
 
+/** Pi-hole answers HTTP 404 when deleting an entry that is not on the list. */
+export function isNotFoundError(error) {
+  return error instanceof ApiError && error.status === 404;
+}
+
 /** Validate the /domains payload. */
 export function parseDomains(payload) {
   return requireArray(payload?.domains).map((entry) => {

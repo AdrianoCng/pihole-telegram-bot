@@ -294,6 +294,54 @@ it("does not confirm a domain that failed to be added", async () => {
   expect(ctx.reply).not.toHaveBeenCalled();
 });
 
+it("removes an allowed domain and confirms it in one reply", async () => {
+  domains.removeDomain.mockResolvedValue("removed");
+  const ctx = { ...context(), payload: "Example.com" };
+
+  await run("unallow", ctx);
+
+  expect(domains.removeDomain).toHaveBeenCalledWith(
+    { type: "allow", label: "allowlist" },
+    { kind: "exact", domain: "example.com", display: "example.com" }
+  );
+  expect(ctx.reply.mock.calls).toEqual([
+    ["🗑️ Removed <code>example.com</code> from the allowlist", { parse_mode: "HTML" }],
+  ]);
+});
+
+it("reports a wildcard that is not denied", async () => {
+  domains.removeDomain.mockResolvedValue("missing");
+  const ctx = { ...context(), payload: "*.ads.example" };
+
+  await run("undeny", ctx);
+
+  expect(domains.removeDomain).toHaveBeenCalledWith(
+    { type: "deny", label: "denylist" },
+    { kind: "regex", domain: "(\\.|^)ads\\.example$", display: "*.ads.example" }
+  );
+  expect(ctx.reply.mock.calls[0][0]).toBe("ℹ️ <code>*.ads.example</code> is not on the denylist");
+});
+
+it("rejects an invalid domain to remove without changing Pi-hole", async () => {
+  const ctx = { ...context(), payload: "a b" };
+
+  await run("undeny", ctx);
+
+  expect(domains.removeDomain).not.toHaveBeenCalled();
+  expect(ctx.reply.mock.calls[0][0]).toBe(
+    "❌ Invalid domain. Send /undeny <domain>, e.g. /undeny example.com or /undeny *.example.com"
+  );
+});
+
+it("does not confirm a domain that failed to be removed", async () => {
+  const ctx = { ...context(), payload: "example.com" };
+  const error = new Error("remove failed");
+  domains.removeDomain.mockRejectedValue(error);
+
+  await expect(run("unallow", ctx)).rejects.toBe(error);
+  expect(ctx.reply).not.toHaveBeenCalled();
+});
+
 it("lists each domain list in its own HTML reply", async () => {
   domains.listDomains.mockResolvedValue([
     { domain: "example.com", type: "allow", kind: "exact", enabled: true },
