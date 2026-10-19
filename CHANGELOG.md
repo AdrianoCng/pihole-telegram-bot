@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.0](https://github.com/AdrianoCng/pihole-telegram-bot/compare/v1.5.0...v1.6.0) (2026-10-19)
+
+
+### Features
+
+* add /allow and /deny commands for domain management ([#45](https://github.com/AdrianoCng/pihole-telegram-bot/issues/45)) ([c350e4f](https://github.com/AdrianoCng/pihole-telegram-bot/commit/c350e4fb1f2f6dfe448f119f911ff7282b0f8432))
+* add /domains command to list allowed and denied domains ([#47](https://github.com/AdrianoCng/pihole-telegram-bot/issues/47)) ([e7294d7](https://github.com/AdrianoCng/pihole-telegram-bot/commit/e7294d71234b4693418b68ae20f5c9b373263486))
+* add /unallow and /undeny commands to remove domains from the allowlist and denylist, respectively([#50](https://github.com/AdrianoCng/pihole-telegram-bot/issues/50)) ([0dc096d](https://github.com/AdrianoCng/pihole-telegram-bot/commit/0dc096d977a9829c828080e8945294f83e01966b))
+
 ## [1.5.0](https://github.com/AdrianoCng/pihole-telegram-bot/compare/v1.4.0...v1.5.0) (2026-10-17)
 
 
