@@ -9,11 +9,11 @@ import {
   ApiUnreachableError,
 } from "../../../shared/errors/ApiError.js";
 import { sendMessage } from "../../../shared/telegram/sendMessage.js";
-import { logSafeError } from "../../../shared/logSafeError.js";
+import { logError } from "../../../shared/logError.js";
 import { debugDetails, handleBotError, userMessage } from "../errorHandler.js";
 
 vi.mock("../../../shared/telegram/sendMessage.js", () => ({ sendMessage: vi.fn() }));
-vi.mock("../../../shared/logSafeError.js", () => ({ logSafeError: vi.fn() }));
+vi.mock("../../../shared/logError.js", () => ({ logError: vi.fn() }));
 
 const env = vi.hoisted(() => ({ DEBUG: false }));
 vi.mock("../../../config.js", () => ({ env }));
@@ -64,7 +64,7 @@ describe("errorHandler", () => {
     });
     await Promise.resolve();
 
-    expect(logSafeError).toHaveBeenCalledWith({ operation: "summary", error });
+    expect(logError).toHaveBeenCalledWith({ operation: "summary", error });
     expect(sendMessage).toHaveBeenCalledWith(ctx, REQUEST_FAILED);
     expect(settled).toBe(false);
 
@@ -79,7 +79,7 @@ describe("errorHandler", () => {
 
     await handleBotError(error, {});
 
-    expect(logSafeError).toHaveBeenCalledWith({ operation: "update", error });
+    expect(logError).toHaveBeenCalledWith({ operation: "update", error });
   });
 
   it("logs a failed Telegram reply and never rethrows", async () => {
@@ -89,7 +89,7 @@ describe("errorHandler", () => {
 
     await expect(handleBotError(error, {})).resolves.toBeUndefined();
 
-    expect(logSafeError).toHaveBeenNthCalledWith(2, {
+    expect(logError).toHaveBeenNthCalledWith(2, {
       operation: "error-reply",
       path: "telegram",
       error: replyError,

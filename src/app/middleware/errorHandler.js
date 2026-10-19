@@ -1,7 +1,7 @@
 import { AppError, UNEXPECTED_ERROR_MESSAGE } from "../../shared/errors/AppError.js";
 import { sendMessage } from "../../shared/telegram/sendMessage.js";
 import { env } from "../../config.js";
-import { logSafeError } from "../../shared/logSafeError.js";
+import { logError } from "../../shared/logError.js";
 
 const MAX_DEBUG_MESSAGE_LENGTH = 500;
 
@@ -30,7 +30,7 @@ export function debugDetails(error) {
 
   if (error instanceof AppError) {
     for (const [key, value] of Object.entries(error.debugFields())) {
-      if (value !== undefined) lines.push(`${key}: ${value}`);
+      lines.push(`${key}: ${value}`);
     }
     for (const cause of error.debugCauses()) {
       const code = typeof cause?.code === "string" ? ` (${cause.code})` : "";
@@ -49,12 +49,12 @@ export function debugDetails(error) {
  * message, and never rethrow so one failed update cannot stop the bot.
  */
 export async function handleBotError(error, ctx) {
-  logSafeError({ operation: ctx?.command ?? "update", error });
+  logError({ operation: ctx?.command ?? "update", error });
 
   try {
     const debug = env.DEBUG ? debugDetails(error) : "";
     await sendMessage(ctx, userMessage(error) + debug);
   } catch (replyError) {
-    logSafeError({ operation: "error-reply", path: "telegram", error: replyError });
+    logError({ operation: "error-reply", path: "telegram", error: replyError });
   }
 }

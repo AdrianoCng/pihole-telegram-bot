@@ -1,12 +1,12 @@
 import { it, expect, beforeEach, vi } from "vitest";
 import { API_ENDPOINTS } from "../../../pihole/endpoints.js";
 import { authenticatedGet } from "../../../pihole/session.js";
-import { logSafeError } from "../../../shared/logSafeError.js";
+import { logError } from "../../../shared/logError.js";
 import { TOP_BLOCKED_DOMAINS_COUNT, TOP_CLIENTS_COUNT } from "../constants.js";
 import { getTop } from "../service.js";
 
 vi.mock("../../../pihole/session.js");
-vi.mock("../../../shared/logSafeError.js");
+vi.mock("../../../shared/logError.js");
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -45,7 +45,7 @@ it("keeps the other top section when one read fails", async () => {
     topDomains: null,
     topClients: [{ ip: "192.168.1.2" }],
   });
-  expect(logSafeError).toHaveBeenCalledWith(
+  expect(logError).toHaveBeenCalledWith(
     expect.objectContaining({ path: API_ENDPOINTS.STATS.TOP_DOMAINS })
   );
 
