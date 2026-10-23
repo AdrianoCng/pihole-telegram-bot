@@ -156,6 +156,10 @@ npm start
 
 The reply keyboard lists read-only monitoring commands first (`/summary`, `/top`, `/recent`, `/status`, `/messages`), followed by session commands and then maintenance and destructive commands.
 
+### API authentication
+
+Commands that use the Pi-hole API sign in automatically using `PIHOLE_PASSWORD`, and sign in again once if the session has expired. You no longer need to run `/authorize` after restarting the bot. `/authorize` and `/logout` remain available for manual troubleshooting. On a graceful shutdown (`SIGINT`/`SIGTERM`, including PM2 restarts) the bot ends its Pi-hole API session so that restarts do not use up Pi-hole's session limit.
+
 ## 🧪 Testing
 
 Development and testing use Vitest and require Node 22.12+ on the 22.x line or Node 24.x. CI runs on Node 22.
