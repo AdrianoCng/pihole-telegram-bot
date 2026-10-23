@@ -1,9 +1,9 @@
 import { code } from "../../shared/telegram/html.js";
 import { sendMessage } from "../../shared/telegram/sendMessage.js";
 import { DOMAIN_LISTS } from "./constants.js";
-import { renderDomains } from "./format.js";
-import { parseDomainTarget } from "./parse.js";
-import { addDomain, listDomains, removeDomain } from "./service.js";
+import { renderCheck, renderDomains } from "./format.js";
+import { parseCheckTarget, parseDomainTarget } from "./parse.js";
+import { addDomain, checkDomain, listDomains, removeDomain } from "./service.js";
 
 export const allowCommand = {
   trigger: ["allow"],
@@ -117,5 +117,20 @@ export const domainsCommand = {
     for (const message of renderDomains(entries)) {
       await sendMessage(ctx, message, { parse_mode: "HTML" });
     }
+  },
+};
+
+export const checkCommand = {
+  trigger: ["check"],
+  description: "Show which rules match a domain",
+  async handler(ctx) {
+    const domain = parseCheckTarget(ctx.payload);
+
+    if (domain === null) {
+      await sendMessage(ctx, "❌ Invalid domain. Send /check <domain>, e.g. /check example.com");
+      return;
+    }
+
+    await sendMessage(ctx, renderCheck(await checkDomain(domain)), { parse_mode: "HTML" });
   },
 };

@@ -2,6 +2,7 @@ import { botVersionCommand } from "../features/about/command.js";
 import { disableCommand, enableCommand, statusCommand } from "../features/blocking/command.js";
 import {
   allowCommand,
+  checkCommand,
   denyCommand,
   domainsCommand,
   unallowCommand,
@@ -46,6 +47,7 @@ export const COMMANDS = [
   unallowCommand,
   undenyCommand,
   domainsCommand,
+  checkCommand,
   versionCommand,
   updateCommand,
   upgravityCommand,

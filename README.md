@@ -145,6 +145,7 @@ npm start
    - `/unallow <domain>` - Remove a domain from the allowlist. Use `*.domain` to remove a wildcard added with `/allow *.domain`
    - `/undeny <domain>` - Remove a domain from the denylist, e.g. `/undeny example.com` or `/undeny *.ads.example`
    - `/domains` - List allowlist and denylist entries, both exact and regex
+   - `/check <domain>` - Show which allow/deny rules and subscribed lists match a domain, whether each is enabled, and which groups it applies to. Changes nothing, e.g. `/check example.com`
    - `/version` or `/v` - Show installed version of Pi-hole, Web Interface & FTL
    - `/update` or `/up` - Update Pi-hole subsystems
    - `/upgravity` or `/g` - Update the list of ad-serving domains
@@ -154,10 +155,6 @@ npm start
    - `/help` - Show available commands and descriptions
 
 The reply keyboard lists read-only monitoring commands first (`/summary`, `/top`, `/recent`, `/status`, `/messages`), followed by session commands and then maintenance and destructive commands.
-
-### API authentication
-
-`/summary`, `/top`, `/recent`, `/messages`, `/allow`, `/deny`, `/unallow`, `/undeny` and `/domains` sign in to the Pi-hole API automatically using `PIHOLE_PASSWORD`, and sign in again once if the session has expired. You no longer need to run `/authorize` after restarting the bot. `/authorize` and `/logout` remain available for manual troubleshooting. On a graceful shutdown (`SIGINT`/`SIGTERM`, including PM2 restarts) the bot ends its Pi-hole API session so that restarts do not use up Pi-hole's session limit.
 
 ## 🧪 Testing
 

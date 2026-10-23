@@ -356,6 +356,37 @@ it("lists each domain list in its own HTML reply", async () => {
   ]);
 });
 
+it("checks a domain in one HTML reply", async () => {
+  domains.checkDomain.mockResolvedValue({
+    domain: "example.com",
+    rules: [],
+    lists: [],
+    groups: new Map(),
+  });
+  const ctx = { ...context(), payload: "Example.com" };
+
+  await run("check", ctx);
+
+  expect(domains.checkDomain).toHaveBeenCalledWith("example.com");
+  expect(ctx.reply.mock.calls).toEqual([
+    [
+      "🔎 <code>example.com</code>\nNo allow/deny rule or subscribed list matches this domain",
+      { parse_mode: "HTML" },
+    ],
+  ]);
+});
+
+it("rejects an invalid domain to check without asking Pi-hole", async () => {
+  const ctx = { ...context(), payload: "*.example.com" };
+
+  await run("check", ctx);
+
+  expect(domains.checkDomain).not.toHaveBeenCalled();
+  expect(ctx.reply.mock.calls[0][0]).toBe(
+    "❌ Invalid domain. Send /check <domain>, e.g. /check example.com"
+  );
+});
+
 const actionContext = (choice) => ({
   ...context(),
   match: [`pause:${choice}`, choice],
