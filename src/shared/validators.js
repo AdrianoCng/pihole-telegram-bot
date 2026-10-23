@@ -40,3 +40,14 @@ export function requireTimestamp(value) {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) throw invalidResponse();
   return value;
 }
+
+export function requireBoolean(value) {
+  if (typeof value !== "boolean") throw invalidResponse();
+  return value;
+}
+
+export function requireGroupIds(value) {
+  const ids = requireArray(value);
+  if (!ids.every(isCount)) throw invalidResponse();
+  return ids;
+}

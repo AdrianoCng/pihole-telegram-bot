@@ -1,6 +1,14 @@
 import { API_ENDPOINTS } from "../../pihole/endpoints.js";
 import { authenticatedDelete, authenticatedGet, authenticatedPost } from "../../pihole/session.js";
-import { isDuplicateError, isNotFoundError, parseAddResult, parseDomains } from "./parse.js";
+import { SEARCH_LIMIT } from "./constants.js";
+import {
+  isDuplicateError,
+  isNotFoundError,
+  parseAddResult,
+  parseDomains,
+  parseGroups,
+  parseSearch,
+} from "./parse.js";
 
 /** Add a domain entry to a list. Resolves "added" or "exists". */
 export async function addDomain(list, { kind, domain }) {
@@ -32,4 +40,16 @@ export async function removeDomain(list, { kind, domain }) {
 /** Read every allow and deny entry, exact and regex. */
 export async function listDomains() {
   return parseDomains(await authenticatedGet(API_ENDPOINTS.DOMAINS));
+}
+
+/** Find every allow/deny rule and subscribed list matching a domain. Changes nothing. */
+export async function checkDomain(domain) {
+  // One extra result tells parseSearch the limit was reached.
+  const [search, groups] = await Promise.all([
+    authenticatedGet(
+      `${API_ENDPOINTS.SEARCH}/${encodeURIComponent(domain)}?partial=false&N=${SEARCH_LIMIT + 1}`
+    ),
+    authenticatedGet(API_ENDPOINTS.GROUPS),
+  ]);
+  return { domain, ...parseSearch(search), groups: parseGroups(groups) };
 }

@@ -1,11 +1,14 @@
 import { ApiError, ApiRejectedError } from "../../shared/errors/ApiError.js";
 import {
   invalidResponse,
+  isCount,
   requireArray,
   requireOneOf,
   requireString,
+  requireBoolean,
+  requireGroupIds,
 } from "../../shared/validators.js";
-import { DOMAIN_KINDS, DOMAIN_LISTS } from "./constants.js";
+import { DOMAIN_KINDS, DOMAIN_LISTS, GRAVITY_TYPES, SEARCH_LIMIT } from "./constants.js";
 
 const WILDCARD_PREFIX = "*.";
 const DOMAIN_MAX_LENGTH = 253;
@@ -14,6 +17,7 @@ const DUPLICATE_ERROR = /already present|UNIQUE constraint/i;
 const WILDCARD_REGEX = /^\(\\\.\|\^\)(.+)\$$/;
 const LIST_TYPES = new Set(Object.values(DOMAIN_LISTS).map((list) => list.type));
 const KINDS = new Set(Object.values(DOMAIN_KINDS));
+const GRAVITY_TYPE_VALUES = new Set(Object.values(GRAVITY_TYPES));
 
 function isHostname(value) {
   const labels = value.split(".");
@@ -43,6 +47,12 @@ export function parseDomainTarget(payload) {
   }
 
   return isHostname(value) ? { kind: DOMAIN_KINDS.EXACT, domain: value, display: value } : null;
+}
+
+/** Parse the /check payload into one exact domain, or null when it is invalid. */
+export function parseCheckTarget(payload) {
+  const target = parseDomainTarget(payload);
+  return target?.kind === DOMAIN_KINDS.EXACT ? target.domain : null;
 }
 
 /** Validate the add-domain payload: "added", "exists", or a rejection. */
@@ -96,4 +106,45 @@ export function displayDomain({ kind, domain }) {
 
   const host = match[1].replaceAll("\\.", ".");
   return isHostname(host) && wildcardRegex(host) === domain ? `${WILDCARD_PREFIX}${host}` : domain;
+}
+
+export function parseSearch(payload) {
+  const domains = requireArray(payload?.search?.domains);
+  const gravity = requireArray(payload?.search?.gravity);
+  const truncated = domains.length > SEARCH_LIMIT || gravity.length > SEARCH_LIMIT;
+
+  const rules = domains.slice(0, SEARCH_LIMIT).map((entry) => ({
+    domain: requireString(entry?.domain),
+    type: requireOneOf(LIST_TYPES, entry.type),
+    kind: requireOneOf(KINDS, entry.kind),
+    enabled: requireBoolean(entry.enabled),
+    groups: requireGroupIds(entry.groups),
+  }));
+
+  const lists = new Map();
+  for (const entry of gravity.slice(0, SEARCH_LIMIT)) {
+    const list = {
+      address: requireString(entry?.address),
+      type: requireOneOf(GRAVITY_TYPE_VALUES, entry.type),
+      enabled: requireBoolean(entry.enabled),
+      groups: requireGroupIds(entry.groups),
+    };
+    // A list can match more than once, e.g. as a plain and an ABP-style entry.
+    lists.set(`${list.type} ${list.address}`, list);
+  }
+
+  return { rules, lists: [...lists.values()], truncated };
+}
+
+/** Validate the /groups payload into a map from group ID to its name and state. */
+export function parseGroups(payload) {
+  return new Map(
+    requireArray(payload?.groups).map((group) => {
+      if (!isCount(group?.id)) throw invalidResponse();
+      return [
+        group.id,
+        { name: requireString(group.name), enabled: requireBoolean(group.enabled) },
+      ];
+    })
+  );
 }

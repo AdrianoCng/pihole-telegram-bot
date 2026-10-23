@@ -1,5 +1,10 @@
-import { TELEGRAM_MESSAGE_MAX_LENGTH, code, truncate } from "../../shared/telegram/html.js";
-import { DOMAIN_KINDS, DOMAIN_LISTS } from "./constants.js";
+import {
+  TELEGRAM_MESSAGE_MAX_LENGTH,
+  code,
+  escapeHtml,
+  truncate,
+} from "../../shared/telegram/html.js";
+import { DOMAIN_KINDS, DOMAIN_LISTS, GRAVITY_TYPES, SEARCH_LIMIT } from "./constants.js";
 import { displayDomain } from "./parse.js";
 
 const SECTIONS = [
@@ -60,5 +65,76 @@ export function renderDomains(entries) {
 
   return SECTIONS.map((section) =>
     fitLines(renderSection(section, entries), TELEGRAM_MESSAGE_MAX_LENGTH)
+  );
+}
+
+const LIST_TITLES = {
+  [GRAVITY_TYPES.ALLOW]: "✅ allowlist",
+  [GRAVITY_TYPES.BLOCK]: "🚫 blocklist",
+};
+
+function renderGroups(ids, groups) {
+  if (ids.length === 0) return "no groups";
+
+  const names = ids.map((id) => {
+    const group = groups.get(id);
+    if (!group) return `#${id}`;
+    const name = escapeHtml(truncate(group.name));
+    return group.enabled ? name : `${name} (disabled)`;
+  });
+  return `groups: ${names.join(", ")}`;
+}
+
+function renderState(entry, groups) {
+  return `${entry.enabled ? "enabled" : "disabled"} · ${renderGroups(entry.groups, groups)}`;
+}
+
+function renderRules({ list, title }, { rules, groups }) {
+  const onList = rules.filter((rule) => rule.type === list.type);
+  if (onList.length === 0) return [];
+
+  return [
+    `<b>${title}</b>`,
+    ...onList.map(
+      (rule) =>
+        `${ENTRY_PREFIX}${code(truncate(displayDomain(rule)))} ${rule.kind} · ${renderState(rule, groups)}`
+    ),
+  ];
+}
+
+function renderLists({ lists, groups }) {
+  if (lists.length === 0) return [];
+
+  return [
+    "<b>📋 Subscribed lists</b>",
+    ...lists.map(
+      (list) =>
+        `${ENTRY_PREFIX}${LIST_TITLES[list.type]} ${code(list.address)} · ${renderState(list, groups)}`
+    ),
+  ];
+}
+
+/** Every allow/deny rule and subscribed list matching a domain, with state and groups. */
+export function renderCheck(result) {
+  const header = `🔎 ${code(result.domain)}`;
+
+  if (result.rules.length === 0 && result.lists.length === 0) {
+    return [header, "No allow/deny rule or subscribed list matches this domain"].join("\n");
+  }
+
+  return fitLines(
+    [
+      header,
+      // Near the top so fitLines never drops it.
+      ...(result.truncated
+        ? [`<i>Showing the first ${SEARCH_LIMIT} matches; more exist.</i>`]
+        : []),
+      "",
+      ...SECTIONS.flatMap((section) => renderRules(section, result)),
+      ...renderLists(result),
+      "",
+      "<i>A rule applies only to clients in one of its groups.</i>",
+    ],
+    TELEGRAM_MESSAGE_MAX_LENGTH
   );
 }

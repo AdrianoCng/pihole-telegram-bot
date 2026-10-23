@@ -5,8 +5,8 @@ import {
   authenticatedPost,
 } from "../../../pihole/session.js";
 import { ApiError } from "../../../shared/errors/ApiError.js";
-import { DOMAIN_LISTS } from "../constants.js";
-import { addDomain, listDomains, removeDomain } from "../service.js";
+import { DOMAIN_LISTS, SEARCH_LIMIT } from "../constants.js";
+import { addDomain, checkDomain, listDomains, removeDomain } from "../service.js";
 
 vi.mock("../../../pihole/session.js");
 
@@ -121,4 +121,38 @@ it("propagates a failed list request", async () => {
   authenticatedGet.mockRejectedValue(error);
 
   await expect(listDomains()).rejects.toBe(error);
+});
+
+it("checks a domain against rules and subscribed lists", async () => {
+  authenticatedGet.mockImplementation(async (path) =>
+    path === "/groups"
+      ? { groups: [{ id: 0, name: "Default", enabled: true }] }
+      : {
+          search: {
+            domains: [
+              { domain: "example.com", type: "allow", kind: "exact", enabled: true, groups: [0] },
+            ],
+            gravity: [],
+          },
+        }
+  );
+
+  await expect(checkDomain("example.com")).resolves.toEqual({
+    domain: "example.com",
+    rules: [{ domain: "example.com", type: "allow", kind: "exact", enabled: true, groups: [0] }],
+    lists: [],
+    truncated: false,
+    groups: new Map([[0, { name: "Default", enabled: true }]]),
+  });
+  expect(authenticatedGet).toHaveBeenCalledWith(
+    `/search/example.com?partial=false&N=${SEARCH_LIMIT + 1}`
+  );
+  expect(authenticatedGet).toHaveBeenCalledWith("/groups");
+});
+
+it("propagates a failed check", async () => {
+  const error = new TypeError("fetch failed");
+  authenticatedGet.mockRejectedValue(error);
+
+  await expect(checkDomain("example.com")).rejects.toBe(error);
 });

@@ -2,6 +2,8 @@ export const API_ENDPOINTS = {
   AUTH: "/auth",
   QUERIES: "/queries",
   DOMAINS: "/domains",
+  SEARCH: "/search",
+  GROUPS: "/groups",
   STATS: {
     SUMMARY: "/stats/summary",
     TOP_DOMAINS: "/stats/top_domains",

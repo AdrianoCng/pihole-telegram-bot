@@ -1,12 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { ApiError } from "../../../shared/errors/ApiError.js";
+import { ApiError, ApiResponseError } from "../../../shared/errors/ApiError.js";
 import {
   displayDomain,
   isDuplicateError,
   isNotFoundError,
   parseAddResult,
+  parseCheckTarget,
   parseDomainTarget,
   parseDomains,
+  parseGroups,
+  parseSearch,
 } from "../parse.js";
 
 const exact = (domain) => ({ kind: "exact", domain, display: domain });
@@ -201,5 +204,115 @@ describe("displayDomain", () => {
     expect(displayDomain({ kind: "regex", domain: "^ads[0-9]+\\." })).toBe("^ads[0-9]+\\.");
     expect(displayDomain({ kind: "regex", domain: "(\\.|^)a.b\\.com$" })).toBe("(\\.|^)a.b\\.com$");
     expect(displayDomain({ kind: "exact", domain: "example.com" })).toBe("example.com");
+  });
+});
+
+describe("parseCheckTarget", () => {
+  it("accepts one domain, lowercased without a trailing dot", () => {
+    expect(parseCheckTarget(" Ads.Example.COM. ")).toBe("ads.example.com");
+  });
+
+  it.each([undefined, "", "*.example.com", "a b", "bad_domain-.com"])("rejects %j", (payload) => {
+    expect(parseCheckTarget(payload)).toBeNull();
+  });
+});
+
+const searchRule = (overrides = {}) => ({
+  domain: "example.com",
+  type: "deny",
+  kind: "exact",
+  enabled: true,
+  groups: [0],
+  comment: null,
+  id: 1,
+  ...overrides,
+});
+
+const searchList = (overrides = {}) => ({
+  domain: "example.com",
+  address: "https://lists.example/hosts",
+  type: "block",
+  enabled: true,
+  groups: [0, 2],
+  id: 3,
+  ...overrides,
+});
+
+describe("parseSearch", () => {
+  it("keeps the fields /check shows", () => {
+    expect(parseSearch({ search: { domains: [searchRule()], gravity: [searchList()] } })).toEqual({
+      rules: [{ domain: "example.com", type: "deny", kind: "exact", enabled: true, groups: [0] }],
+      lists: [
+        { address: "https://lists.example/hosts", type: "block", enabled: true, groups: [0, 2] },
+      ],
+      truncated: false,
+    });
+  });
+
+  it("is not truncated at exactly the limit", () => {
+    const { truncated } = parseSearch({
+      search: {
+        domains: Array.from({ length: 20 }, () => searchRule()),
+        gravity: Array.from({ length: 20 }, (_, i) => searchList({ address: `https://l/${i}` })),
+      },
+    });
+    expect(truncated).toBe(false);
+  });
+
+  it("flags and drops results past the limit", () => {
+    const { rules, lists, truncated } = parseSearch({
+      search: {
+        domains: Array.from({ length: 21 }, () => searchRule()),
+        gravity: Array.from({ length: 21 }, (_, i) => searchList({ address: `https://l/${i}` })),
+      },
+    });
+    expect(truncated).toBe(true);
+    expect(rules).toHaveLength(20);
+    expect(lists).toHaveLength(20);
+  });
+
+  it("flags when only the lists exceed the limit", () => {
+    const { truncated } = parseSearch({
+      search: {
+        domains: [],
+        gravity: Array.from({ length: 21 }, (_, i) => searchList({ address: `https://l/${i}` })),
+      },
+    });
+    expect(truncated).toBe(true);
+  });
+
+  it("shows a list that matches more than once a single time", () => {
+    const { lists } = parseSearch({
+      search: { domains: [], gravity: [searchList(), searchList({ domain: "||example.com^" })] },
+    });
+    expect(lists).toHaveLength(1);
+  });
+
+  it.each([
+    ["missing search", {}],
+    ["missing gravity", { search: { domains: [] } }],
+    ["unknown rule type", { search: { domains: [searchRule({ type: "block" })], gravity: [] } }],
+    ["non-boolean enabled", { search: { domains: [searchRule({ enabled: 1 })], gravity: [] } }],
+    ["invalid group id", { search: { domains: [searchRule({ groups: ["0"] })], gravity: [] } }],
+    ["unknown list type", { search: { domains: [], gravity: [searchList({ type: "deny" })] } }],
+    ["missing address", { search: { domains: [], gravity: [searchList({ address: "" })] } }],
+  ])("rejects %s", (_, payload) => {
+    expect(() => parseSearch(payload)).toThrow(ApiResponseError);
+  });
+});
+
+describe("parseGroups", () => {
+  it("maps group IDs to name and state", () => {
+    expect(
+      parseGroups({ groups: [{ id: 0, name: "Default", enabled: true, comment: null }] })
+    ).toEqual(new Map([[0, { name: "Default", enabled: true }]]));
+  });
+
+  it.each([
+    {},
+    { groups: [{ id: -1, name: "x", enabled: true }] },
+    { groups: [{ id: 0, name: "x" }] },
+  ])("rejects %j", (payload) => {
+    expect(() => parseGroups(payload)).toThrow(ApiResponseError);
   });
 });
