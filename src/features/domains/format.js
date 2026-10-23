@@ -109,7 +109,7 @@ function renderLists({ lists, groups }) {
     "<b>📋 Subscribed lists</b>",
     ...lists.map(
       (list) =>
-        `${ENTRY_PREFIX}${LIST_TITLES[list.type]} ${code(truncate(list.address))} · ${renderState(list, groups)}`
+        `${ENTRY_PREFIX}${LIST_TITLES[list.type]} ${code(list.address)} · ${renderState(list, groups)}`
     ),
   ];
 }
