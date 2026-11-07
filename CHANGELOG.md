@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/AdrianoCng/pihole-telegram-bot/compare/v1.6.0...v1.7.0) (2026-10-23)
+
+
+### Features
+
+* add /check command to display domain matching rules and lists ([#52](https://github.com/AdrianoCng/pihole-telegram-bot/issues/52)) ([7ba3c5d](https://github.com/AdrianoCng/pihole-telegram-bot/commit/7ba3c5d7b0daf147e27491a40030dbf24a6e645f))
+
 ## [1.6.0](https://github.com/AdrianoCng/pihole-telegram-bot/compare/v1.5.0...v1.6.0) (2026-10-19)
 
 

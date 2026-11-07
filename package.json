@@ -1,6 +1,6 @@
 {
   "name": "pihole-telegram-bot",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Control your pihole with this telegram bot",
   "keywords": [
     "ad-blocker",
